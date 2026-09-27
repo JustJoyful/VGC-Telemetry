@@ -1,0 +1,46 @@
+{
+  "regulation_id": "M-C",
+  "name": "Regulation M-C",
+  "start_date": "2026-09-09",
+  "end_date": "2026-12-02",
+  "marquee_mechanics": [
+    "Mega Evolution",
+    "Z Mega Evolution"
+  ],
+  "verified_m_c_new_stones": [
+    "Salamencite",
+    "Golisopite",
+    "Baxcalibrite",
+    "Absolite Z",
+    "Garchompite Z",
+    "Lucarionite Z"
+  ],
+  "standard_mega_stones": [
+    "Salamencite",
+    "Golisopite",
+    "Baxcalibrite",
+    "Lucarionite",
+    "Garchompite",
+    "Absolite"
+  ],
+  "z_mega_stones": [
+    "Absolite Z",
+    "Garchompite Z",
+    "Lucarionite Z"
+  ],
+  "form_vocabulary": [
+    "Mega",
+    "Mega-Z",
+    "Alola",
+    "Galar",
+    "Hisui",
+    "Paldea",
+    "Wash",
+    "Heat",
+    "Frost",
+    "Fan",
+    "Mow",
+    "Rapid-Strike",
+    "Single-Strike"
+  ]
+}
