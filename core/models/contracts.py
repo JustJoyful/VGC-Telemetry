@@ -11,6 +11,7 @@ class EVSpread(BaseModel):
     In Pokémon Champions, each stat can have 0 to 252 EVs, and total EVs cannot exceed 508.
     'def' is aliased to 'def_' because 'def' is a reserved Python keyword.
     """
+
     model_config = ConfigDict(extra="forbid", populate_by_name=True)
 
     hp: int = Field(ge=0, le=252)
@@ -38,6 +39,7 @@ class CompetitivePokemon(BaseModel):
     Validates structural integrity, closed form vocabulary, and Mega/Z-Mega consistency.
     No Terastallization fields or stats are permitted.
     """
+
     model_config = ConfigDict(extra="forbid")
 
     species: str
@@ -78,6 +80,7 @@ class CompetitivePokemon(BaseModel):
 
 class TeamRoster(BaseModel):
     """A full 6-Pokémon team roster from a verified tournament."""
+
     model_config = ConfigDict(extra="forbid")
 
     player_id: str
@@ -89,6 +92,7 @@ class TeamRoster(BaseModel):
 
 class MatchResult(BaseModel):
     """Match result sourced from verified tournament export (e.g. Limitless)."""
+
     model_config = ConfigDict(extra="forbid")
 
     round: int
@@ -101,6 +105,7 @@ class MatchResult(BaseModel):
 
 class TournamentMetadata(BaseModel):
     """Tournament-level metadata."""
+
     model_config = ConfigDict(extra="forbid")
 
     tid: str
@@ -113,6 +118,7 @@ class TournamentMetadata(BaseModel):
 
 class TournamentExport(BaseModel):
     """Full tournament payload matching the verified data contract."""
+
     model_config = ConfigDict(extra="forbid")
 
     metadata: TournamentMetadata

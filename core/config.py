@@ -1,9 +1,16 @@
 import json
+import os
 from pathlib import Path
 from typing import Any
 
 _REGULATIONS_DIR = Path(__file__).parent / "regulations"
 _CONFIG_CACHE: dict[str, dict[str, Any]] = {}
+
+
+def get_active_regulation() -> dict[str, Any]:
+    """Return the active regulation configuration specified by ACTIVE_REGULATION env or M-C."""
+    active_id = os.environ.get("ACTIVE_REGULATION", "M-C")
+    return get_regulation_config(active_id)
 
 
 def get_regulation_config(regulation_id: str = "M-C") -> dict[str, Any]:
