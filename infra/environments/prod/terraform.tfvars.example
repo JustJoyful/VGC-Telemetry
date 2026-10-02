@@ -1,0 +1,5 @@
+aws_region         = "us-east-1"
+environment        = "prod"
+ecr_repository_url = "123456789012.dkr.ecr.us-east-1.amazonaws.com/vgc-telemetry"
+image_tag          = "latest"
+notification_email = "prod-alerts@example.com"
