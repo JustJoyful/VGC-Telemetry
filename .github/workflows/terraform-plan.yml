@@ -1,0 +1,116 @@
+name: Terraform Plan
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "infra/**"
+      - "app/**"
+      - "core/**"
+      - "db/**"
+      - "ingestion/**"
+      - "scraper/**"
+      - "Dockerfile"
+      - ".dockerignore"
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  plan:
+    name: Terraform Plan (${{ matrix.environment }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: ["dev"]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.10.0"
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive infra/
+
+      - name: Configure AWS Credentials via OIDC (Read-Only)
+        if: env.AWS_ROLE != ''
+        uses: aws-actions/configure-aws-credentials@v4
+        env:
+          AWS_ROLE: ${{ secrets.AWS_READONLY_ROLE_ARN }}
+        with:
+          role-to-assume: ${{ secrets.AWS_READONLY_ROLE_ARN }}
+          role-session-name: github-actions-terraform-plan
+          aws-region: us-east-1
+
+      - name: Terraform Init & Validate
+        if: env.AWS_ROLE != ''
+        working-directory: infra/environments/${{ matrix.environment }}
+        env:
+          AWS_ROLE: ${{ secrets.AWS_READONLY_ROLE_ARN }}
+        run: |
+          terraform init
+          terraform validate
+
+      - name: Terraform Plan
+        if: env.AWS_ROLE != ''
+        id: plan
+        working-directory: infra/environments/${{ matrix.environment }}
+        env:
+          AWS_ROLE: ${{ secrets.AWS_READONLY_ROLE_ARN }}
+        run: |
+          terraform plan -no-color -var="image_tag=${{ github.sha }}" -var="ecr_repository_url=${{ secrets.ECR_REPOSITORY_URL }}" -out=tfplan
+          echo "PLAN_OUTPUT<<EOF" >> $GITHUB_ENV
+          terraform show -no-color tfplan | head -c 60000 >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Comment Plan on PR
+        if: env.AWS_ROLE != '' && steps.plan.outcome == 'success'
+        uses: actions/github-script@v7
+        env:
+          PLAN: ${{ env.PLAN_OUTPUT }}
+          AWS_ROLE: ${{ secrets.AWS_READONLY_ROLE_ARN }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### Terraform Plan: \`${{ matrix.environment }}\` 📖
+            <details><summary>Show Plan</summary>
+
+            \`\`\`hcl
+            ${process.env.PLAN}
+            \`\`\`
+
+            </details>
+
+            *Pushed by: @${{ github.actor }} | Commit: \`${{ github.sha }}\`*`;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment => {
+              return comment.user.type === 'Bot' && comment.body.includes('Terraform Plan: `${{ matrix.environment }}`');
+            });
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: output
+              });
+            } else {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: output
+              });
+            }

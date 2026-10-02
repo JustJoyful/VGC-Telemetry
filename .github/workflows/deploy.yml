@@ -1,0 +1,95 @@
+name: Deploy
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "infra/**"
+      - "app/**"
+      - "core/**"
+      - "db/**"
+      - "ingestion/**"
+      - "scraper/**"
+      - "Dockerfile"
+      - ".dockerignore"
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-and-deploy:
+    name: Build Images & Apply Terraform
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials via OIDC
+        if: env.AWS_ROLE != ''
+        uses: aws-actions/configure-aws-credentials@v4
+        env:
+          AWS_ROLE: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          role-session-name: github-actions-deploy
+          aws-region: us-east-1
+
+      - name: Log in to Amazon ECR
+        if: env.AWS_ROLE != ''
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        env:
+          AWS_ROLE: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+
+      - name: Build and Push Multi-Stage Docker Images
+        if: env.AWS_ROLE != ''
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPO: ${{ secrets.ECR_REPOSITORY_NAME || 'vgc-telemetry' }}
+          SHA: ${{ github.sha }}
+        run: |
+          echo "Building API image..."
+          docker build --target api \
+            -t $REGISTRY/$REPO:${SHA}-api \
+            -t $REGISTRY/$REPO:latest-api .
+
+          echo "Building Ingestion image..."
+          docker build --target ingestion \
+            -t $REGISTRY/$REPO:${SHA}-ingestion \
+            -t $REGISTRY/$REPO:latest-ingestion .
+
+          echo "Building Scraper image..."
+          docker build --target scraper \
+            -t $REGISTRY/$REPO:${SHA}-scraper \
+            -t $REGISTRY/$REPO:latest-scraper .
+
+          echo "Pushing images to ECR..."
+          docker push $REGISTRY/$REPO:${SHA}-api
+          docker push $REGISTRY/$REPO:latest-api
+          docker push $REGISTRY/$REPO:${SHA}-ingestion
+          docker push $REGISTRY/$REPO:latest-ingestion
+          docker push $REGISTRY/$REPO:${SHA}-scraper
+          docker push $REGISTRY/$REPO:latest-scraper
+
+      - name: Setup Terraform
+        if: env.AWS_ROLE != ''
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.10.0"
+
+      - name: Terraform Apply (Production)
+        if: env.AWS_ROLE != ''
+        working-directory: infra/environments/prod
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPO: ${{ secrets.ECR_REPOSITORY_NAME || 'vgc-telemetry' }}
+        run: |
+          terraform init
+          terraform apply -auto-approve \
+            -var="image_tag=${{ github.sha }}" \
+            -var="ecr_repository_url=$REGISTRY/$REPO"
