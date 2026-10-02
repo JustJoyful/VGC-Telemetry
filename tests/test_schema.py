@@ -4,6 +4,7 @@ from db.schema import (
     evspread_usage_sk,
     match_sk,
     moves_usage_sk,
+    partner_directional_sk,
     partner_sk,
     rate_limit_pk,
     rate_limit_sk,
@@ -37,6 +38,11 @@ def test_partner_canonical_ordering():
     # Alphabetical order: Amoonguss < Incineroar
     assert partner_sk("Incineroar", "Amoonguss") == "PARTNER#Amoonguss#Incineroar"
     assert partner_sk("Amoonguss", "Incineroar") == "PARTNER#Amoonguss#Incineroar"
+
+
+def test_partner_directional():
+    assert partner_directional_sk("Swampert", "Garchomp") == "PARTNER#Swampert#Garchomp"
+    assert partner_directional_sk("Garchomp", "Swampert") == "PARTNER#Garchomp#Swampert"
 
 
 def test_gsi_key_builders():

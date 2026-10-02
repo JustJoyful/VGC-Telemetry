@@ -48,6 +48,15 @@ def partner_sk(species_a: str, species_b: str) -> str:
     return f"PARTNER#{s1}#{s2}"
 
 
+def partner_directional_sk(species_a: str, species_b: str) -> str:
+    """Directional partner sort key (PARTNER#<species_a>#<species_b>).
+
+    Used for bidirectional indexing so that querying partners of species_a
+    is a zero-scan prefix query (SK begins_with PARTNER#<species_a>#).
+    """
+    return f"PARTNER#{species_a}#{species_b}"
+
+
 def regulation_pk(regulation: str) -> str:
     return f"REGULATION#{regulation}"
 

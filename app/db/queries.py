@@ -57,25 +57,33 @@ def query_player_history(
 
 
 def query_meta_stat(
-    regulation: str,
+    target_pk_or_reg: str,
     sk_prefix: str,
     table: Any | None = None,
 ) -> list[dict[str, Any]]:
-    """Query pre-aggregated metrics for a regulation partition."""
+    """Query pre-aggregated metrics for a regulation or tournament partition."""
     tbl = table or get_dynamodb_table()
-    key_cond = Key("PK").eq(regulation_pk(regulation)) & Key("SK").begins_with(sk_prefix)
+    is_prefixed = target_pk_or_reg.startswith("TOURNAMENT#") or target_pk_or_reg.startswith(
+        "REGULATION#"
+    )
+    pk = target_pk_or_reg if is_prefixed else regulation_pk(target_pk_or_reg)
+    key_cond = Key("PK").eq(pk) & Key("SK").begins_with(sk_prefix)
     response = tbl.query(KeyConditionExpression=key_cond)
     raw_items = response.get("Items", [])
     return [deserialize_dynamodb_item(item) for item in raw_items]
 
 
 def get_meta_item(
-    regulation: str,
+    target_pk_or_reg: str,
     sk: str,
     table: Any | None = None,
 ) -> dict[str, Any] | None:
-    """Get a single pre-aggregated metric item."""
+    """Get a single pre-aggregated metric item for a regulation or tournament partition."""
     tbl = table or get_dynamodb_table()
-    response = tbl.get_item(Key={"PK": regulation_pk(regulation), "SK": sk})
+    is_prefixed = target_pk_or_reg.startswith("TOURNAMENT#") or target_pk_or_reg.startswith(
+        "REGULATION#"
+    )
+    pk = target_pk_or_reg if is_prefixed else regulation_pk(target_pk_or_reg)
+    response = tbl.get_item(Key={"PK": pk, "SK": sk})
     item = response.get("Item")
     return deserialize_dynamodb_item(item) if item else None
