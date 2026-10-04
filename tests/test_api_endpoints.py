@@ -4,6 +4,8 @@ from fastapi.testclient import TestClient
 
 from app.main import app
 from db.schema import (
+    ability_usage_sk,
+    evspread_usage_sk,
     moves_usage_sk,
     regulation_pk,
     species_usage_sk,
@@ -167,3 +169,129 @@ def test_player_history_endpoint(dynamodb_table):
     assert body["player_id"] == "P007"
     assert len(body["history"]) == 1
     assert body["history"][0]["standing"] == 1
+
+
+def test_meta_endpoint_usage_all_species(dynamodb_table):
+    dynamodb_table.put_item(
+        Item={
+            "PK": regulation_pk("M-C"),
+            "SK": species_usage_sk("Swampert"),
+            "species": "Swampert",
+            "count": 10,
+        }
+    )
+    dynamodb_table.put_item(
+        Item={
+            "PK": regulation_pk("M-C"),
+            "SK": species_usage_sk("Garchomp"),
+            "species": "Garchomp",
+            "count": 8,
+        }
+    )
+    response = client.get("/v1/meta?regulation=M-C&metric=usage")
+    assert response.status_code == 200
+    body = response.json()
+    assert len(body["data"]) == 2
+
+
+def test_meta_endpoint_usage_species_not_found(dynamodb_table):
+    response = client.get("/v1/meta?regulation=M-C&metric=usage&species=NonexistentMon")
+    assert response.status_code == 404
+    assert "No usage stats found" in response.json()["detail"]
+
+
+def test_meta_endpoint_moves_validation_and_not_found(dynamodb_table):
+    # Missing species query param
+    resp_missing = client.get("/v1/meta?regulation=M-C&metric=moves")
+    assert resp_missing.status_code == 400
+    assert "Query parameter 'species' is required" in resp_missing.json()["detail"]
+
+    # Nonexistent species
+    resp_not_found = client.get("/v1/meta?regulation=M-C&metric=moves&species=NonexistentMon")
+    assert resp_not_found.status_code == 404
+    assert "No move stats found" in resp_not_found.json()["detail"]
+
+
+def test_meta_endpoint_ability_metric(dynamodb_table):
+    # Missing species
+    resp_missing = client.get("/v1/meta?regulation=M-C&metric=ability")
+    assert resp_missing.status_code == 400
+    assert "Query parameter 'species' is required" in resp_missing.json()["detail"]
+
+    # Not found
+    resp_not_found = client.get("/v1/meta?regulation=M-C&metric=ability&species=NonexistentMon")
+    assert resp_not_found.status_code == 404
+    assert "No ability stats found" in resp_not_found.json()["detail"]
+
+    # Valid
+    dynamodb_table.put_item(
+        Item={
+            "PK": regulation_pk("M-C"),
+            "SK": ability_usage_sk("Incineroar"),
+            "species": "Incineroar",
+            "abilities": {"Intimidate": 45, "Blaze": 2},
+        }
+    )
+    resp_valid = client.get("/v1/meta?regulation=M-C&metric=ability&species=Incineroar")
+    assert resp_valid.status_code == 200
+    assert resp_valid.json()["data"]["abilities"]["Intimidate"] == 45
+
+
+def test_meta_endpoint_evspread_metric(dynamodb_table):
+    # Missing species
+    resp_missing = client.get("/v1/meta?regulation=M-C&metric=evspread")
+    assert resp_missing.status_code == 400
+    assert "Query parameter 'species' is required" in resp_missing.json()["detail"]
+
+    # Not found
+    resp_not_found = client.get("/v1/meta?regulation=M-C&metric=evspread&species=NonexistentMon")
+    assert resp_not_found.status_code == 404
+    assert "No EV spread stats found" in resp_not_found.json()["detail"]
+
+    # Valid
+    dynamodb_table.put_item(
+        Item={
+            "PK": regulation_pk("M-C"),
+            "SK": evspread_usage_sk("Amoonguss"),
+            "species": "Amoonguss",
+            "ev_spreads": {"252/0/156/0/100/0": 30},
+        }
+    )
+    resp_valid = client.get("/v1/meta?regulation=M-C&metric=evspread&species=Amoonguss")
+    assert resp_valid.status_code == 200
+    assert resp_valid.json()["data"]["ev_spreads"]["252/0/156/0/100/0"] == 30
+
+
+def test_meta_endpoint_partner_all_pairs(dynamodb_table):
+    dynamodb_table.put_item(
+        Item={
+            "PK": regulation_pk("M-C"),
+            "SK": "PARTNER#Swampert#Incineroar",
+            "species": "Swampert",
+            "partner": "Incineroar",
+            "count": 12,
+        }
+    )
+    response = client.get("/v1/meta?regulation=M-C&metric=partner")
+    assert response.status_code == 200
+    assert len(response.json()["data"]) >= 1
+
+
+def test_meta_endpoint_unknown_metric_returns_400():
+    response = client.get("/v1/meta?regulation=M-C&metric=invalid_metric")
+    assert response.status_code == 400
+    assert "Unknown metric" in response.json()["detail"]
+
+
+def test_meta_endpoint_tournament_scoped_query(dynamodb_table):
+    dynamodb_table.put_item(
+        Item={
+            "PK": tournament_pk("T_LOCAL_99"),
+            "SK": species_usage_sk("Swampert"),
+            "species": "Swampert",
+            "count": 15,
+        }
+    )
+    response = client.get("/v1/meta?tournament_id=T_LOCAL_99&metric=usage&species=Swampert")
+    assert response.status_code == 200
+    assert response.json()["data"]["count"] == 15
