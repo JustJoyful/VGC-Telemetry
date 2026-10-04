@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+
+        <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="Content-Language" content="en_US" />
+    <meta name="google" content="notranslate" />
+
+    <!-- favicon -->
+    <link rel="shortcut icon" href="/static/favicon.ico">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+    
+    <!-- Custom CSS -->
+    <link href="/static/css/rk9gg-v20240908.css" rel="stylesheet">
+    <link href="/static/css/palette_rk9_14.css" rel="stylesheet">
+    <link href="/static/css/rk9gg.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <!-- version 7 -->
+    <script src="https://kit.fontawesome.com/8c12879507.js" crossorigin="anonymous"></script>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.14.1/jquery-ui.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js" integrity="sha384-+sLIOodYLS7CIrQpBjl+C7nPvqq+FbNUBDunl/OZv93DB7Ln/533i8e/mZXLi/P+" crossorigin="anonymous"></script>
+    <script src="/static/js/js.cookie-2.2.1.min.js"></script>
+    <script src="/static/js/htmx.min.js"></script>
+    <script src="/static/js/hyperscript.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
+
+    <title>Home - RK9</title>
+    
+<style>
+    img.homecard {
+        height: 100px;
+        width: auto;
+    }
+</style>
+
+
+    <!-- Common Firebase JS -->
+<script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database-compat.js"></script>
+<script src="/firebase/firebase-login.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth-compat.js"></script>
+<script src="/static/js/firebase-presence.js?20250201"></script>
+<script>
+$(function() {
+    firebase.auth().onAuthStateChanged(function(user) {
+        window.user = user; // user is undefined if no user signed in
+        if (user) {
+            // Check when token expires
+            var expirationTime = user.toJSON().stsTokenManager.expirationTime;
+            var now = Date.now();
+            var minutes = 30;
+            if (now > (expirationTime - (minutes*60*1000))) {
+                // Refresh ID Token for fresh hour and set in browser, so it is ready for next python request
+                // user.getIdToken(true).then(function (token) {
+                //     Cookies.set('token', token, { domain: '.rk9.gg', sameSite: 'lax', path: '/', expires: 1/24 });
+                // });
+            } else if (!Cookies.get('token')) {
+                // Cookie missing, set existing one again
+                user.getIdToken().then(function (token) {
+                    Cookies.set('token', token, { domain: '.rk9.gg', sameSite: 'lax', path: '/', expires: 1/24 });
+                });
+                // Don't reload with new cookie if coming from new authentication flow
+                if (window.location.pathname != "/login") {
+                    location.reload();
+                }
+            }
+            
+            present();
+            
+        }
+    });
+    firebase.auth().onIdTokenChanged(function(user) {
+        // alert('onIdTokenChanged event');
+        if (user) {
+            // User is signed in or token was refreshed.
+            user.getIdToken().then(function (token) {
+                if (token != Cookies.get('token')) {
+                    // alert(token.slice(-6));
+                    // alert(Cookies.get('token').slice(-6));
+                    Cookies.set('token', token, { domain: '.rk9.gg', sameSite: 'lax', path: '/', expires: 1/24 });
+                }
+                // console.log('new token');
+                // console.log(token);
+            });
+        }
+    });
+    $("a.logout").on("click", function(event) {
+        var r = confirm("Are you sure you want to sign out?");
+        if (r == true) {
+            Cookies.remove('token', { domain: '.rk9.gg', sameSite: 'lax', path: '/' });
+            Cookies.remove('token', { sameSite: 'lax', path: '/' });
+            firebase.auth().signOut();
+            // setTimeout(() => {  window.location.href = "/"; }, 1000);
+            // event.preventDefault();
+        } else {
+            event.preventDefault();
+        }
+    });
+});
+window.addEventListener('focus', function(event) { 
+    present();
+});
+</script>
+<!-- End Common Firebase JS -->
+
+    
+    
+
+</head>
+
+<body style="padding-top: 70px;">
+    
+<style>
+    .dropdown-item:hover, .dropdown-item:focus {
+        background-color: #E67635;  /* palette 14 - orange-400 */
+    }
+    .dropdown-item.active, .dropdown-item:active {
+        background-color: #E67635;  /* palette 14 - orange-400 */
+    }
+    .navbar-dark .navbar-nav .nav-link {
+        color: rgba(247, 247, 247, 0.9);
+    }
+    .navbar-dark .navbar-nav .nav-link:hover, .navbar-dark .navbar-nav .nav-link:focus {
+        color: rgba(255, 255, 255);
+    }
+    .navbar-dark .navbar-nav .nav-link.disabled {
+        color: rgba(247, 247, 247, 0.35);
+    }
+    .navbar-dark .navbar-toggler {
+        color: rgba(247, 247, 247, 0.9);
+        border-color: rgba(247, 247, 247, 0.5);
+    }
+    .navbar-dark .navbar-text {
+    color: rgba(247, 247, 247, 0.9);
+    }
+</style>
+
+
+    <!-- navbar with RK9 logo -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top flex-md-nowrap p-0 shadow" style="margin-bottom: 15px;">
+        <a class="navbar-rk9gg nav-link col-md-3 col-lg-2 mr-0 px-3" style="color: #F7F7F7;" href="/">
+            <img src="/static/images/rk9_logo_grey-050.png" class="ml-3" width="120" height="auto" alt=""> 
+        </a>
+        <!--  -->
+        <button class="navbar-toggler position-absolute" type="button" data-toggle="collapse" data-target="#navbarTop" aria-controls="navbarTop" aria-expanded="false" aria-label="Toggle navigation">
+            <span><i class="far fa-chevron-double-down pt-1"></i></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarTop">
+        
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item dropdown mr-4">
+                    <a class="nav-link dropdown-toggle" href="#" id="tournamentsDropdown" role="button" data-toggle="dropdown" aria-expanded="false">Events &<br>Tournaments</a>
+                    <div class="dropdown-menu bg-primary" aria-labelledby="tournamentsDropdown">
+                        <a class="dropdown-item grey-050" href="/events/pokemon">Pokémon Events</a>
+                        <a class="dropdown-item grey-050" href="/tournaments">Upcoming Tournaments</a>
+                    </div>
+                </li>
+                <li class="nav-item mr-4">
+                    
+                </li>
+                <li class="nav-item mr-4">
+                    <a class="nav-link" href="/organizer">Organizer<br>Dashboard</a>
+                </li>
+            </ul>
+            
+            
+            <div class="mt-0 mb-3">
+                <select id="lang" name="lang">
+                    <option value="en" selected>English</option>
+                    <option value="de" >Deutsch</option>
+                    <option value="es" >Español</option>
+                    <option value="fr" >Français</option>
+                    <option value="it" >Italiano</option>
+                    <option value="pt" >Português</option>
+                    <option value="ja" >日本語</option>
+                    <option value="ko" >한국어</option>
+                </select>
+            </div>
+            
+            
+            <ul class="navbar-nav ml-5 mr-4">
+                <li class="nav-item text-nowrap text-right" style="padding-top: .25rem;">
+                    
+                    <a class="nav-link login" href="/login">Sign in</a>
+                    
+                </li>
+            </ul>
+            
+        </div>
+    </nav>
+
+<script>
+$('#lang').on('change', function() {
+    var lang = $(this).val();
+    window.location.href = "?lang=" + lang;
+});
+</script>
+
+    
+
+<div id="content">
+    <div class="container-fluid">
+        
+        
+
+        
+        <div class="row mt-3">
+            <!-- player card -->
+            <div class="col-md-4 mb-3">
+                <div class="card mt-3 p-2 h-100" style="background: #f7f7f7;">
+                    <!-- <h4 class="card-title mt-2 px-2"><i class="fal fa-users-class"></i>&nbsp;&nbsp; Players</h4> -->
+                    <div class="card-body">
+                        
+                        <h4 class="card-title mt-2 px-2"><i class="fal fa-users-class"></i>&nbsp;&nbsp; Players</h4>
+                        <h5 class="card-text">Welcome to RK9.gg!</h5>
+                        <p class="card-text"><b><a href="/player">If you already have an account, sign in to see your Player Dashboard!</a></b> Your Player Dashboard displays the events you are currently registered for, along with a history of your past events. Be sure to sign in with the same email address each time – if you sign in with a different email address, you'll create a new account.</p> <p class="card-text">If you've never signed in before, we will create an account based on your email address, after you have authenticated with Google. Once your account is created, you'll be able to save your player information to your profile.  This makes registering for events as easy as a couple of clicks.</p>
+                        
+                    </div>
+                </div>
+            </div>
+            
+            <!-- organizer card -->
+            
+
+        </div>
+    </div>
+</div>
+
+
+
+
+
+    
+    
+        <div class="print-hidden">
+            
+<div id="footer" class="footer">
+    <p class="h4 text-center">
+        <a href="https://x.com/rk9labs" target="_blank"><i class="fa-brands fa-x-twitter" style="color: #2680C2;"></i></a>
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+        <a href="https://bsky.app/profile/rk9.gg" target="_blank"><i class="fa-brands fa-bluesky" style="color: #2680C2;"></i></i></a>
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+        <a href="https://www.facebook.com/rk9labs/" target="_blank"><i class="fa-brands fa-facebook-f" style="color: #2680C2;"></i></a>
+    </p>
+    <p class="text-center" style="font-size: 16px;">
+        <a href="https://support.rk9.gg" target="_blank">RK9 Support Center</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="/privacy">Privacy Notice</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="/terms">Terms of Service</a>
+    </p>
+    <p class="text-center" style="font-size: 16px;">
+        &copy; Copyright 2026 RK9 Labs, LLC
+    </p>
+</div>
+
+
+        </div>
+    
+    
+
+
+</body>
+
+</html>

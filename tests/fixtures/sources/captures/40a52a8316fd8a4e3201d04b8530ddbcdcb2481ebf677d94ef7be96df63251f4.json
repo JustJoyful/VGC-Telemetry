@@ -1,0 +1,8 @@
+{
+  "url": "https://api.github.com/repos/smogon/pokemon-showdown/commits/master",
+  "captured_at": "2026-10-03T19:07:55.230181+00:00",
+  "status": 200,
+  "content_type": "application/json; charset=utf-8",
+  "sha256": "f22d14965e68ac5e7640d8e7e0ffe213d9cb85d9e6c6c0703b0258467b924686",
+  "body_path": "40a52a8316fd8a4e3201d04b8530ddbcdcb2481ebf677d94ef7be96df63251f4.body"
+}

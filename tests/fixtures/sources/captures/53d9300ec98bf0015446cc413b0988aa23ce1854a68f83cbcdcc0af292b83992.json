@@ -1,0 +1,8 @@
+{
+  "url": "https://play.limitlesstcg.com/api/tournaments/6abe6180880ed327106e0cf4/pairings",
+  "captured_at": "2026-10-03T19:08:53.546986+00:00",
+  "status": 200,
+  "content_type": "application/json; charset=utf-8",
+  "sha256": "05a4742235556c535591c8e24ecdad2f390b8bb5435542441d118522196f32d7",
+  "body_path": "53d9300ec98bf0015446cc413b0988aa23ce1854a68f83cbcdcc0af292b83992.body"
+}

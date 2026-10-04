@@ -1,0 +1,231 @@
+{
+  "captures": [
+    {
+      "metadata_path": "captures/002a12cc6ab5442321a813582b8d07a9b35152abe154d882ce502a226d42c048.json",
+      "origin": "live_public",
+      "admission_evidence": false
+    },
+    {
+      "metadata_path": "captures/01a89493ed65030a6deb3e624141b70b7d3bb11db27d82e7f25ad5a36b680afb.json",
+      "origin": "live_public",
+      "admission_evidence": false
+    },
+    {
+      "metadata_path": "captures/04a27aeaa1225ccd5b58f717a109bd5ed04a6f80da5fafc30f8df15ad63ddcde.json",
+      "origin": "live_public",
+      "admission_evidence": false
+    },
+    {
+      "metadata_path": "captures/06dcf3bab2cfa1c28abfe4b76eaba19a7848e77df53f89bb094e1d0351161997.json",
+      "origin": "live_public",
+      "admission_evidence": true
+    },
+    {
+      "metadata_path": "captures/0741d9c4ab2047c83b2d4b0b050515133a28a5256be2e23378cbb0f03196636d.json",
+      "origin": "live_public",
+      "admission_evidence": false
+    },
+    {
+      "metadata_path": "captures/10f582638227cf2fdec94b9393b872369eb04e295473099cd42fa4a8576b9ff2.json",
+      "origin": "live_public",
+      "admission_evidence": false
+    },
+    {
+      "metadata_path": "captures/13c3f2c533bc8cf2c452e748b5cbca7be5ab5d4e66c5a0ab70df967fd22b0288.json",
+      "origin": "live_public",
+      "admission_evidence": false
+    },
+    {
+      "metadata_path": "captures/1f3571dc5f9030bfd2fa5381bca7c34ce0a83033b9acc25840d26de7a7ccdc19.json",
+      "origin": "live_public",
+      "admission_evidence": false
+    },
+    {
+      "metadata_path": "captures/29611011975f49eade8e838508321cb9f4094fe8fa9fb7a59dac56f02e43d104.json",
+      "origin": "live_public",
+      "admission_evidence": true
+    },
+    {
+      "metadata_path": "captures/308cae1f93d27d514c6f53e70de0f874c512c69f28886e43bc96cd866e20267d.json",
+      "origin": "live_public",
+      "admission_evidence": true
+    },
+    {
+      "metadata_path": "captures/37301186e2edb4e8cc70ce220b32539e024e8fa9c6e4b71af6b244fa535a3a5a.json",
+      "origin": "live_public",
+      "admission_evidence": false
+    },
+    {
+      "metadata_path": "captures/3a5d20febab3b58deb7088e58a0c4d8d82b8d3e81cfbad4e4ecd1cd043c12289.json",
+      "origin": "live_public",
+      "admission_evidence": true
+    },
+    {
+      "metadata_path": "captures/3c998c966b36ab420be7e1d244ddb09f9cc94e4888a997894e5fe6f3f4e1c8f5.json",
+      "origin": "live_public",
+      "admission_evidence": true
+    },
+    {
+      "metadata_path": "captures/40a52a8316fd8a4e3201d04b8530ddbcdcb2481ebf677d94ef7be96df63251f4.json",
+      "origin": "live_public",
+      "admission_evidence": false
+    },
+    {
+      "metadata_path": "captures/475bc7b1e368c88396b9d1eeb5cb4c605fa1f4da89333bd2621be9de92c7e91f.json",
+      "origin": "live_public",
+      "admission_evidence": false
+    },
+    {
+      "metadata_path": "captures/483cd98be6f6740df4550514a286700591f0ea8845bd70e11b5e2ea53ff41b34.json",
+      "origin": "live_public",
+      "admission_evidence": true
+    },
+    {
+      "metadata_path": "captures/5008a02e235ee011fe52259c5af4677dc37eefad071b153c6633868cb086e45f.json",
+      "origin": "live_public",
+      "admission_evidence": false
+    },
+    {
+      "metadata_path": "captures/50817a558b8da1f4c7b79236b99ba4dc8993e5f792fc3b0886f470f6e0f21196.json",
+      "origin": "live_public",
+      "admission_evidence": false
+    },
+    {
+      "metadata_path": "captures/53d9300ec98bf0015446cc413b0988aa23ce1854a68f83cbcdcc0af292b83992.json",
+      "origin": "live_public",
+      "admission_evidence": false
+    },
+    {
+      "metadata_path": "captures/5b9666d5fe758bc9f72f39bf9afcffcc35b953ffe3fbf8e6f97350c840647a22.json",
+      "origin": "live_public",
+      "admission_evidence": false
+    },
+    {
+      "metadata_path": "captures/5f5ef9c986605f656332bd4c48e2f54b878a52d8530665216a62435579de639e.json",
+      "origin": "live_public",
+      "admission_evidence": true
+    },
+    {
+      "metadata_path": "captures/62cfc293da695b2cf2c22edfc051a07d373272c16a30ec26692b325d8f191ab5.json",
+      "origin": "live_public",
+      "admission_evidence": false
+    },
+    {
+      "metadata_path": "captures/638832c365d590c16fdc4c2b20b5b32ef22b861cd527319f428732abb0e89a2b.json",
+      "origin": "live_public",
+      "admission_evidence": false
+    },
+    {
+      "metadata_path": "captures/6d6c5764646e69364f48e0a375dd7aaadde7b82a56f2ed43026d8ce3e21eed30.json",
+      "origin": "live_public",
+      "admission_evidence": true
+    },
+    {
+      "metadata_path": "captures/6d945ecc0a529186e9b5ff0d2a92962e2022c0a8834d23354163dbe07c53ca8c.json",
+      "origin": "live_public",
+      "admission_evidence": false
+    },
+    {
+      "metadata_path": "captures/6f73869db9aeeb8a79759c0851e735848f6db4f4c120be8ef9a979811e4be7df.json",
+      "origin": "live_public",
+      "admission_evidence": false
+    },
+    {
+      "metadata_path": "captures/6fef7cf2b06ffcb33b5df0c5da2c206a22365438afc7174bab0b80cfd39abf1b.json",
+      "origin": "live_public",
+      "admission_evidence": true
+    },
+    {
+      "metadata_path": "captures/79acc84d3de95e5899320ca105c3e6871a36c7494c947190624097c498389290.json",
+      "origin": "live_public",
+      "admission_evidence": false
+    },
+    {
+      "metadata_path": "captures/828bf4e1bfc9abb38ec084b1b18140d2837ddb3feaba45bfec380eba0e84d2c9.json",
+      "origin": "live_public",
+      "admission_evidence": true
+    },
+    {
+      "metadata_path": "captures/82aa860f3b351dca905741dd664e236cd9d758f9cd4cc65400f3011499b343a5.json",
+      "origin": "live_public",
+      "admission_evidence": false
+    },
+    {
+      "metadata_path": "captures/948b607c76a30171e21b460b32ca477b8d63353d0be20c3c8c047b994998202b.json",
+      "origin": "live_public",
+      "admission_evidence": false
+    },
+    {
+      "metadata_path": "captures/b06c15afea02ced92477c899a90df6f249d5bdbd4bfa70317f82adb0fb264cc7.json",
+      "origin": "live_public",
+      "admission_evidence": true
+    },
+    {
+      "metadata_path": "captures/b50db559e38fb5c2160e82fef83bdf4554091f62981f8bd0dacd1ea984e1b245.json",
+      "origin": "live_public",
+      "admission_evidence": false
+    },
+    {
+      "metadata_path": "captures/c59f59450740375239b72be5c384fa5d100606635896e6d5cb5b8f34ce2e1a0b.json",
+      "origin": "live_public",
+      "admission_evidence": true
+    },
+    {
+      "metadata_path": "captures/c9c7a03522306637668e1182226c6d5abfd6e2f37bb4246c58a074cc01f9e962.json",
+      "origin": "live_public",
+      "admission_evidence": false
+    },
+    {
+      "metadata_path": "captures/ccac7ed5566bad6b60bba196fd3091a78cc65f086c918fef0d766fd6c8a81709.json",
+      "origin": "live_public",
+      "admission_evidence": false
+    },
+    {
+      "metadata_path": "captures/d09eb6d07ca9929dfb01e42e53529ba068712b3c81d8b3361682edc6986dc5cf.json",
+      "origin": "live_public",
+      "admission_evidence": true
+    },
+    {
+      "metadata_path": "captures/d4ef61f9da0c2ae40bd49a7ba1e15e254c5a2efd4d529b47316267818e4cd48a.json",
+      "origin": "live_public",
+      "admission_evidence": false
+    },
+    {
+      "metadata_path": "captures/e48ec5c25d796d567c6c6eb2ac8db9c95d77bc039d3056b07ae4af72a63f882b.json",
+      "origin": "live_public",
+      "admission_evidence": false
+    },
+    {
+      "metadata_path": "captures/e82329e8697d23feb880dc36ec771ed15d9fe33bf48365b7e316608f256898d7.json",
+      "origin": "live_public",
+      "admission_evidence": false
+    },
+    {
+      "metadata_path": "captures/e94e2792a8bf48d01f7fbb37898b4cfea807f7e5316de488aa8e938dc6790a5e.json",
+      "origin": "live_public",
+      "admission_evidence": false
+    },
+    {
+      "metadata_path": "captures/e9d88f0c4d6e2bada92e2e0a59c75ca43c0f2c6a46d0d2f3986aa401695c5ad2.json",
+      "origin": "live_public",
+      "admission_evidence": false
+    },
+    {
+      "metadata_path": "captures/ea2e6ed345c92612be6caeadfabf70adfa4ee1bdf33e713f2d55f644226d4640.json",
+      "origin": "live_public",
+      "admission_evidence": true
+    },
+    {
+      "metadata_path": "captures/fa257e748e0bc5b2e1cbb82480aa6b8e98a3247deac6d736cd9c543133ad513e.json",
+      "origin": "live_public",
+      "admission_evidence": true
+    }
+  ],
+  "gaps": [
+    "RK9 robots excludes roster/pairings/public sheets; explicit operator scraping authorization is required.",
+    "Only two RK9 public sheets per sample were captured; remaining linked sheets are explicitly not captured.",
+    "RK9 masked player IDs and name-only pairings cannot establish cross-event player identity.",
+    "M-A and intermediate historical game-data patches are not verified.",
+    "Public sheets do not publish native Stat Points; missing allocations stay unknown."
+  ]
+}

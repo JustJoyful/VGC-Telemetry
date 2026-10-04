@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /roster/
+Disallow: /pairings/
+Disallow: /decklist/public/
+Disallow: /teamlist/public/
+Disallow: /teamlist-go/public/

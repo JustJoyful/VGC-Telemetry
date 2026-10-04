@@ -1,0 +1,8 @@
+{
+  "url": "https://play.limitlesstcg.com/api/games",
+  "captured_at": "2026-10-03T19:07:50.196756+00:00",
+  "status": 200,
+  "content_type": "application/json; charset=utf-8",
+  "sha256": "e99b6fdb0ac711251e19744596f00b083ec18ab6838d0f6e4cc0c984e342967f",
+  "body_path": "483cd98be6f6740df4550514a286700591f0ea8845bd70e11b5e2ea53ff41b34.body"
+}

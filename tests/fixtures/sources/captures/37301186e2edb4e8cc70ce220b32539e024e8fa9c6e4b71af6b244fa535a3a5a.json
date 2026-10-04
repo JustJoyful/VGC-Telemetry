@@ -1,0 +1,8 @@
+{
+  "url": "https://play.limitlesstcg.com/api/tournaments/6abe6180880ed327106e0cf4/standings",
+  "captured_at": "2026-10-03T19:08:53.245011+00:00",
+  "status": 200,
+  "content_type": "application/json; charset=utf-8",
+  "sha256": "df6e5622f4811d7957c6a58af4761fac38f9729ac303a4a0f798875589d2a233",
+  "body_path": "37301186e2edb4e8cc70ce220b32539e024e8fa9c6e4b71af6b244fa535a3a5a.body"
+}

@@ -1,0 +1,1595 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+
+        <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="Content-Language" content="en_US" />
+    <meta name="google" content="notranslate" />
+
+    <!-- favicon -->
+    <link rel="shortcut icon" href="/static/favicon.ico">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+    
+    <!-- Custom CSS -->
+    <link href="/static/css/rk9gg-v20240908.css" rel="stylesheet">
+    <link href="/static/css/palette_rk9_14.css" rel="stylesheet">
+    <link href="/static/css/rk9gg.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <!-- version 7 -->
+    <script src="https://kit.fontawesome.com/8c12879507.js" crossorigin="anonymous"></script>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.14.1/jquery-ui.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js" integrity="sha384-+sLIOodYLS7CIrQpBjl+C7nPvqq+FbNUBDunl/OZv93DB7Ln/533i8e/mZXLi/P+" crossorigin="anonymous"></script>
+    <script src="/static/js/js.cookie-2.2.1.min.js"></script>
+    <script src="/static/js/htmx.min.js"></script>
+    <script src="/static/js/hyperscript.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
+
+    <title>Team list for: Uscorp - RK9</title>
+    
+<link href="/static/css/decklist.css" rel="stylesheet">
+<style>
+    img.sprite {
+        width: 120px;
+        height: 100px;
+        object-fit: cover;
+    }
+    div.pokemon {
+        border: 5px solid white;
+    }
+    .bg-light-green-50 {
+        background-color: #f1f8e9;
+    }
+    div.featherlight-content {
+        background: #545454 !important;
+    }
+</style>
+
+
+    <!-- Common Firebase JS -->
+<script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database-compat.js"></script>
+<script src="/firebase/firebase-login.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth-compat.js"></script>
+<script src="/static/js/firebase-presence.js?20250201"></script>
+<script>
+$(function() {
+    firebase.auth().onAuthStateChanged(function(user) {
+        window.user = user; // user is undefined if no user signed in
+        if (user) {
+            // Check when token expires
+            var expirationTime = user.toJSON().stsTokenManager.expirationTime;
+            var now = Date.now();
+            var minutes = 30;
+            if (now > (expirationTime - (minutes*60*1000))) {
+                // Refresh ID Token for fresh hour and set in browser, so it is ready for next python request
+                // user.getIdToken(true).then(function (token) {
+                //     Cookies.set('token', token, { domain: '.rk9.gg', sameSite: 'lax', path: '/', expires: 1/24 });
+                // });
+            } else if (!Cookies.get('token')) {
+                // Cookie missing, set existing one again
+                user.getIdToken().then(function (token) {
+                    Cookies.set('token', token, { domain: '.rk9.gg', sameSite: 'lax', path: '/', expires: 1/24 });
+                });
+                // Don't reload with new cookie if coming from new authentication flow
+                if (window.location.pathname != "/login") {
+                    location.reload();
+                }
+            }
+            
+            present();
+            
+        }
+    });
+    firebase.auth().onIdTokenChanged(function(user) {
+        // alert('onIdTokenChanged event');
+        if (user) {
+            // User is signed in or token was refreshed.
+            user.getIdToken().then(function (token) {
+                if (token != Cookies.get('token')) {
+                    // alert(token.slice(-6));
+                    // alert(Cookies.get('token').slice(-6));
+                    Cookies.set('token', token, { domain: '.rk9.gg', sameSite: 'lax', path: '/', expires: 1/24 });
+                }
+                // console.log('new token');
+                // console.log(token);
+            });
+        }
+    });
+    $("a.logout").on("click", function(event) {
+        var r = confirm("Are you sure you want to sign out?");
+        if (r == true) {
+            Cookies.remove('token', { domain: '.rk9.gg', sameSite: 'lax', path: '/' });
+            Cookies.remove('token', { sameSite: 'lax', path: '/' });
+            firebase.auth().signOut();
+            // setTimeout(() => {  window.location.href = "/"; }, 1000);
+            // event.preventDefault();
+        } else {
+            event.preventDefault();
+        }
+    });
+});
+window.addEventListener('focus', function(event) { 
+    present();
+});
+</script>
+<!-- End Common Firebase JS -->
+
+    
+<link href="/static/css/featherlight.min.css" type="text/css" rel="stylesheet" />
+<script src="/static/js/featherlight.min.js" type="text/javascript" charset="utf-8"></script>
+<script>
+function imgError(image) {
+    image.onerror = "";
+    image.src = "https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/000_000.png";
+    return true
+}
+
+$(document).ready(function() {
+    $("button.translate").on('click', function() {
+        var lang = $(this).text();
+        $("div.translation").hide();
+        $("button.translate").removeClass('btn-warning');
+        $(".translation.lang-" + lang).show();
+        $(this).addClass('btn-warning');
+    });
+    
+    
+    
+    $("button.translate#button-IT").click();
+    
+    
+    $.featherlight.defaults.closeOnClick = 'anywhere';
+});
+</script>
+
+
+</head>
+
+<body style="padding-top: 70px;">
+    
+<style>
+    .dropdown-item:hover, .dropdown-item:focus {
+        background-color: #E67635;  /* palette 14 - orange-400 */
+    }
+    .dropdown-item.active, .dropdown-item:active {
+        background-color: #E67635;  /* palette 14 - orange-400 */
+    }
+    .navbar-dark .navbar-nav .nav-link {
+        color: rgba(247, 247, 247, 0.9);
+    }
+    .navbar-dark .navbar-nav .nav-link:hover, .navbar-dark .navbar-nav .nav-link:focus {
+        color: rgba(255, 255, 255);
+    }
+    .navbar-dark .navbar-nav .nav-link.disabled {
+        color: rgba(247, 247, 247, 0.35);
+    }
+    .navbar-dark .navbar-toggler {
+        color: rgba(247, 247, 247, 0.9);
+        border-color: rgba(247, 247, 247, 0.5);
+    }
+    .navbar-dark .navbar-text {
+    color: rgba(247, 247, 247, 0.9);
+    }
+</style>
+
+
+    <!-- navbar with RK9 logo -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top flex-md-nowrap p-0 shadow" style="margin-bottom: 15px;">
+        <a class="navbar-rk9gg nav-link col-md-3 col-lg-2 mr-0 px-3" style="color: #F7F7F7;" href="/">
+            <img src="/static/images/rk9_logo_grey-050.png" class="ml-3" width="120" height="auto" alt=""> 
+        </a>
+        <!--  -->
+        <button class="navbar-toggler position-absolute" type="button" data-toggle="collapse" data-target="#navbarTop" aria-controls="navbarTop" aria-expanded="false" aria-label="Toggle navigation">
+            <span><i class="far fa-chevron-double-down pt-1"></i></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarTop">
+        
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item dropdown mr-4">
+                    <a class="nav-link dropdown-toggle" href="#" id="tournamentsDropdown" role="button" data-toggle="dropdown" aria-expanded="false">Events &<br>Tournaments</a>
+                    <div class="dropdown-menu bg-primary" aria-labelledby="tournamentsDropdown">
+                        <a class="dropdown-item grey-050" href="/events/pokemon">Pokémon Events</a>
+                        <a class="dropdown-item grey-050" href="/tournaments">Upcoming Tournaments</a>
+                    </div>
+                </li>
+                <li class="nav-item mr-4">
+                    
+                </li>
+                <li class="nav-item mr-4">
+                    <a class="nav-link" href="/organizer">Organizer<br>Dashboard</a>
+                </li>
+            </ul>
+            
+            
+            <div class="mt-0 mb-3">
+                <select id="lang" name="lang" disabled>
+                    <option value="en" selected>English</option>
+                </select>
+            </div>
+            
+            
+            <ul class="navbar-nav ml-5 mr-4">
+                <li class="nav-item text-nowrap text-right" style="padding-top: .25rem;">
+                    
+                    <a class="nav-link login" href="/login">Sign in</a>
+                    
+                </li>
+            </ul>
+            
+        </div>
+    </nav>
+
+<script>
+$('#lang').on('change', function() {
+    var lang = $(this).val();
+    window.location.href = "?lang=" + lang;
+});
+</script>
+
+    
+<div id="content">
+    <div class="container-fluid">
+
+        <div class="d-flex justify-content-end flex-wrap flex-md-nowrap align-items-center pt-4 px-3">
+            <h4 class="mb-0">2027 Frankfurt Pokémon VGC Regional Championships</h4>
+        </div>
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-2 px-3">
+            
+                <h3>Team list for: <b>Uscorp</b></h3>
+            
+            <h5 class="my-0 px-3">2026-09-26 at 08:30<br><small><span class="badge badge-light">Time zone: Europe/Berlin CEST</span></small></h5>
+        </div>
+
+        <div class="pt-2 px-3">
+            <h6>Translate to:<br>
+            
+            
+                
+                    <button class="btn btn-sm btn-secondary translate" id="button-EN">EN</button>
+                
+                    <button class="btn btn-sm btn-secondary translate" id="button-FR">FR</button>
+                
+                    <button class="btn btn-sm btn-secondary translate" id="button-IT">IT</button>
+                
+                    <button class="btn btn-sm btn-secondary translate" id="button-DE">DE</button>
+                
+                    <button class="btn btn-sm btn-secondary translate" id="button-ES">ES</button>
+                
+                    <button class="btn btn-sm btn-secondary translate" id="button-JP">JP</button>
+                
+                    <button class="btn btn-sm btn-secondary translate" id="button-KO">KO</button>
+                
+                    <button class="btn btn-sm btn-secondary translate" id="button-SC">SC</button>
+                
+                    <button class="btn btn-sm btn-secondary translate" id="button-TC">TC</button>
+                
+            
+            </h6>
+        </div>
+
+        
+        
+        
+        
+
+            <div class="my-3 mx-5 pt-2 px-3 translation lang-EN" id="lang-EN">
+                <!-- <div class="font-weight-normal border border-success" id="teamlist-"> -->
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/1000_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            Gholdengo
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>EN</b> <i class="small">Gholdengo</i><br>
+                            
+                            <b>Ability:</b> Good as Gold &nbsp;&nbsp; 
+                            <b>Held Item:</b> Life Orb<br>
+                            
+                            <b>Stat Alignment:</b> Modest<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">Nasty Plot</span>
+                            <span class="badge">Shadow Ball</span>
+                            <span class="badge">Make It Rain</span>
+                            <span class="badge">Protect</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/373_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            Salamence
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>EN</b> <i class="small">Salamence</i><br>
+                            
+                            <b>Ability:</b> Intimidate &nbsp;&nbsp; 
+                            <b>Held Item:</b> Salamencite<br>
+                            
+                            <b>Stat Alignment:</b> Timid<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">Hyper Voice</span>
+                            <span class="badge">Draco Meteor</span>
+                            <span class="badge">Tailwind</span>
+                            <span class="badge">Protect</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/026_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            Raichu
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>EN</b> <i class="small">Raichu</i><br>
+                            
+                            <b>Ability:</b> Lightning Rod &nbsp;&nbsp; 
+                            <b>Held Item:</b> Raichunite Y<br>
+                            
+                            <b>Stat Alignment:</b> Timid<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">Fake Out</span>
+                            <span class="badge">Zap Cannon</span>
+                            <span class="badge">Focus Blast</span>
+                            <span class="badge">Protect</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/059_001.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            Arcanine [Hisuian Form]
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>EN</b> <i class="small">Arcanine [Hisuian Form]</i><br>
+                            
+                            <b>Ability:</b> Rock Head &nbsp;&nbsp; 
+                            <b>Held Item:</b> Focus Sash<br>
+                            
+                            <b>Stat Alignment:</b> Jolly<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">Flare Blitz</span>
+                            <span class="badge">Head Smash</span>
+                            <span class="badge">Extreme Speed</span>
+                            <span class="badge">Protect</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/979_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            Annihilape
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>EN</b> <i class="small">Annihilape</i><br>
+                            
+                            <b>Ability:</b> Defiant &nbsp;&nbsp; 
+                            <b>Held Item:</b> Choice Scarf<br>
+                            
+                            <b>Stat Alignment:</b> Adamant<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">Phantom Force</span>
+                            <span class="badge">Stone Edge</span>
+                            <span class="badge">Ice Punch</span>
+                            <span class="badge">Close Combat</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/812_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            Rillaboom
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>EN</b> <i class="small">Rillaboom</i><br>
+                            
+                            <b>Ability:</b> Grassy Surge &nbsp;&nbsp; 
+                            <b>Held Item:</b> Miracle Seed<br>
+                            
+                            <b>Stat Alignment:</b> Adamant<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">Fake Out</span>
+                            <span class="badge">Grassy Glide</span>
+                            <span class="badge">Wood Hammer</span>
+                            <span class="badge">High Horsepower</span></h5>
+                        </div>
+                        
+                    
+                    
+                <!-- </div> -->
+            </div>
+            
+        
+
+            <div class="my-3 mx-5 pt-2 px-3 translation lang-FR" id="lang-FR">
+                <!-- <div class="font-weight-normal border border-success" id="teamlist-"> -->
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/1000_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            Gromago
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>FR</b> <i class="small">Gholdengo</i><br>
+                            
+                            <b>Ability:</b> Corps en Or &nbsp;&nbsp; 
+                            <b>Held Item:</b> Orbe Vie<br>
+                            
+                            <b>Stat Alignment:</b> Modeste<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">Machination</span>
+                            <span class="badge">Ball&#39;Ombre</span>
+                            <span class="badge">Ruée d&#39;Or</span>
+                            <span class="badge">Abri</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/373_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            Drattak
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>FR</b> <i class="small">Salamence</i><br>
+                            
+                            <b>Ability:</b> Intimidation &nbsp;&nbsp; 
+                            <b>Held Item:</b> Drattakite<br>
+                            
+                            <b>Stat Alignment:</b> Timide<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">Mégaphone</span>
+                            <span class="badge">Draco-Météore</span>
+                            <span class="badge">Vent Arrière</span>
+                            <span class="badge">Abri</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/026_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            Raichu
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>FR</b> <i class="small">Raichu</i><br>
+                            
+                            <b>Ability:</b> Paratonnerre &nbsp;&nbsp; 
+                            <b>Held Item:</b> Raichuïte Y<br>
+                            
+                            <b>Stat Alignment:</b> Timide<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">Bluff</span>
+                            <span class="badge">Élecanon</span>
+                            <span class="badge">Exploforce</span>
+                            <span class="badge">Abri</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/059_001.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            Arcanin [Forme de Hisui]
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>FR</b> <i class="small">Arcanine [Hisuian Form]</i><br>
+                            
+                            <b>Ability:</b> Tête de Roc &nbsp;&nbsp; 
+                            <b>Held Item:</b> Ceinture Force<br>
+                            
+                            <b>Stat Alignment:</b> Jovial<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">Boutefeu</span>
+                            <span class="badge">Fracass&#39;Tête</span>
+                            <span class="badge">Vitesse Extrême</span>
+                            <span class="badge">Abri</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/979_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            Courrousinge
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>FR</b> <i class="small">Annihilape</i><br>
+                            
+                            <b>Ability:</b> Acharné &nbsp;&nbsp; 
+                            <b>Held Item:</b> Mouchoir Choix<br>
+                            
+                            <b>Stat Alignment:</b> Rigide<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">Hantise</span>
+                            <span class="badge">Lame de Roc</span>
+                            <span class="badge">Poing Glace</span>
+                            <span class="badge">Close Combat</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/812_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            Gorythmic
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>FR</b> <i class="small">Rillaboom</i><br>
+                            
+                            <b>Ability:</b> Créa-Herbe &nbsp;&nbsp; 
+                            <b>Held Item:</b> Graine Miracle<br>
+                            
+                            <b>Stat Alignment:</b> Rigide<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">Bluff</span>
+                            <span class="badge">Gliss&#39;Herbe</span>
+                            <span class="badge">Martobois</span>
+                            <span class="badge">Cavalerie Lourde</span></h5>
+                        </div>
+                        
+                    
+                    
+                <!-- </div> -->
+            </div>
+            
+        
+
+            <div class="my-3 mx-5 pt-2 px-3 translation lang-IT" id="lang-IT">
+                <!-- <div class="font-weight-normal border border-success" id="teamlist-"> -->
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/1000_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            Gholdengo
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>IT</b> <i class="small">Gholdengo</i><br>
+                            
+                            <b>Ability:</b> Corpo Aureo &nbsp;&nbsp; 
+                            <b>Held Item:</b> Assorbisfera<br>
+                            
+                            <b>Stat Alignment:</b> Modesta<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">Congiura</span>
+                            <span class="badge">Palla Ombra</span>
+                            <span class="badge">Corsa all&#39;Oro</span>
+                            <span class="badge">Protezione</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/373_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            Salamence
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>IT</b> <i class="small">Salamence</i><br>
+                            
+                            <b>Ability:</b> Prepotenza &nbsp;&nbsp; 
+                            <b>Held Item:</b> Salamencite<br>
+                            
+                            <b>Stat Alignment:</b> Timida<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">Granvoce</span>
+                            <span class="badge">Dragobolide</span>
+                            <span class="badge">Ventoincoda</span>
+                            <span class="badge">Protezione</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/026_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            Raichu
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>IT</b> <i class="small">Raichu</i><br>
+                            
+                            <b>Ability:</b> Parafulmine &nbsp;&nbsp; 
+                            <b>Held Item:</b> Raichuite Y<br>
+                            
+                            <b>Stat Alignment:</b> Timida<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">Bruciapelo</span>
+                            <span class="badge">Elettrocannone</span>
+                            <span class="badge">Focalcolpo</span>
+                            <span class="badge">Protezione</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/059_001.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            Arcanine [Forme de Hisui]
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>IT</b> <i class="small">Arcanine [Hisuian Form]</i><br>
+                            
+                            <b>Ability:</b> Testadura &nbsp;&nbsp; 
+                            <b>Held Item:</b> Focalnastro<br>
+                            
+                            <b>Stat Alignment:</b> Allegra<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">Fuococarica</span>
+                            <span class="badge">Zuccata</span>
+                            <span class="badge">Extrarapido</span>
+                            <span class="badge">Protezione</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/979_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            Annihilape
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>IT</b> <i class="small">Annihilape</i><br>
+                            
+                            <b>Ability:</b> Agonismo &nbsp;&nbsp; 
+                            <b>Held Item:</b> Stolascelta<br>
+                            
+                            <b>Stat Alignment:</b> Decisa<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">Spettrotuffo</span>
+                            <span class="badge">Pietrataglio</span>
+                            <span class="badge">Gelopugno</span>
+                            <span class="badge">Zuffa</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/812_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            Rillaboom
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>IT</b> <i class="small">Rillaboom</i><br>
+                            
+                            <b>Ability:</b> Erbogenesi &nbsp;&nbsp; 
+                            <b>Held Item:</b> Miracolseme<br>
+                            
+                            <b>Stat Alignment:</b> Decisa<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">Bruciapelo</span>
+                            <span class="badge">Erboscivolata</span>
+                            <span class="badge">Mazzuolegno</span>
+                            <span class="badge">Forza Equina</span></h5>
+                        </div>
+                        
+                    
+                    
+                <!-- </div> -->
+            </div>
+            
+        
+
+            <div class="my-3 mx-5 pt-2 px-3 translation lang-DE" id="lang-DE">
+                <!-- <div class="font-weight-normal border border-success" id="teamlist-"> -->
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/1000_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            Monetigo
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>DE</b> <i class="small">Gholdengo</i><br>
+                            
+                            <b>Ability:</b> Goldkörper &nbsp;&nbsp; 
+                            <b>Held Item:</b> Leben-Orb<br>
+                            
+                            <b>Stat Alignment:</b> Mäßig<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">Ränkeschmied</span>
+                            <span class="badge">Spukball</span>
+                            <span class="badge">Goldrausch</span>
+                            <span class="badge">Schutzschild</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/373_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            Brutalanda
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>DE</b> <i class="small">Salamence</i><br>
+                            
+                            <b>Ability:</b> Bedroher &nbsp;&nbsp; 
+                            <b>Held Item:</b> Brutalandanit<br>
+                            
+                            <b>Stat Alignment:</b> Scheu<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">Schallwelle</span>
+                            <span class="badge">Draco Meteor</span>
+                            <span class="badge">Rückenwind</span>
+                            <span class="badge">Schutzschild</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/026_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            Raichu
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>DE</b> <i class="small">Raichu</i><br>
+                            
+                            <b>Ability:</b> Blitzfänger &nbsp;&nbsp; 
+                            <b>Held Item:</b> Raichunit Y<br>
+                            
+                            <b>Stat Alignment:</b> Scheu<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">Mogelhieb</span>
+                            <span class="badge">Blitzkanone</span>
+                            <span class="badge">Fokusstoß</span>
+                            <span class="badge">Schutzschild</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/059_001.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            Arkani [Hisui-Form]
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>DE</b> <i class="small">Arcanine [Hisuian Form]</i><br>
+                            
+                            <b>Ability:</b> Steinhaupt &nbsp;&nbsp; 
+                            <b>Held Item:</b> Fokusgurt<br>
+                            
+                            <b>Stat Alignment:</b> Froh<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">Flammenblitz</span>
+                            <span class="badge">Kopfstoß</span>
+                            <span class="badge">Turbotempo</span>
+                            <span class="badge">Schutzschild</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/979_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            Epitaff
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>DE</b> <i class="small">Annihilape</i><br>
+                            
+                            <b>Ability:</b> Siegeswille &nbsp;&nbsp; 
+                            <b>Held Item:</b> Wahlschal<br>
+                            
+                            <b>Stat Alignment:</b> Hart<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">Phantomkraft</span>
+                            <span class="badge">Steinkante</span>
+                            <span class="badge">Eishieb</span>
+                            <span class="badge">Nahkampf</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/812_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            Gortrom
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>DE</b> <i class="small">Rillaboom</i><br>
+                            
+                            <b>Ability:</b> Gras-Erzeuger &nbsp;&nbsp; 
+                            <b>Held Item:</b> Wundersaat<br>
+                            
+                            <b>Stat Alignment:</b> Hart<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">Mogelhieb</span>
+                            <span class="badge">Grasrutsche</span>
+                            <span class="badge">Holzhammer</span>
+                            <span class="badge">Pferdestärke</span></h5>
+                        </div>
+                        
+                    
+                    
+                <!-- </div> -->
+            </div>
+            
+        
+
+            <div class="my-3 mx-5 pt-2 px-3 translation lang-ES" id="lang-ES">
+                <!-- <div class="font-weight-normal border border-success" id="teamlist-"> -->
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/1000_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            Gholdengo
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>ES</b> <i class="small">Gholdengo</i><br>
+                            
+                            <b>Ability:</b> Cuerpo Áureo &nbsp;&nbsp; 
+                            <b>Held Item:</b> Vidasfera<br>
+                            
+                            <b>Stat Alignment:</b> Modesta<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">Maquinación</span>
+                            <span class="badge">Bola Sombra</span>
+                            <span class="badge">Fiebre Dorada</span>
+                            <span class="badge">Protección</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/373_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            Salamence
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>ES</b> <i class="small">Salamence</i><br>
+                            
+                            <b>Ability:</b> Intimidación &nbsp;&nbsp; 
+                            <b>Held Item:</b> Salamencita<br>
+                            
+                            <b>Stat Alignment:</b> Miedosa<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">Vozarrón</span>
+                            <span class="badge">Cometa Draco</span>
+                            <span class="badge">Viento Afín</span>
+                            <span class="badge">Protección</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/026_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            Raichu
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>ES</b> <i class="small">Raichu</i><br>
+                            
+                            <b>Ability:</b> Pararrayos &nbsp;&nbsp; 
+                            <b>Held Item:</b> Raichunita Y<br>
+                            
+                            <b>Stat Alignment:</b> Miedosa<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">Sorpresa</span>
+                            <span class="badge">Electrocañón</span>
+                            <span class="badge">Onda Certera</span>
+                            <span class="badge">Protección</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/059_001.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            Arcanine [Forma de Hisui]
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>ES</b> <i class="small">Arcanine [Hisuian Form]</i><br>
+                            
+                            <b>Ability:</b> Cabeza Roca &nbsp;&nbsp; 
+                            <b>Held Item:</b> Banda Aguante<br>
+                            
+                            <b>Stat Alignment:</b> Alegre<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">Envite Ígneo</span>
+                            <span class="badge">Testarazo</span>
+                            <span class="badge">Velocidad Extrema</span>
+                            <span class="badge">Protección</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/979_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            Annihilape
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>ES</b> <i class="small">Annihilape</i><br>
+                            
+                            <b>Ability:</b> Competitivo &nbsp;&nbsp; 
+                            <b>Held Item:</b> Pañuelo Elección<br>
+                            
+                            <b>Stat Alignment:</b> Firme<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">Golpe Fantasma</span>
+                            <span class="badge">Roca Afilada</span>
+                            <span class="badge">Puño Hielo</span>
+                            <span class="badge">A Bocajarro</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/812_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            Rillaboom
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>ES</b> <i class="small">Rillaboom</i><br>
+                            
+                            <b>Ability:</b> Herbogénesis &nbsp;&nbsp; 
+                            <b>Held Item:</b> Semilla Milagro<br>
+                            
+                            <b>Stat Alignment:</b> Firme<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">Sorpresa</span>
+                            <span class="badge">Fitoimpulso</span>
+                            <span class="badge">Mazazo</span>
+                            <span class="badge">Fuerza Equina</span></h5>
+                        </div>
+                        
+                    
+                    
+                <!-- </div> -->
+            </div>
+            
+        
+
+            <div class="my-3 mx-5 pt-2 px-3 translation lang-JP" id="lang-JP">
+                <!-- <div class="font-weight-normal border border-success" id="teamlist-"> -->
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/1000_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            サーフゴー
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>JP</b> <i class="small">Gholdengo</i><br>
+                            
+                            <b>Ability:</b> おうごんのからだ &nbsp;&nbsp; 
+                            <b>Held Item:</b> いのちのたま<br>
+                            
+                            <b>Stat Alignment:</b> ひかえめ<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">わるだくみ</span>
+                            <span class="badge">シャドーボール</span>
+                            <span class="badge">ゴールドラッシュ</span>
+                            <span class="badge">まもる</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/373_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            ボーマンダ
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>JP</b> <i class="small">Salamence</i><br>
+                            
+                            <b>Ability:</b> いかく &nbsp;&nbsp; 
+                            <b>Held Item:</b> ボーマンダナイト<br>
+                            
+                            <b>Stat Alignment:</b> おくびょう<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">ハイパーボイス</span>
+                            <span class="badge">りゅうせいぐん</span>
+                            <span class="badge">おいかぜ</span>
+                            <span class="badge">まもる</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/026_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            ライチュウ
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>JP</b> <i class="small">Raichu</i><br>
+                            
+                            <b>Ability:</b> ひらいしん &nbsp;&nbsp; 
+                            <b>Held Item:</b> ライチュウナイトＹ<br>
+                            
+                            <b>Stat Alignment:</b> おくびょう<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">ねこだまし</span>
+                            <span class="badge">でんじほう</span>
+                            <span class="badge">きあいだま</span>
+                            <span class="badge">まもる</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/059_001.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            ウインディ [ヒスイのすがた]
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>JP</b> <i class="small">Arcanine [Hisuian Form]</i><br>
+                            
+                            <b>Ability:</b> いしあたま &nbsp;&nbsp; 
+                            <b>Held Item:</b> きあいのタスキ<br>
+                            
+                            <b>Stat Alignment:</b> ようき<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">フレアドライブ</span>
+                            <span class="badge">もろはのずつき</span>
+                            <span class="badge">しんそく</span>
+                            <span class="badge">まもる</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/979_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            コノヨザル
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>JP</b> <i class="small">Annihilape</i><br>
+                            
+                            <b>Ability:</b> まけんき &nbsp;&nbsp; 
+                            <b>Held Item:</b> こだわりスカーフ<br>
+                            
+                            <b>Stat Alignment:</b> いじっぱり<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">ゴーストダイブ</span>
+                            <span class="badge">ストーンエッジ</span>
+                            <span class="badge">れいとうパンチ</span>
+                            <span class="badge">インファイト</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/812_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            ゴリランダー
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>JP</b> <i class="small">Rillaboom</i><br>
+                            
+                            <b>Ability:</b> グラスメイカー &nbsp;&nbsp; 
+                            <b>Held Item:</b> きせきのタネ<br>
+                            
+                            <b>Stat Alignment:</b> いじっぱり<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">ねこだまし</span>
+                            <span class="badge">グラススライダー</span>
+                            <span class="badge">ウッドハンマー</span>
+                            <span class="badge">１０まんばりき</span></h5>
+                        </div>
+                        
+                    
+                    
+                <!-- </div> -->
+            </div>
+            
+        
+
+            <div class="my-3 mx-5 pt-2 px-3 translation lang-KO" id="lang-KO">
+                <!-- <div class="font-weight-normal border border-success" id="teamlist-"> -->
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/1000_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            타부자고
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>KO</b> <i class="small">Gholdengo</i><br>
+                            
+                            <b>Ability:</b> 황금몸 &nbsp;&nbsp; 
+                            <b>Held Item:</b> 생명의구슬<br>
+                            
+                            <b>Stat Alignment:</b> 조심<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">나쁜음모</span>
+                            <span class="badge">섀도볼</span>
+                            <span class="badge">골드러시</span>
+                            <span class="badge">방어</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/373_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            보만다
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>KO</b> <i class="small">Salamence</i><br>
+                            
+                            <b>Ability:</b> 위협 &nbsp;&nbsp; 
+                            <b>Held Item:</b> 보만다나이트<br>
+                            
+                            <b>Stat Alignment:</b> 겁쟁이<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">하이퍼보이스</span>
+                            <span class="badge">용성군</span>
+                            <span class="badge">순풍</span>
+                            <span class="badge">방어</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/026_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            라이츄
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>KO</b> <i class="small">Raichu</i><br>
+                            
+                            <b>Ability:</b> 피뢰침 &nbsp;&nbsp; 
+                            <b>Held Item:</b> 라이츄나이트Y<br>
+                            
+                            <b>Stat Alignment:</b> 겁쟁이<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">속이다</span>
+                            <span class="badge">전자포</span>
+                            <span class="badge">기합구슬</span>
+                            <span class="badge">방어</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/059_001.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            윈디 [히스이의 모습]
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>KO</b> <i class="small">Arcanine [Hisuian Form]</i><br>
+                            
+                            <b>Ability:</b> 돌머리 &nbsp;&nbsp; 
+                            <b>Held Item:</b> 기합의띠<br>
+                            
+                            <b>Stat Alignment:</b> 명랑<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">플레어드라이브</span>
+                            <span class="badge">양날박치기</span>
+                            <span class="badge">신속</span>
+                            <span class="badge">방어</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/979_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            저승갓숭
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>KO</b> <i class="small">Annihilape</i><br>
+                            
+                            <b>Ability:</b> 오기 &nbsp;&nbsp; 
+                            <b>Held Item:</b> 구애스카프<br>
+                            
+                            <b>Stat Alignment:</b> 고집<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">고스트다이브</span>
+                            <span class="badge">스톤에지</span>
+                            <span class="badge">냉동펀치</span>
+                            <span class="badge">인파이트</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/812_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            고릴타
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>KO</b> <i class="small">Rillaboom</i><br>
+                            
+                            <b>Ability:</b> 그래스메이커 &nbsp;&nbsp; 
+                            <b>Held Item:</b> 기적의씨<br>
+                            
+                            <b>Stat Alignment:</b> 고집<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">속이다</span>
+                            <span class="badge">그래스슬라이더﻿</span>
+                            <span class="badge">우드해머</span>
+                            <span class="badge">10만마력</span></h5>
+                        </div>
+                        
+                    
+                    
+                <!-- </div> -->
+            </div>
+            
+        
+
+            <div class="my-3 mx-5 pt-2 px-3 translation lang-SC" id="lang-SC">
+                <!-- <div class="font-weight-normal border border-success" id="teamlist-"> -->
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/1000_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            赛富豪
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>SC</b> <i class="small">Gholdengo</i><br>
+                            
+                            <b>Ability:</b> 黄金之躯 &nbsp;&nbsp; 
+                            <b>Held Item:</b> 生命宝珠<br>
+                            
+                            <b>Stat Alignment:</b> 内敛<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">诡计</span>
+                            <span class="badge">暗影球</span>
+                            <span class="badge">淘金潮</span>
+                            <span class="badge">守住</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/373_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            暴飞龙
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>SC</b> <i class="small">Salamence</i><br>
+                            
+                            <b>Ability:</b> 威吓 &nbsp;&nbsp; 
+                            <b>Held Item:</b> 暴飞龙进化石<br>
+                            
+                            <b>Stat Alignment:</b> 胆小<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">巨声</span>
+                            <span class="badge">流星群</span>
+                            <span class="badge">顺风</span>
+                            <span class="badge">守住</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/026_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            雷丘
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>SC</b> <i class="small">Raichu</i><br>
+                            
+                            <b>Ability:</b> 避雷针 &nbsp;&nbsp; 
+                            <b>Held Item:</b> 雷丘进化石Y<br>
+                            
+                            <b>Stat Alignment:</b> 胆小<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">击掌奇袭</span>
+                            <span class="badge">电磁炮</span>
+                            <span class="badge">真气弹</span>
+                            <span class="badge">守住</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/059_001.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            风速狗 [洗翠的样子]
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>SC</b> <i class="small">Arcanine [Hisuian Form]</i><br>
+                            
+                            <b>Ability:</b> 坚硬脑袋 &nbsp;&nbsp; 
+                            <b>Held Item:</b> 气势披带<br>
+                            
+                            <b>Stat Alignment:</b> 爽朗<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">闪焰冲锋</span>
+                            <span class="badge">双刃头锤</span>
+                            <span class="badge">神速</span>
+                            <span class="badge">守住</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/979_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            弃世猴
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>SC</b> <i class="small">Annihilape</i><br>
+                            
+                            <b>Ability:</b> 不服输 &nbsp;&nbsp; 
+                            <b>Held Item:</b> 讲究围巾<br>
+                            
+                            <b>Stat Alignment:</b> 固执<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">潜灵奇袭</span>
+                            <span class="badge">尖石攻击</span>
+                            <span class="badge">冰冻拳</span>
+                            <span class="badge">近身战</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/812_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            轰擂金刚猩
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>SC</b> <i class="small">Rillaboom</i><br>
+                            
+                            <b>Ability:</b> 青草制造者 &nbsp;&nbsp; 
+                            <b>Held Item:</b> 奇迹种子<br>
+                            
+                            <b>Stat Alignment:</b> 固执<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">击掌奇袭</span>
+                            <span class="badge">青草滑梯</span>
+                            <span class="badge">木槌</span>
+                            <span class="badge">十万马力</span></h5>
+                        </div>
+                        
+                    
+                    
+                <!-- </div> -->
+            </div>
+            
+        
+
+            <div class="my-3 mx-5 pt-2 px-3 translation lang-TC" id="lang-TC">
+                <!-- <div class="font-weight-normal border border-success" id="teamlist-"> -->
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/1000_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            賽富豪
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>TC</b> <i class="small">Gholdengo</i><br>
+                            
+                            <b>Ability:</b> 黃金之軀 &nbsp;&nbsp; 
+                            <b>Held Item:</b> 生命寶珠<br>
+                            
+                            <b>Stat Alignment:</b> 內斂<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">詭計</span>
+                            <span class="badge">暗影球</span>
+                            <span class="badge">淘金潮</span>
+                            <span class="badge">守住</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/373_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            暴飛龍
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>TC</b> <i class="small">Salamence</i><br>
+                            
+                            <b>Ability:</b> 威嚇 &nbsp;&nbsp; 
+                            <b>Held Item:</b> 暴飛龍進化石<br>
+                            
+                            <b>Stat Alignment:</b> 膽小<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">巨聲</span>
+                            <span class="badge">流星群</span>
+                            <span class="badge">順風</span>
+                            <span class="badge">守住</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/026_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            雷丘
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>TC</b> <i class="small">Raichu</i><br>
+                            
+                            <b>Ability:</b> 避雷針 &nbsp;&nbsp; 
+                            <b>Held Item:</b> 雷丘進化石Y<br>
+                            
+                            <b>Stat Alignment:</b> 膽小<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">擊掌奇襲</span>
+                            <span class="badge">電磁炮</span>
+                            <span class="badge">真氣彈</span>
+                            <span class="badge">守住</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/059_001.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            風速狗 [洗翠的樣子]
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>TC</b> <i class="small">Arcanine [Hisuian Form]</i><br>
+                            
+                            <b>Ability:</b> 堅硬腦袋 &nbsp;&nbsp; 
+                            <b>Held Item:</b> 氣勢披帶<br>
+                            
+                            <b>Stat Alignment:</b> 爽朗<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">閃焰衝鋒</span>
+                            <span class="badge">雙刃頭錘</span>
+                            <span class="badge">神速</span>
+                            <span class="badge">守住</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/979_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            棄世猴
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>TC</b> <i class="small">Annihilape</i><br>
+                            
+                            <b>Ability:</b> 不服輸 &nbsp;&nbsp; 
+                            <b>Held Item:</b> 講究圍巾<br>
+                            
+                            <b>Stat Alignment:</b> 固執<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">潛靈奇襲</span>
+                            <span class="badge">尖石攻擊</span>
+                            <span class="badge">冰凍拳</span>
+                            <span class="badge">近身戰</span></h5>
+                        </div>
+                        
+                    
+                        <div class="pokemon bg-light-green-50 p-3">
+                            <img src="https://storage.googleapis.com/files.rk9labs.com/sprites/broadcast/812_000.png" onerror="imgError(this)" style="float: left; margin: 12px; height: 32px;">
+                            
+                            
+                            轟擂金剛猩
+                            
+                            &nbsp;
+                             &nbsp; 
+                            <b>TC</b> <i class="small">Rillaboom</i><br>
+                            
+                            <b>Ability:</b> 青草製造者 &nbsp;&nbsp; 
+                            <b>Held Item:</b> 奇跡種子<br>
+                            
+                            <b>Stat Alignment:</b> 固執<br>
+                            
+                            <h5>&nbsp;&nbsp;<span class="badge">擊掌奇襲</span>
+                            <span class="badge">青草滑梯</span>
+                            <span class="badge">木槌</span>
+                            <span class="badge">十萬馬力</span></h5>
+                        </div>
+                        
+                    
+                    
+                <!-- </div> -->
+            </div>
+            
+        
+        
+
+    </div>
+</div>
+
+
+
+    
+    
+        <div class="print-hidden">
+            
+<div id="footer" class="footer">
+    <p class="h4 text-center">
+        <a href="https://x.com/rk9labs" target="_blank"><i class="fa-brands fa-x-twitter" style="color: #2680C2;"></i></a>
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+        <a href="https://bsky.app/profile/rk9.gg" target="_blank"><i class="fa-brands fa-bluesky" style="color: #2680C2;"></i></i></a>
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+        <a href="https://www.facebook.com/rk9labs/" target="_blank"><i class="fa-brands fa-facebook-f" style="color: #2680C2;"></i></a>
+    </p>
+    <p class="text-center" style="font-size: 16px;">
+        <a href="https://support.rk9.gg" target="_blank">RK9 Support Center</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="/privacy">Privacy Notice</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="/terms">Terms of Service</a>
+    </p>
+    <p class="text-center" style="font-size: 16px;">
+        &copy; Copyright 2026 RK9 Labs, LLC
+    </p>
+</div>
+
+
+        </div>
+    
+    
+
+
+</body>
+
+</html>

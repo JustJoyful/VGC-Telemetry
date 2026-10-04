@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="%%HTML_LANG%%" id="detail" class="lang-en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="robots" content="nofollow">
+  <meta name="focus-ring-visibility" content="hidden">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no">
+  <link rel="stylesheet" href="../../resources/css/style_cm.css">
+  <link rel="stylesheet" href="../../resources/css/sprite_ui.css">
+  <link rel="shortcut icon" href="../../resources/image/favicon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="../../resources/image/favicon.png">
+  <title>Regulation Set M-B (Updated on August 5)</title>
+  
+  <script src="../../resources/js/scroll.js"></script>
+</head>
+
+<body>
+  <div id="scroll-container">
+    <div id="scroll-track"></div>
+    <div id="scroll-thumb"></div>
+  </div>
+  <main>
+    <div class="article-image">
+          <img src="./banner/2_1779123873_30081785900677.jpg">
+        </div>
+    <article>
+      <div class="article-category sprite-ui sprite-ui-ui_web_CategoryPlt_01"><div>Regulations</div></div>
+      <div class="article-title">Regulation Set M-B (Updated on August 5)</div>
+      <hr>
+      <div class="article-body">
+        Announcing Regulation Set M-B for Ranked Battles!<br /><br /><h1>Regulation Set M-B Duration</h1>Wednesday, June 17, 2026, at 02:00 UTC to Wednesday, September 9, 2026, at 01:59 UTC<br />Regulation Set M-B was initially planned to last until September 2, but it will now be used for Ranked Battles until September 9. (Updated on August 5.)<br /><br /><h1>Regulation Set M-B Details</h1><h2>Eligible Pokémon</h2>Of the Pokémon available in Pokémon Champions, only the Pokémon displayed in <b>Eligible Pokémon</b> below are eligible to participate.​<br /><br /><a class="btn-link" href="https://web-view.app.pokemonchampions.jp/battle/pages/events/rs178066986988lmoqpm/en/pokemon.html">Eligible Pokémon</a><br />​​<h2>Mechanics</h2>Certain Pokémon can Mega Evolve if they’re holding a Mega Stone.<br />You can use Mega Evolution only one time per battle.<br /><br />​The following Mega Evolutions are newly allowed under this regulation.<br /><br /><h4>Mega Raichu X​<br />​​Mega Raichu Y​<br />​​Mega Sceptile​<br />​​Mega Blaziken​<br />​​Mega Swampert​<br />​​Mega Mawile​<br />​​Mega Metagross<br />​​Mega Staraptor​<br />​​Mega Scolipede​<br />​​Mega Scrafty​<br />​​Mega Eelektross​<br />​​Mega Pyroar​<br />​​Mega Malamar​<br />​​Mega Barbaracle​<br />​​Mega Dragalge​<br />​​Mega Falinks</h4>​​<h2>Held Items</h2>Duplicate held items are not allowed.​ <br /><br /><h2>Timers</h2>Total Time: 20 minutes<br />Player Time: 7 minutes<br />Turn Time: 45 seconds<br />Preview Time: 90 seconds<br /><br /><h1>What Are Regulations?</h1>​​Regulations are the rules that govern things like which Pokémon species and held items are allowed in battle.​ 
+        <a href="../list" class="btn-link button-primary back-button">More News</a>
+      </div>
+    </article>
+  </main>
+</body>
+
+</html>

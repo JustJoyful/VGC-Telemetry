@@ -1,0 +1,8 @@
+{
+  "url": "https://play.limitlesstcg.com/api/tournaments?game=VGC&format=M-C&limit=5&page=2",
+  "captured_at": "2026-10-03T19:08:53.894888+00:00",
+  "status": 200,
+  "content_type": "application/json; charset=utf-8",
+  "sha256": "a32e7a3e83c4397a38c259ede97ff86abdd44523f1c159b3f2273dcf5d923b56",
+  "body_path": "1f3571dc5f9030bfd2fa5381bca7c34ce0a83033b9acc25840d26de7a7ccdc19.body"
+}
