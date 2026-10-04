@@ -22,7 +22,7 @@ def handle_s3_event(event: dict[str, Any], context: Any = None) -> dict[str, Any
     Quarantines corrupt/invalid payloads and ignores quarantine/ prefix defensively.
     """
     s3_client = boto3.client("s3")
-    table = get_dynamodb_table()
+    table = None
 
     records = event.get("Records", [])
     if not records:
@@ -39,6 +39,10 @@ def handle_s3_event(event: dict[str, Any], context: Any = None) -> dict[str, Any
             logger.warning("Ignoring event for quarantine prefix key: %s", key)
             return {"status": "skipped", "reason": "quarantine_prefix_ignored", "key": key}
 
+        if not key.startswith("raw/"):
+            results.append({"status": "skipped", "reason": "non_legacy_prefix", "key": key})
+            continue
+
         try:
             response = s3_client.get_object(Bucket=bucket, Key=key)
             raw_bytes = response["Body"].read()
@@ -48,6 +52,9 @@ def handle_s3_event(event: dict[str, Any], context: Any = None) -> dict[str, Any
 
         try:
             payload = json.loads(raw_bytes.decode("utf-8"))
+            if isinstance(payload, dict) and "schema_version" in payload:
+                results.append({"status": "skipped", "reason": "non_legacy_schema", "key": key})
+                continue
             parsed = parse_tournament_export(payload)
         except (json.JSONDecodeError, ValidationError, Exception) as e:
             logger.warning("Payload in %s failed contract validation: %s. Quarantining.", key, e)
@@ -65,6 +72,8 @@ def handle_s3_event(event: dict[str, Any], context: Any = None) -> dict[str, Any
                 "error": str(e),
             }
 
+        if table is None:
+            table = get_dynamodb_table()
         success = write_tournament_data(table, parsed)
         results.append(
             {
@@ -74,6 +83,8 @@ def handle_s3_event(event: dict[str, Any], context: Any = None) -> dict[str, Any
             }
         )
 
+    if len(results) == 1 and results[0].get("reason"):
+        return results[0]
     return {"status": "completed", "results": results}
 
 

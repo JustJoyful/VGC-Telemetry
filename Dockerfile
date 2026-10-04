@@ -51,5 +51,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY core/ ${LAMBDA_TASK_ROOT}/core/
 COPY scraper/ ${LAMBDA_TASK_ROOT}/scraper/
+COPY ingestion/ ${LAMBDA_TASK_ROOT}/ingestion/
 
 CMD ["scraper.handler.lambda_handler"]
