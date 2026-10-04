@@ -1,0 +1,12 @@
+{
+  "snapshots": {
+    "champions-mc-3661ce4": {
+      "path": "champions-mc-3661ce4.json",
+      "sha256": "33c614be1bc47c123ad112facf34da29bc9b9918852a4a432bb9b131e37b6862"
+    },
+    "champions-mb-3661ce4": {
+      "path": "champions-mb-3661ce4.json",
+      "sha256": "03bbc7d964276997a33cc823ac14ccc5a379422fb19bb43505a6d1a1b5b3853f"
+    }
+  }
+}

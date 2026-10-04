@@ -1,0 +1,175 @@
+{
+  "sources": [
+    {
+      "source": "limitless",
+      "enabled": false,
+      "verified": true,
+      "adapter_version": "2.0.0",
+      "evidence": [
+        {
+          "url": "https://play.limitlesstcg.com/api/games",
+          "captured_at": "2026-10-03T19:07:50.196756Z",
+          "document_key": "483cd98be6f6740df4550514a286700591f0ea8845bd70e11b5e2ea53ff41b34.body",
+          "content_hash": "e99b6fdb0ac711251e19744596f00b083ec18ab6838d0f6e4cc0c984e342967f"
+        }
+      ],
+      "format_mappings": {
+        "M-C": {
+          "game": "VGC",
+          "platforms": [
+            "SWITCH"
+          ],
+          "rules_id": "M-C",
+          "catalog_revision": "champions-mc-3661ce4",
+          "game_data_revision": "showdown-3661ce40bf9001d185ce078b8920e12304204609",
+          "battle_format": "doubles",
+          "evidence": [
+            {
+              "url": "https://champions-news.pokemon-home.com/en/page/816.html",
+              "captured_at": "2026-10-04T15:22:26.552961Z",
+              "document_key": "308cae1f93d27d514c6f53e70de0f874c512c69f28886e43bc96cd866e20267d.body",
+              "content_hash": "c195592cdf52c8ce193cc02d444b19c3272234be66a04764356064be35ff1985"
+            },
+            {
+              "url": "https://raw.githubusercontent.com/smogon/pokemon-showdown/3661ce40bf9001d185ce078b8920e12304204609/config/formats.ts",
+              "captured_at": "2026-10-03T19:09:34.846819Z",
+              "document_key": "06dcf3bab2cfa1c28abfe4b76eaba19a7848e77df53f89bb094e1d0351161997.body",
+              "content_hash": "f457c2499d0261fe51f097a23fe7be9caf63be858e25ef39db47891e3d339070"
+            }
+          ]
+        },
+        "M-B": {
+          "game": "VGC",
+          "platforms": [
+            "SWITCH"
+          ],
+          "rules_id": "M-B",
+          "catalog_revision": "champions-mb-3661ce4",
+          "game_data_revision": "showdown-3661ce40bf9001d185ce078b8920e12304204609",
+          "battle_format": "doubles",
+          "evidence": [
+            {
+              "url": "https://champions-news.pokemon-home.com/en/page/776.html",
+              "captured_at": "2026-10-04T15:22:26.977009Z",
+              "document_key": "c59f59450740375239b72be5c384fa5d100606635896e6d5cb5b8f34ce2e1a0b.body",
+              "content_hash": "f66f7c310bb3c722e26d4bdb1d417f9f3a18ec740731e030cc302de4797cb082"
+            },
+            {
+              "url": "https://raw.githubusercontent.com/smogon/pokemon-showdown/3661ce40bf9001d185ce078b8920e12304204609/config/formats.ts",
+              "captured_at": "2026-10-03T19:09:34.846819Z",
+              "document_key": "06dcf3bab2cfa1c28abfe4b76eaba19a7848e77df53f89bb094e1d0351161997.body",
+              "content_hash": "f457c2499d0261fe51f097a23fe7be9caf63be858e25ef39db47891e3d339070"
+            }
+          ]
+        }
+      },
+      "event_mappings": {},
+      "event_ids": [],
+      "public_scraping_authorized": false,
+      "max_events": 10,
+      "max_team_pages": 1000
+    },
+    {
+      "source": "rk9",
+      "enabled": false,
+      "verified": true,
+      "adapter_version": "2.0.0",
+      "evidence": [
+        {
+          "url": "https://rk9.gg/events/pokemon",
+          "captured_at": "2026-10-03T19:11:34.689177Z",
+          "document_key": "b06c15afea02ced92477c899a90df6f249d5bdbd4bfa70317f82adb0fb264cc7.body",
+          "content_hash": "857b5440460e894fec291b66375db8e310de68b6a7bdde6945dc3f35f82d8d42"
+        }
+      ],
+      "format_mappings": {},
+      "event_mappings": {
+        "FR002-fiunEHp9wx4mh4": {
+          "game": "VGC",
+          "platforms": [
+            "SWITCH"
+          ],
+          "rules_id": "M-C",
+          "catalog_revision": "champions-mc-3661ce4",
+          "game_data_revision": "showdown-3661ce40bf9001d185ce078b8920e12304204609",
+          "battle_format": "doubles",
+          "evidence": [
+            {
+              "url": "https://victoryroad.pro/2027-frankfurt/",
+              "captured_at": "2026-10-04T15:22:28.030668Z",
+              "document_key": "fa257e748e0bc5b2e1cbb82480aa6b8e98a3247deac6d736cd9c543133ad513e.body",
+              "content_hash": "a27ae5700862174dd9fb7ef62bf58ca2d3ed664d73103ff5649fac007c7aa382"
+            },
+            {
+              "url": "https://rk9.gg/tournament/FR002-fiunEHp9wx4mh4",
+              "captured_at": "2026-10-03T19:19:11.427002Z",
+              "document_key": "ea2e6ed345c92612be6caeadfabf70adfa4ee1bdf33e713f2d55f644226d4640.body",
+              "content_hash": "deab88cfaea7e4e1bae0abae5147618a99b3de7d3e458fc7ade7f4e9e477cba1"
+            },
+            {
+              "url": "https://champions-news.pokemon-home.com/en/page/816.html",
+              "captured_at": "2026-10-04T15:22:26.552961Z",
+              "document_key": "308cae1f93d27d514c6f53e70de0f874c512c69f28886e43bc96cd866e20267d.body",
+              "content_hash": "c195592cdf52c8ce193cc02d444b19c3272234be66a04764356064be35ff1985"
+            },
+            {
+              "url": "https://raw.githubusercontent.com/smogon/pokemon-showdown/3661ce40bf9001d185ce078b8920e12304204609/config/formats.ts",
+              "captured_at": "2026-10-03T19:09:34.846819Z",
+              "document_key": "06dcf3bab2cfa1c28abfe4b76eaba19a7848e77df53f89bb094e1d0351161997.body",
+              "content_hash": "f457c2499d0261fe51f097a23fe7be9caf63be858e25ef39db47891e3d339070"
+            }
+          ],
+          "name": "2027 Frankfurt Regional Championships",
+          "starts_at": "2026-09-26T06:30:00Z",
+          "division_id": null
+        },
+        "BA002-JL3KVbvivVKNAc": {
+          "game": "VGC",
+          "platforms": [
+            "SWITCH"
+          ],
+          "rules_id": "M-C",
+          "catalog_revision": "champions-mc-3661ce4",
+          "game_data_revision": "showdown-3661ce40bf9001d185ce078b8920e12304204609",
+          "battle_format": "doubles",
+          "evidence": [
+            {
+              "url": "https://victoryroad.pro/2027-baltimore/",
+              "captured_at": "2026-10-04T15:22:28.301381Z",
+              "document_key": "3c998c966b36ab420be7e1d244ddb09f9cc94e4888a997894e5fe6f3f4e1c8f5.body",
+              "content_hash": "b48f2e12d1b391210bbf9a19f2434a61ba8bd7e564c42614988512846c3f4a9d"
+            },
+            {
+              "url": "https://rk9.gg/tournament/BA002-JL3KVbvivVKNAc",
+              "captured_at": "2026-10-03T19:19:05.478432Z",
+              "document_key": "29611011975f49eade8e838508321cb9f4094fe8fa9fb7a59dac56f02e43d104.body",
+              "content_hash": "7181f59b6f7680565a3751ec6bc97080e9ba4e320f8fb86c56a0549c5b8d3883"
+            },
+            {
+              "url": "https://champions-news.pokemon-home.com/en/page/816.html",
+              "captured_at": "2026-10-04T15:22:26.552961Z",
+              "document_key": "308cae1f93d27d514c6f53e70de0f874c512c69f28886e43bc96cd866e20267d.body",
+              "content_hash": "c195592cdf52c8ce193cc02d444b19c3272234be66a04764356064be35ff1985"
+            },
+            {
+              "url": "https://raw.githubusercontent.com/smogon/pokemon-showdown/3661ce40bf9001d185ce078b8920e12304204609/config/formats.ts",
+              "captured_at": "2026-10-03T19:09:34.846819Z",
+              "document_key": "06dcf3bab2cfa1c28abfe4b76eaba19a7848e77df53f89bb094e1d0351161997.body",
+              "content_hash": "f457c2499d0261fe51f097a23fe7be9caf63be858e25ef39db47891e3d339070"
+            }
+          ],
+          "name": "2027 Baltimore Regional Championships",
+          "starts_at": "2026-09-19T12:30:00Z",
+          "division_id": null
+        }
+      },
+      "event_ids": [
+        "FR002-fiunEHp9wx4mh4",
+        "BA002-JL3KVbvivVKNAc"
+      ],
+      "public_scraping_authorized": true,
+      "max_events": 10,
+      "max_team_pages": 2
+    }
+  ]
+}
