@@ -8,7 +8,8 @@ from core.config import is_legal_z_mega_stone, is_valid_form
 class EVSpread(BaseModel):
     """Competitive EV spread across six stats.
 
-    In Pokémon Champions, each stat can have 0 to 252 EVs, and total EVs cannot exceed 508.
+    Legacy /v1 contract: each stat has 0 to 252 EVs, total at most 508.
+    Native Champions Stat Points are defined separately in champions.py.
     'def' is aliased to 'def_' because 'def' is a reserved Python keyword.
     """
 
