@@ -1,129 +1,114 @@
+"""Collector regressions migrated from the retired guessed raw-export path."""
+
 import json
 
 import boto3
 import httpx
+import pytest
 
-from scraper.handler import fetch_and_store_tournaments
+from scraper.dispatcher import CollectionFailure, CollectionReport, SourceReport, collect_sources
 from scraper.limitless_client import LimitlessAPIClient
 from scraper.rk9_scraper import RK9HTMLScraper
+from tests.source_helpers import INDEX, real_inputs
 
 
-def test_limitless_client_fetch_and_assemble():
-    def mock_transport(request: httpx.Request):
-        url = str(request.url)
-        if "tournaments/T999/standings" in url:
-            return httpx.Response(
-                200,
-                json=[
-                    {
-                        "player": {"id": "P99", "name": "Test Player"},
-                        "placing": 1,
-                        "record": {"wins": 5, "losses": 0},
-                        "decklist": [],
-                    }
-                ],
-            )
-        elif "tournaments/T999/pairings" in url:
-            return httpx.Response(
-                200,
-                json=[
-                    {
-                        "round": 1,
-                        "id": "M99",
-                        "player1": {"id": "P99"},
-                        "player2": {"id": "P100"},
-                        "winner": {"id": "P99"},
-                        "score": "2-0",
-                    }
-                ],
-            )
-        elif "tournaments/T999" in url:
-            return httpx.Response(
-                200,
-                json={"name": "Mock Limitless Cup", "date": "2026-09-25", "tier": "Regional"},
-            )
-        elif "tournaments" in url:
-            return httpx.Response(200, json=[{"id": "T999", "name": "Mock Limitless Cup"}])
+def fixture_client(fail_path=None):
+    capture, admission, _ = real_inputs("limitless")
+
+    def respond(request):
+        if request.url.path == fail_path:
+            return httpx.Response(500, text="Server Error")
+        if request.url.path == "/api/tournaments":
+            return httpx.Response(200, json=[{"id": capture.source_event_id}])
+        for doc in capture.documents.values():
+            if str(request.url).split("?")[0] == doc.url:
+                return httpx.Response(doc.status, content=doc.body.encode())
         return httpx.Response(404)
 
-    client = httpx.Client(transport=httpx.MockTransport(mock_transport))
-    limitless = LimitlessAPIClient(client=client)
-
-    export = limitless.fetch_tournament_export("T999", regulation="M-C")
-    assert export["metadata"]["tid"] == "T999"
-    assert export["metadata"]["name"] == "Mock Limitless Cup"
-    assert len(export["teams"]) == 1
-    assert export["teams"][0]["player_id"] == "P99"
-    assert len(export["matches"]) == 1
+    return LimitlessAPIClient(
+        client=httpx.Client(transport=httpx.MockTransport(respond))
+    ), admission.model_copy(update={"enabled": True})
 
 
-def test_rk9_scraper_discover_and_roster():
-    def mock_transport(request: httpx.Request):
-        url = str(request.url)
-        if "robots.txt" in url:
-            return httpx.Response(200, text="User-agent: *\nAllow: /\n")
-        elif "events" in url:
-            html = """
-            <html>
-                <body>
-                    <a href="/tournament/RK9_100">Champions Open 2026</a>
-                </body>
-            </html>
-            """
-            return httpx.Response(200, text=html)
-        elif "roster/RK9_100" in url:
-            html = """
-            <table>
-                <tr><td>Player One</td><td>Masters</td></tr>
-                <tr><td>Player Two</td><td>Masters</td></tr>
-            </table>
-            """
-            return httpx.Response(200, text=html)
-        return httpx.Response(404)
-
-    client = httpx.Client(transport=httpx.MockTransport(mock_transport))
-    scraper = RK9HTMLScraper(client=client, crawl_delay=0.0)
-
-    events = scraper.discover_recent_events()
-    assert len(events) == 1
-    assert events[0]["tid"] == "RK9_100"
-
-    roster = scraper.scrape_tournament_roster("RK9_100")
-    assert len(roster) == 2
-    assert roster[0]["player_name"] == "Player One"
+def test_limitless_client_fetch_and_capture():
+    client, _ = fixture_client()
+    capture = client.capture_tournament(real_inputs("limitless")[0].source_event_id)
+    assert capture.source == "limitless"
+    assert capture.documents["details"].url.endswith("/details")
+    standings = json.loads(capture.documents["standings"].body)
+    assert standings[0]["player"] == "azelle" and len(standings[0]["decklist"]) == 6
+    assert len(json.loads(capture.documents["pairings"].body)) > 0
 
 
-def test_scraper_handler_writes_to_raw_prefix(s3_bucket):
-    def mock_transport(request: httpx.Request):
-        url = str(request.url)
-        if "tournaments/T888/standings" in url:
-            return httpx.Response(200, json=[])
-        elif "tournaments/T888/pairings" in url:
-            return httpx.Response(200, json=[])
-        elif "tournaments/T888" in url:
-            return httpx.Response(
-                200,
-                json={"name": "Auto Cup", "date": "2026-09-25", "tier": "Major"},
-            )
-        elif "tournaments" in url:
-            return httpx.Response(200, json=[{"id": "T888", "name": "Auto Cup"}])
-        return httpx.Response(404)
+def test_rk9_scraper_discovery():
+    paths = []
 
-    client = httpx.Client(transport=httpx.MockTransport(mock_transport))
-    limitless = LimitlessAPIClient(client=client)
+    def respond(request):
+        paths.append(request.url.path)
+        if request.url.path == "/robots.txt":
+            return httpx.Response(200, text="User-agent: *\nAllow: /")
+        return httpx.Response(200, text='<a href="/tournament/RK9_100">Champions Open 2026</a>')
 
-    s3_client = boto3.client("s3", region_name="us-east-1")
-    written = fetch_and_store_tournaments(
-        s3_client=s3_client,
-        bucket_name=s3_bucket.name,
-        api_client=limitless,
-        limit=5,
+    scraper = RK9HTMLScraper(
+        client=httpx.Client(transport=httpx.MockTransport(respond)), crawl_delay=0
     )
+    assert scraper.discover_recent_events() == [{"tid": "RK9_100", "name": "Champions Open 2026"}]
+    assert "/events/pokemon" in paths
 
-    assert len(written) == 1
-    assert written[0] == "raw/T888.json"
 
-    # Confirm object exists in S3 under raw/ prefix
-    obj = s3_bucket.Object("raw/T888.json").get()
-    data = json.loads(obj["Body"].read().decode("utf-8"))
-    assert data["metadata"]["tid"] == "T888"
+def test_scraper_handler_writes_to_staging_prefix(s3_bucket):
+    client, admission = fixture_client()
+    report = collect_sources(
+        admissions=[admission],
+        catalog_index=INDEX,
+        s3_client=boto3.client("s3"),
+        bucket_name=s3_bucket.name,
+        clients={"limitless": client},
+    )
+    refs = report.sources["limitless"].staged_references
+    assert len(refs) == 1
+    assert refs[0]["capture_key"].startswith("staging/v2/captures/")
+    data = json.loads(s3_bucket.Object(refs[0]["normalized_key"]).get()["Body"].read())
+    assert data["result"]["tournament"]["metadata"]["event_id"].startswith("limitless:")
+    assert all(not obj.key.startswith("raw/") for obj in s3_bucket.objects.all())
+
+
+def test_scraper_handler_list_fetch_error(s3_bucket):
+    client, admission = fixture_client("/api/tournaments")
+    with pytest.raises(CollectionFailure) as error:
+        collect_sources(
+            admissions=[admission],
+            catalog_index=INDEX,
+            s3_client=boto3.client("s3"),
+            bucket_name=s3_bucket.name,
+            clients={"limitless": client},
+        )
+    assert error.value.report.sources["limitless"].failed == 1
+
+
+def test_scraper_handler_single_capture_error(s3_bucket):
+    capture, _, _ = real_inputs("limitless")
+    client, admission = fixture_client(f"/api/tournaments/{capture.source_event_id}/standings")
+    with pytest.raises(CollectionFailure) as error:
+        collect_sources(
+            admissions=[admission],
+            catalog_index=INDEX,
+            s3_client=boto3.client("s3"),
+            bucket_name=s3_bucket.name,
+            clients={"limitless": client},
+        )
+    assert error.value.report.sources["limitless"].failed == 1
+    assert (
+        len(list(s3_bucket.objects.all())) == 2
+    )  # HTTP failure evidence and explicit pending result.
+
+
+def test_scraper_lambda_handler(s3_bucket, monkeypatch):
+    from scraper.handler import lambda_handler
+
+    report = CollectionReport(sources={"limitless": SourceReport(captured=1)})
+    monkeypatch.setattr("scraper.handler.collect_sources", lambda **kwargs: report)
+    result = lambda_handler({})
+    assert (
+        result["status"] == "success" and result["report"]["sources"]["limitless"]["captured"] == 1
+    )
