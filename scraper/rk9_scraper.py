@@ -2,9 +2,14 @@ import logging
 import re
 import time
 import urllib.robotparser
-from typing import Any
+from datetime import datetime, timezone
+from urllib.parse import quote
 
 import httpx
+
+from core.models.champions import SourceCapture
+from scraper.html import public_team_links
+from scraper.http import captured_document, request_public
 
 logger = logging.getLogger(__name__)
 
@@ -22,9 +27,14 @@ class RK9HTMLScraper:
         base_url: str = RK9_BASE_URL,
         client: httpx.Client | None = None,
         crawl_delay: float = 1.0,
+        public_scraping_authorized: bool = False,
+        max_team_pages: int = 1000,
     ):
         self.base_url = base_url.rstrip("/")
         self.crawl_delay = crawl_delay
+        self.public_scraping_authorized = public_scraping_authorized
+        self.max_team_pages = max_team_pages
+        self._robots_response = None
         self.user_agent = "VGCTelemetryBot/1.0 (+https://github.com/JustJoyful/VGC-Telemetry)"
         self.client = client or httpx.Client(
             timeout=15.0,
@@ -40,37 +50,66 @@ class RK9HTMLScraper:
         """Check robots.txt compliance before fetching path."""
         if self._robot_parser is None:
             self._robot_parser = urllib.robotparser.RobotFileParser()
-            try:
-                robots_url = f"{self.base_url}/robots.txt"
-                resp = self.client.get(robots_url)
-                if resp.status_code == 200:
-                    self._robot_parser.parse(resp.text.splitlines())
-                else:
-                    self._robot_parser.allow_all = True
-            except Exception as e:
-                logger.warning("Could not fetch robots.txt (%s); proceeding with caution.", e)
-                self._robot_parser.allow_all = True
+            robots_url = f"{self.base_url}/robots.txt"
+            resp = request_public(self.client, robots_url)
+            self._robots_response = resp
+            if resp.status_code == 200:
+                self._robot_parser.parse(resp.text.splitlines())
+            else:
+                self._robot_parser.disallow_all = True
 
         return self._robot_parser.can_fetch(self.user_agent, f"{self.base_url}/{path.lstrip('/')}")
 
-    def _fetch_html(self, path: str) -> str:
-        if not self._check_robots(path):
+    def _response(self, path: str):
+        permitted = self._check_robots(path)
+        if not permitted and not self.public_scraping_authorized:
             raise PermissionError(f"robots.txt disallows scraping path: {path}")
+        if not permitted:
+            logger.warning("Explicit operator policy overrides robots exclusion for %s", path)
 
-        # Enforce rate limit / crawl delay
-        elapsed = time.time() - self._last_request_time
-        if elapsed < self.crawl_delay:
-            time.sleep(self.crawl_delay - elapsed)
+        def throttle():
+            elapsed = time.monotonic() - self._last_request_time
+            if elapsed < self.crawl_delay:
+                time.sleep(self.crawl_delay - elapsed)
+            self._last_request_time = time.monotonic()
 
-        url = f"{self.base_url}/{path.lstrip('/')}"
-        response = self.client.get(url)
-        self._last_request_time = time.time()
+        return request_public(
+            self.client, f"{self.base_url}/{path.lstrip('/')}", before_request=throttle
+        )
+
+    def _fetch_html(self, path: str) -> str:
+        response = self._response(path)
         response.raise_for_status()
         return response.text
 
+    def capture_tournament(self, tournament_id: str) -> SourceCapture:
+        event_id = quote(tournament_id, safe="")
+        documents = {
+            key: captured_document(self._response(f"{path}/{event_id}"))
+            for key, path in [
+                ("event", "tournament"),
+                ("roster", "roster"),
+                ("pairings", "pairings"),
+            ]
+        }
+        if self._robots_response is not None:
+            documents["robots"] = captured_document(self._robots_response)
+        if documents["roster"].status == 200:
+            links = public_team_links(documents["roster"].body, self.base_url, tournament_id)
+            for entry, url in list(links.items())[: self.max_team_pages]:
+                documents["team:" + entry] = captured_document(
+                    self._response(url[len(self.base_url) + 1 :])
+                )
+        return SourceCapture(
+            source="rk9",
+            source_event_id=tournament_id,
+            fetched_at=datetime.now(timezone.utc),
+            documents=documents,
+        )
+
     def discover_recent_events(self) -> list[dict[str, str]]:
         """Open Item 2: Scrape RK9 event listing page to discover event IDs and dates."""
-        html = self._fetch_html("events")
+        html = self._fetch_html("events/pokemon")
         events: list[dict[str, str]] = []
 
         # Find tournament links e.g. href="/tournament/T123" or href="/roster/T123"
@@ -83,30 +122,3 @@ class RK9HTMLScraper:
                 events.append({"tid": tid, "name": name})
 
         return events
-
-    def scrape_tournament_roster(self, tournament_id: str) -> list[dict[str, Any]]:
-        """Scrape team rosters from RK9 roster table."""
-        html = self._fetch_html(f"roster/{tournament_id}")
-
-        # Extract table rows
-        teams: list[dict[str, Any]] = []
-        # Basic regex parser for structured table cells
-        rows = re.findall(r"<tr[^>]*>(.*?)</tr>", html, re.DOTALL)
-        standing = 1
-        for row in rows:
-            cells = re.findall(r"<td[^>]*>(.*?)</td>", row, re.DOTALL)
-            if len(cells) >= 2:
-                player_name = re.sub(r"<[^>]+>", "", cells[0]).strip()
-                if player_name:
-                    teams.append(
-                        {
-                            "player_id": f"rk9_{tournament_id}_{standing}",
-                            "player_name": player_name,
-                            "standing": standing,
-                            "record": "0-0",
-                            "pokemon": [],
-                        }
-                    )
-                    standing += 1
-
-        return teams
