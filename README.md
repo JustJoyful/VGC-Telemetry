@@ -4,11 +4,11 @@ A REST API project for **Pokémon Champions tournament analysis**: registered te
 
 ## Project status
 
-The repository contains a working prototype and offline tests, not a verified production data service. Existing `/v1` routes serve tournament teams, player history, and species/move/ability/legacy-spread/partner counts. Phase 0 adds verified real-source fixtures, native/partial contracts, M-C/M-B catalogs, and isolated previews. Safe publication and automatic catalog updates remain under development.
+The repository contains a working prototype and offline tests, not a verified production data service. Existing `/v1` routes serve tournament teams, player history, and species/move/ability/legacy-spread/partner counts. Phase 0 adds verified real-source fixtures, native/partial contracts, M-C/M-B catalogs, and isolated previews. Phase 1 adds isolated revision and generation publication with offline replay proof. Automatic catalog updates remain pending.
 
-The target `/v2` API combines official RK9 and online Limitless tournament records, enriches published builds with attributable public pastes, preserves historical regulations, and reports provenance, sample coverage, and freshness. Source adapters require verified real samples before enablement.
+The target `/v2` API reliably serves verified Limitless Pokémon Champions VGC top-cut tournament data, preserves historical regulations, and reports provenance, sample coverage, and freshness. Limitless is the only initial tournament source. Ranked ladder feeds and brittle or mismatched sources are out of scope. RK9 is excluded because its published Terms prohibit automated screen scraping.
 
-Limitless already provides an [upstream API](https://docs.limitlesstcg.com/developer/tournaments). This project's value is consistent Champions data across sources and reproducible analysis, rather than a copy of that API.
+Limitless already provides an [upstream API](https://docs.limitlesstcg.com/developer/tournaments). This project's value is Champions-specific legality, reproducible analysis, coverage, and freshness beyond a direct API copy. Additional sources require a separate access review.
 
 ## Domain
 
@@ -57,9 +57,9 @@ uv run python -m ingestion.preview \
   --output /tmp/champions-phase-0-preview.json
 ```
 
-Use `tests/fixtures/sources/rk9/accepted-capture.json` for the RK9 sample. Preview JSON reports observed rosters, unknown fields, and diagnostics; it is a local verification artifact. Public Stat Points are unavailable in these samples. RK9 includes two captured sheets and explicitly marks other linked sheets uncaptured.
+Preview JSON reports observed rosters, unknown fields, and diagnostics; it is a local verification artifact. The captured Limitless teams contain no published Stat Points, so their allocations remain unknown.
 
-Both sources in `core/sources/admission.json` ship disabled. The collector writes immutable `staging/v2/captures/` and `staging/v2/normalized/` objects. The legacy writer skips these prefixes and schema-2 payloads. Configure `SOURCE_ADMISSION_PATH` and `CATALOG_INDEX_PATH` to supply an independently reviewed source configuration. RK9's `public_scraping_authorized` records the operator's explicit scraping policy; access refusals still fail visibly.
+The Limitless source in `core/sources/admission.json` ships disabled. The collector writes immutable `staging/v2/captures/` and `staging/v2/normalized/` objects. The legacy writer skips these prefixes and schema-2 payloads. Configure `SOURCE_ADMISSION_PATH` and `CATALOG_INDEX_PATH` to supply an independently reviewed source configuration. Access refusals fail visibly.
 
 Catalogs use official regulation/eligible-pool evidence and pinned MIT-licensed community mechanics. See [catalog provenance](core/regulations/v2/README.md) for inventory and reproduction. M-A and intermediate historical patches remain unverified.
 
@@ -74,8 +74,57 @@ The repository's context documents are currently gitignored but remain part of t
 - [MEMORY.md](MEMORY.md): verified baseline, open bugs, decisions.
 - [SOURCE_UPDATE.md](SOURCE_UPDATE.md): source and release evidence checklist.
 
-The old `phase-2-plan.md` is superseded. Current documents distinguish planned behavior from implemented code. Phase 0 inputs and previews are implemented; revision-safe publication is the next milestone.
+The old `phase-2-plan.md` is superseded. Phase 0's admitted Limitless input-to-preview gate is complete: 120 offline tests pass with 92% coverage and clean Ruff checks. The [Phase 1 publication plan](docs/superpowers/plans/2026-10-05-phase-1-publication.md) implements the separate native publication foundation. Phase 1 is complete offline: 184 tests pass, with 93% measured coverage and clean Ruff checks. See MEMORY.md for evidence; public `/v2` and automated updates remain later gates.
 
 ## Hosting
 
 Terraform defines dev/prod provisioned DynamoDB and Lambda Function URL hosting. Deployment requires verified AWS prerequisites and same-revision CI gates. Reserved concurrency limits simultaneous execution; budget alerts notify. Neither guarantees a zero bill, and both environments share account-level cost considerations.
+
+## Native publication and replay
+
+The explicit `ingestion.native_handler.handle_native_event` accepts staged references:
+
+```python
+from ingestion.native_handler import handle_native_event
+
+handle_native_event(
+    {
+        "normalized": [
+            {
+                "bucket": "your-staging-bucket",
+                "key": "staging/v2/normalized/<sha256>.json",
+                "version_id": "exact-s3-version",  # omit only for a verified hash-addressed object
+            }
+        ]
+    }
+)
+# Recovery without a new delivery: repeat until the outcome is published.
+handle_native_event({"recover": True})
+```
+
+This is an explicit operator invocation, with DynamoDB/S3 access, not a configured
+production trigger or automatic schedule. `max_steps` bounds each population's build
+work per call (default 100); `pending` means retry/resume, not completion. Recovery
+continues past busy populations and pages both intent and dirty-generation jobs. Build cursors
+persist in DynamoDB; intent recovery advances a durable bounded cursor. Operational
+batch failures raise with per-record `results` after independent successes.
+
+Native rows use `V2#` namespaces. Content identity excludes volatile evidence timestamps;
+capture fetch time supplies ordering until upstream sequence evidence is available.
+Equal-order conflicting content remains pending. Contributions cover observed entries,
+with top-cut eligibility unknown; they are not public top-cut analytics. Legacy `/v1`
+keys and EV units retain their existing meaning and legacy aggregation limitations.
+
+Reproduce offline replay, crashes, corrections, reassignment, and clean-rebuild checks:
+
+```bash
+uv run --frozen pytest tests/test_revision_inputs.py tests/test_revision_contributions.py -q
+uv run --frozen pytest tests/test_publication_promotion.py tests/test_publication_recovery.py -q
+uv run --frozen pytest tests/test_publication_generations.py tests/test_publication_handler.py tests/test_publication_pipeline.py -q
+```
+
+Captures, revisions, manifests, complete and incomplete generations are retained
+indefinitely; no cleanup or TTL is enabled. Readers pin a complete generation ID;
+previous complete generations stay readable. Automated expiration requires a reviewed
+retention policy that protects publication pointers, active builds, and reader windows.
+Offline Moto checks establish logic, not AWS throughput, permissions, or deployment.
