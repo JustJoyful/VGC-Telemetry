@@ -10,9 +10,8 @@ from tests.source_helpers import real_inputs
 from tests.test_champions_preview import api
 
 
-@pytest.mark.parametrize("source", ["limitless", "rk9"])
-def test_real_fixture_to_immutable_readback_preview(source, s3_bucket):
-    c, a, k = real_inputs(source)
+def test_real_fixture_to_immutable_readback_preview(s3_bucket):
+    c, a, k = real_inputs("limitless")
     s3 = boto3.client("s3")
     result = normalize_capture(c, admission=a, catalog=k)
     ck = stage_capture(c, s3_client=s3, bucket_name=s3_bucket.name)
@@ -21,7 +20,7 @@ def test_real_fixture_to_immutable_readback_preview(source, s3_bucket):
     stored = NormalizationResult.model_validate(payload["result"])
     preview = api().build_preview(stored)
     assert stored == result and preview.tournament == result.tournament
-    assert preview.complete_rosters == (31 if source == "limitless" else 2)
+    assert preview.complete_rosters == 31
     assert all(p.stat_points is None for t in preview.tournament.teams for p in t.pokemon)
     assert (
         preview.admission_status == "verified"

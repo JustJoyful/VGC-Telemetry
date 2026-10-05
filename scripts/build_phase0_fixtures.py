@@ -167,67 +167,17 @@ def build(resolved_dir):
     limitless = SourceAdmission(
         source="limitless", verified=True, evidence=[games], format_mappings=mappings
     )
-    event_mappings = {}
-    for event, label, start, report in [
-        (
-            "FR002-fiunEHp9wx4mh4",
-            "2027 Frankfurt Regional Championships",
-            "2026-09-26T06:30:00Z",
-            "frankfurt",
-        ),
-        (
-            "BA002-JL3KVbvivVKNAc",
-            "2027 Baltimore Regional Championships",
-            "2026-09-19T12:30:00Z",
-            "baltimore",
-        ),
-    ]:
-        url = f"https://victoryroad.pro/2027-{report}/"
-        body = docs[url][1]
-        if "M-C" not in body or "Pokémon Champions" not in body:
-            raise ValueError(f"Report lacks game/regulation evidence: {url}")
-        event_mappings[event] = mappings["M-C"] | dict(
-            name=label,
-            starts_at=start,
-            evidence=[
-                evidence(url),
-                evidence("https://rk9.gg/tournament/" + event),
-                *mappings["M-C"]["evidence"],
-            ],
-        )
-    rk9 = SourceAdmission(
-        source="rk9",
-        verified=True,
-        evidence=[evidence("https://rk9.gg/events/pokemon")],
-        event_mappings=event_mappings,
-        event_ids=list(event_mappings),
-        public_scraping_authorized=True,
-        max_team_pages=2,
-    )
     write(
         ROOT / "core/sources/admission.json",
-        {"sources": [a.model_dump(mode="json") for a in [limitless, rk9]]},
+        {"sources": [limitless.model_dump(mode="json")]},
     )
-    for source, event in [
-        ("limitless", "6ab9204c880ed327106dddf4"),
-        ("rk9", "FR002-fiunEHp9wx4mh4"),
-    ]:
+    for source, event in [("limitless", "6ab9204c880ed327106dddf4")]:
         selected = {}
         for url, (meta, body) in docs.items():
             if source == "limitless" and url.startswith(
                 f"https://play.limitlesstcg.com/api/tournaments/{event}/"
             ):
                 key = url.rsplit("/", 1)[1]
-            elif source == "rk9" and url in [
-                f"https://rk9.gg/{p}/{event}" for p in ["tournament", "roster", "pairings"]
-            ]:
-                key = {"tournament": "event", "roster": "roster", "pairings": "pairings"}[
-                    url.split("/")[3]
-                ]
-            elif source == "rk9" and url.startswith(f"https://rk9.gg/teamlist/public/{event}/"):
-                key = "team:" + url.rsplit("/", 1)[1]
-            elif source == "rk9" and url == "https://rk9.gg/robots.txt":
-                key = "robots"
             else:
                 continue
             selected[key] = dict(
@@ -250,6 +200,8 @@ def build(resolved_dir):
     entries = []
     for p in sorted(CAPTURES.glob("*.json")):
         meta = json.loads(p.read_text())
+        if meta["url"].startswith("https://rk9.gg/"):
+            continue
         entries.append(
             dict(
                 metadata_path=f"captures/{p.name}",
@@ -262,12 +214,7 @@ def build(resolved_dir):
         dict(
             captures=entries,
             gaps=[
-                "RK9 robots excludes roster/pairings/public sheets; explicit operator "
-                "scraping authorization is required.",
-                "Only two RK9 public sheets per sample were captured; remaining linked "
-                "sheets are explicitly not captured.",
-                "RK9 masked player IDs and name-only pairings cannot establish "
-                "cross-event player identity.",
+                "Official tournament coverage lacks a permitted source after RK9 was removed.",
                 "M-A and intermediate historical game-data patches are not verified.",
                 "Public sheets do not publish native Stat Points; missing allocations "
                 "stay unknown.",

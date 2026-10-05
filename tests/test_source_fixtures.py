@@ -43,15 +43,21 @@ def test_http_failure_is_evidence_not_a_successful_capture(tmp_path):
         transport=httpx.MockTransport(lambda request: httpx.Response(403, text="Forbidden"))
     )
     path = recorder().capture_public_url(
-        "https://rk9.gg/events", output_dir=tmp_path, client=client
+        "https://play.limitlesstcg.com/api/games", output_dir=tmp_path, client=client
     )
     assert json.loads(path.read_text())["status"] == 403
 
 
 def test_capture_refuses_credentials_and_nonpublic_urls(tmp_path):
-    for url in ["http://127.0.0.1/", "https://user:secret@rk9.gg/events", "file:///etc/passwd"]:
+    client = httpx.Client(transport=httpx.MockTransport(lambda request: httpx.Response(200)))
+    for url in [
+        "http://127.0.0.1/",
+        "https://user:secret@play.limitlesstcg.com/api/games",
+        "https://rk9.gg/events/pokemon",
+        "file:///etc/passwd",
+    ]:
         with pytest.raises(ValueError):
-            recorder().capture_public_url(url, output_dir=tmp_path, client=httpx.Client())
+            recorder().capture_public_url(url, output_dir=tmp_path, client=client)
 
 
 def test_fixture_manifest_hashes_and_origins():

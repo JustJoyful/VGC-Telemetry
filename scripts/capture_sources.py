@@ -16,7 +16,6 @@ import httpx
 PUBLIC_HOSTS = {
     "play.limitlesstcg.com",
     "docs.limitlesstcg.com",
-    "rk9.gg",
     "web-view.app.pokemonchampions.jp",
     "champions-news.pokemon-home.com",
     "champions.pokemon.com",
