@@ -1,5 +1,9 @@
 import importlib
 import importlib.util
+from pathlib import Path
+
+import pytest
+from pydantic import ValidationError
 
 from tests.champions_helpers import admission_data, capture
 
@@ -52,3 +56,17 @@ def test_capture_resource_must_match_source_and_event():
     forged = original.model_copy(update={"documents": original.documents | {"details": doc}})
     result = classify_event(forged, SourceAdmission(**admission_data()))
     assert result.status == "rejected" and result.diagnostics[0].code == "capture_origin_conflict"
+
+
+def test_only_limitless_is_an_admitted_tournament_source():
+    from core.models.champions import SourceCapture
+    from core.source_admission import SourceAdmission, load_admissions
+
+    admissions = load_admissions(Path("core/sources/admission.json"))
+    assert [admission.source for admission in admissions] == ["limitless"]
+    with pytest.raises(ValidationError):
+        SourceAdmission(source="rk9")
+    historical_capture = capture().model_dump(mode="json")
+    historical_capture["source"] = "rk9"
+    with pytest.raises(ValidationError):
+        SourceCapture.model_validate(historical_capture)

@@ -28,24 +28,15 @@ class FormatMapping(StrictModel):
     evidence: list[EvidenceRef] = Field(min_length=1)
 
 
-class EventMapping(FormatMapping):
-    name: str | None = None
-    starts_at: str | None = None
-    division_id: str | None = None
-
-
 class SourceAdmission(StrictModel):
-    source: Literal["limitless", "rk9"]
+    source: Literal["limitless"]
     enabled: bool = False
     verified: bool = False
     adapter_version: str = "2.0.0"
     evidence: list[EvidenceRef] = Field(default_factory=list)
     format_mappings: dict[str, FormatMapping] = Field(default_factory=dict)
-    event_mappings: dict[str, EventMapping] = Field(default_factory=dict)
     event_ids: list[str] = Field(default_factory=list)
-    public_scraping_authorized: bool = False
     max_events: int = Field(default=10, ge=1, le=100)
-    max_team_pages: int = Field(default=1000, ge=0, le=5000)
 
 
 def load_admissions(path: Path) -> list[SourceAdmission]:
@@ -73,20 +64,12 @@ def classify_event(capture: SourceCapture, admission: SourceAdmission) -> EventI
     if capture.source != admission.source or not admission.verified or not admission.evidence:
         return pending("source_unverified", "Source identity mapping is not verified")
     event_id = quote(capture.source_event_id, safe="")
-    if capture.source == "limitless":
-        origins = {
-            key: f"https://play.limitlesstcg.com/api/tournaments/{event_id}/{key}"
-            for key in ("details", "standings", "pairings")
-        }
-    else:
-        origins = {
-            key: f"https://rk9.gg/{path}/{event_id}"
-            for key, path in (
-                ("event", "tournament"),
-                ("roster", "roster"),
-                ("pairings", "pairings"),
-            )
-        }
+    if capture.source != "limitless":
+        return pending("source_unverified", "Source is not admitted")
+    origins = {
+        key: f"https://play.limitlesstcg.com/api/tournaments/{event_id}/{key}"
+        for key in ("details", "standings", "pairings")
+    }
     for key, url in origins.items():
         if key in capture.documents and capture.documents[key].url != url:
             return pending(
@@ -135,31 +118,6 @@ def classify_event(capture: SourceCapture, admission: SourceAdmission) -> EventI
                 entrant_count=details.get("players"),
                 match_formats=sorted({phase["mode"] for phase in phases if phase.get("mode")}),
                 evidence=[document_evidence(capture, "details"), *mapping.evidence],
-            )
-        else:
-            # Mapping requires organizer rules evidence; the logo alone establishes no regulation.
-            mapping = admission.event_mappings.get(capture.source_event_id)
-            if mapping is None:
-                return pending(
-                    "event_rules_unverified", "RK9 event needs sourced game/rules mapping"
-                )
-            doc = capture.documents["event"]
-            if (
-                doc.status != 200
-                or 'src="/static/images/pokemon-vg-champions-300.png"' not in doc.body
-            ):
-                return pending("game_unverified", "Event has no verified Champions game marker")
-            metadata = TournamentMetadataV2(
-                event_id=f"rk9:{capture.source_event_id}",
-                name=mapping.name,
-                starts_at=mapping.starts_at,
-                game_id="pokemon-champions",
-                battle_format=mapping.battle_format,
-                division_id=mapping.division_id,
-                rules_id=mapping.rules_id,
-                catalog_revision=mapping.catalog_revision,
-                game_data_revision=mapping.game_data_revision,
-                evidence=[document_evidence(capture, "event"), *mapping.evidence],
             )
         if metadata.battle_format != "doubles":
             return pending(

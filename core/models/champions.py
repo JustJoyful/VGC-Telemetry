@@ -74,7 +74,7 @@ class CapturedDocument(StrictModel):
 
 
 class SourceCapture(StrictModel):
-    source: Literal["limitless", "rk9"]
+    source: Literal["limitless"]
     source_event_id: Identifier
     fetched_at: AwareDatetime
     adapter_version: Identifier = "2.0.0"
