@@ -46,3 +46,20 @@ def test_handler_ignores_quarantine_prefix_events(s3_bucket, dynamodb_table):
 
     # DynamoDB should have zero items
     assert dynamodb_table.scan()["Count"] == 0
+
+
+def test_quarantine_prefix_does_not_drop_later_records(s3_bucket, dynamodb_table):
+    event = {
+        "Records": [
+            {
+                "s3": {
+                    "bucket": {"name": s3_bucket.name},
+                    "object": {"key": "quarantine/ignored.json"},
+                }
+            },
+            {"s3": {"bucket": {"name": s3_bucket.name}, "object": {"key": "raw/bad.json"}}},
+        ]
+    }
+    s3_bucket.Object("raw/bad.json").put(Body=b"{")
+    result = handle_s3_event(event)
+    assert [r["status"] for r in result["results"]] == ["skipped", "quarantined"]

@@ -1,21 +1,27 @@
 import json
 import logging
+import random as randomness
+import time
 import urllib.parse
 from typing import Any
 
 import boto3
+from botocore.exceptions import BotoCoreError, ClientError
 from pydantic import ValidationError
 
 from db.client import get_dynamodb_table
 from ingestion.parser import parse_tournament_export
 from ingestion.quarantine import quarantine_payload
+from ingestion.retry import BatchFailure, WriteExhausted, retry
 from ingestion.writer import write_tournament_data
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-def handle_s3_event(event: dict[str, Any], context: Any = None) -> dict[str, Any]:
+def handle_s3_event(
+    event: dict[str, Any], context: Any = None, *, sleep=time.sleep, random=randomness.random
+) -> dict[str, Any]:
     """Lambda entry point triggered by S3 ObjectCreated events.
 
     Validates incoming tournament export against Pydantic contract.
@@ -37,18 +43,23 @@ def handle_s3_event(event: dict[str, Any], context: Any = None) -> dict[str, Any
         # Defensive check against recursive trigger loops
         if key.startswith("quarantine/"):
             logger.warning("Ignoring event for quarantine prefix key: %s", key)
-            return {"status": "skipped", "reason": "quarantine_prefix_ignored", "key": key}
+            results.append({"status": "skipped", "reason": "quarantine_prefix_ignored", "key": key})
+            continue
 
         if not key.startswith("raw/"):
             results.append({"status": "skipped", "reason": "non_legacy_prefix", "key": key})
             continue
 
         try:
-            response = s3_client.get_object(Bucket=bucket, Key=key)
+            args = {"Bucket": bucket, "Key": key}
+            if record["s3"]["object"].get("versionId"):
+                args["VersionId"] = record["s3"]["object"]["versionId"]
+            response = retry(lambda: s3_client.get_object(**args), sleep=sleep, random=random)
             raw_bytes = response["Body"].read()
-        except Exception as e:
+        except (ClientError, BotoCoreError) as e:
             logger.error("Failed to read S3 object %s/%s: %s", bucket, key, e)
-            return {"status": "error", "reason": "s3_read_failed", "error": str(e)}
+            results.append({"status": "error", "reason": "s3_read_failed", "error": str(e)})
+            continue
 
         try:
             payload = json.loads(raw_bytes.decode("utf-8"))
@@ -56,25 +67,42 @@ def handle_s3_event(event: dict[str, Any], context: Any = None) -> dict[str, Any
                 results.append({"status": "skipped", "reason": "non_legacy_schema", "key": key})
                 continue
             parsed = parse_tournament_export(payload)
-        except (json.JSONDecodeError, ValidationError, Exception) as e:
+        except (json.JSONDecodeError, UnicodeDecodeError, ValidationError) as e:
             logger.warning("Payload in %s failed contract validation: %s. Quarantining.", key, e)
-            quarantine_key = quarantine_payload(
-                s3_client=s3_client,
-                bucket_name=bucket,
-                source_key=key,
-                raw_content=raw_bytes,
-                error_message=str(e),
-            )
-            return {
-                "status": "quarantined",
-                "key": key,
-                "quarantine_key": quarantine_key,
-                "error": str(e),
-            }
+            validation_message = str(e)
+            try:
+                quarantine_key = retry(
+                    lambda: quarantine_payload(
+                        s3_client=s3_client,
+                        bucket_name=bucket,
+                        source_key=key,
+                        raw_content=raw_bytes,
+                        error_message=validation_message,
+                    ),
+                    sleep=sleep,
+                    random=random,
+                )
+                results.append(
+                    {
+                        "status": "quarantined",
+                        "key": key,
+                        "quarantine_key": quarantine_key,
+                        "error": str(e),
+                    }
+                )
+            except (ClientError, BotoCoreError) as failure:
+                results.append({"status": "error", "key": key, "error": str(failure)})
+            continue
 
         if table is None:
             table = get_dynamodb_table()
-        success = write_tournament_data(table, parsed)
+        try:
+            success = retry(
+                lambda: write_tournament_data(table, parsed), sleep=sleep, random=random
+            )
+        except (ClientError, BotoCoreError, WriteExhausted) as failure:
+            results.append({"status": "error", "key": key, "error": str(failure)})
+            continue
         results.append(
             {
                 "status": "processed" if success else "skipped_duplicate",
@@ -83,6 +111,8 @@ def handle_s3_event(event: dict[str, Any], context: Any = None) -> dict[str, Any
             }
         )
 
+    if any(r["status"] == "error" for r in results):
+        raise BatchFailure(results)
     if len(results) == 1 and results[0].get("reason"):
         return results[0]
     return {"status": "completed", "results": results}

@@ -270,7 +270,7 @@ def test_full_pipeline_e2e(s3_bucket, dynamodb_table, monkeypatch):
         ]
     }
     quarantine_result = handle_s3_event(corrupt_event)
-    assert quarantine_result["status"] == "quarantined"
+    assert quarantine_result["results"][0]["status"] == "quarantined"
 
     # Verify corrupt payload was written to quarantine/
     quarantined_objs = list(s3_bucket.objects.filter(Prefix="quarantine/"))
