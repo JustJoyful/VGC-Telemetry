@@ -13,9 +13,10 @@ def api():
 
 
 class CapturedClient:
-    def __init__(self, source, fail=False):
+    def __init__(self, source, fail=False, fail_on_event=None):
         self.capture = real_inputs(source)[0]
         self.fail = fail
+        self.fail_on_event = fail_on_event
         self.calls = []
 
     def get_tournaments(self, **kwargs):
@@ -25,7 +26,7 @@ class CapturedClient:
         return [{"id": self.capture.source_event_id}]
 
     def capture_tournament(self, event):
-        if self.fail:
+        if self.fail or event == self.fail_on_event:
             raise RuntimeError("Source failed")
         return self.capture
 
@@ -52,48 +53,39 @@ def test_disabled_and_unverified_do_not_collect(s3_bucket):
     assert client.calls == []
 
 
-def test_both_explicitly_admitted_adapters_stage_without_raw_writes(s3_bucket):
-    admissions = [
-        real_inputs(s)[1].model_copy(
-            update={"enabled": True, "event_ids": [real_inputs(s)[0].source_event_id]}
-        )
-        for s in ["limitless", "rk9"]
-    ]
+def test_admitted_limitless_adapter_stages_without_raw_writes(s3_bucket):
+    capture, admission, _ = real_inputs("limitless")
+    admission = admission.model_copy(
+        update={"enabled": True, "event_ids": [capture.source_event_id]}
+    )
     report = api().collect_sources(
-        admissions=admissions,
+        admissions=[admission],
         catalog_index=INDEX,
         s3_client=boto3.client("s3"),
         bucket_name=s3_bucket.name,
-        clients={s: CapturedClient(s) for s in ["limitless", "rk9"]},
+        clients={"limitless": CapturedClient("limitless")},
     )
-    assert all(
-        report.sources[s].captured == 1 and report.sources[s].failed == 0
-        for s in ["limitless", "rk9"]
-    )
+    assert report.sources["limitless"].captured == 1
+    assert report.sources["limitless"].failed == 0
     assert all(obj.key.startswith("staging/v2/") for obj in s3_bucket.objects.all())
-    assert len(list(s3_bucket.objects.all())) == 4
+    assert len(list(s3_bucket.objects.all())) == 2
 
 
 def test_failure_raises_after_independent_valid_work_is_staged(s3_bucket):
-    admissions = [
-        real_inputs(s)[1].model_copy(
-            update={"enabled": True, "event_ids": [real_inputs(s)[0].source_event_id]}
-        )
-        for s in ["limitless", "rk9"]
-    ]
+    capture, admission, _ = real_inputs("limitless")
+    admission = admission.model_copy(
+        update={"enabled": True, "event_ids": [capture.source_event_id, "failed-event"]}
+    )
     with pytest.raises(api().CollectionFailure) as error:
         api().collect_sources(
-            admissions=admissions,
+            admissions=[admission],
             catalog_index=INDEX,
             s3_client=boto3.client("s3"),
             bucket_name=s3_bucket.name,
-            clients={
-                "limitless": CapturedClient("limitless", fail=True),
-                "rk9": CapturedClient("rk9"),
-            },
+            clients={"limitless": CapturedClient("limitless", fail_on_event="failed-event")},
         )
     assert error.value.report.sources["limitless"].failed == 1
-    assert error.value.report.sources["rk9"].captured == 1
+    assert error.value.report.sources["limitless"].captured == 1
     assert len(list(s3_bucket.objects.all())) == 2
 
 

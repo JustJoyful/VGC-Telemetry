@@ -11,7 +11,6 @@ from core.source_admission import SourceAdmission, classify_event
 from ingestion.normalize import normalize_capture
 from ingestion.staging import stage_capture, stage_normalized
 from scraper.limitless_client import LimitlessAPIClient
-from scraper.rk9_scraper import RK9HTMLScraper
 
 
 class SourceReport(StrictModel):
@@ -45,9 +44,7 @@ def collect_sources(
     if len({a.source for a in admissions}) != len(admissions):
         raise ValueError("Duplicate source configuration")
     for a in admissions:
-        if a.enabled and (
-            not a.verified or not a.evidence or not (a.format_mappings or a.event_mappings)
-        ):
+        if a.enabled and (not a.verified or not a.evidence or not a.format_mappings):
             raise ValueError(f"Enabled source lacks verified admission configuration: {a.source}")
     report = CollectionReport()
     supplied = clients or {}
@@ -60,14 +57,7 @@ def collect_sources(
         client = supplied.get(source)
         owns_client = client is None
         if client is None:
-            client = (
-                LimitlessAPIClient()
-                if source == "limitless"
-                else RK9HTMLScraper(
-                    public_scraping_authorized=admission.public_scraping_authorized,
-                    max_team_pages=admission.max_team_pages,
-                )
-            )
+            client = LimitlessAPIClient()
         try:
             try:
                 if admission.event_ids:
@@ -83,8 +73,6 @@ def collect_sources(
                                 raise ValueError("Discovered event has no source ID")
                             if identifier not in ids:
                                 ids.append(identifier)
-                else:
-                    ids = [row["tid"] for row in client.discover_recent_events()]
                 stats.discovered = len(ids)
                 if len(ids) > admission.max_events:
                     stats.diagnostics.append(

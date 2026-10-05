@@ -12,7 +12,6 @@ from core.models.champions import (
 )
 from core.source_admission import SourceAdmission
 from scraper.limitless_normalizer import normalize_limitless_capture
-from scraper.rk9_normalizer import normalize_rk9_capture
 
 
 def normalize_capture(
@@ -20,8 +19,6 @@ def normalize_capture(
 ) -> NormalizationResult:
     if capture.source == "limitless":
         return normalize_limitless_capture(capture, admission, catalog)
-    if capture.source == "rk9":
-        return normalize_rk9_capture(capture, admission, catalog)
     return NormalizationResult(
         admission_status="rejected",
         diagnostics=[

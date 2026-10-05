@@ -8,7 +8,6 @@ import pytest
 
 from scraper.dispatcher import CollectionFailure, CollectionReport, SourceReport, collect_sources
 from scraper.limitless_client import LimitlessAPIClient
-from scraper.rk9_scraper import RK9HTMLScraper
 from tests.source_helpers import INDEX, real_inputs
 
 
@@ -38,22 +37,6 @@ def test_limitless_client_fetch_and_capture():
     standings = json.loads(capture.documents["standings"].body)
     assert standings[0]["player"] == "azelle" and len(standings[0]["decklist"]) == 6
     assert len(json.loads(capture.documents["pairings"].body)) > 0
-
-
-def test_rk9_scraper_discovery():
-    paths = []
-
-    def respond(request):
-        paths.append(request.url.path)
-        if request.url.path == "/robots.txt":
-            return httpx.Response(200, text="User-agent: *\nAllow: /")
-        return httpx.Response(200, text='<a href="/tournament/RK9_100">Champions Open 2026</a>')
-
-    scraper = RK9HTMLScraper(
-        client=httpx.Client(transport=httpx.MockTransport(respond)), crawl_delay=0
-    )
-    assert scraper.discover_recent_events() == [{"tid": "RK9_100", "name": "Champions Open 2026"}]
-    assert "/events/pokemon" in paths
 
 
 def test_scraper_handler_writes_to_staging_prefix(s3_bucket):
