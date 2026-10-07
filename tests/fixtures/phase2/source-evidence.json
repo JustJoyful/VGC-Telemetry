@@ -1,0 +1,23 @@
+[
+  {
+    "metadata_path": "tests/fixtures/sources/captures/948b607c76a30171e21b460b32ca477b8d63353d0be20c3c8c047b994998202b.json",
+    "body_path": "tests/fixtures/sources/captures/948b607c76a30171e21b460b32ca477b8d63353d0be20c3c8c047b994998202b.body",
+    "url": "https://play.limitlesstcg.com/api/tournaments/6abe6180880ed327106e0cf4/details",
+    "sha256": "875a72d221dae45eb1ebd4822c38ecba0efae575dc2404c79f2bc1193742ce0c",
+    "captured_at": "2026-10-03T19:08:52.943538+00:00"
+  },
+  {
+    "metadata_path": "tests/fixtures/sources/captures/37301186e2edb4e8cc70ce220b32539e024e8fa9c6e4b71af6b244fa535a3a5a.json",
+    "body_path": "tests/fixtures/sources/captures/37301186e2edb4e8cc70ce220b32539e024e8fa9c6e4b71af6b244fa535a3a5a.body",
+    "url": "https://play.limitlesstcg.com/api/tournaments/6abe6180880ed327106e0cf4/standings",
+    "sha256": "df6e5622f4811d7957c6a58af4761fac38f9729ac303a4a0f798875589d2a233",
+    "captured_at": "2026-10-03T19:08:53.245011+00:00"
+  },
+  {
+    "metadata_path": "tests/fixtures/sources/captures/53d9300ec98bf0015446cc413b0988aa23ce1854a68f83cbcdcc0af292b83992.json",
+    "body_path": "tests/fixtures/sources/captures/53d9300ec98bf0015446cc413b0988aa23ce1854a68f83cbcdcc0af292b83992.body",
+    "url": "https://play.limitlesstcg.com/api/tournaments/6abe6180880ed327106e0cf4/pairings",
+    "sha256": "05a4742235556c535591c8e24ecdad2f390b8bb5435542441d118522196f32d7",
+    "captured_at": "2026-10-03T19:08:53.546986+00:00"
+  }
+]

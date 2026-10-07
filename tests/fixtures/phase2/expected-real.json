@@ -1,0 +1,24 @@
+{
+  "authority": "Literal cut identities independently checked against raw bracket labels and participants; no production reducers",
+  "metrics": {
+    "paths": ["standings[player in proven T8 leaves].decklist", "standings[player in proven T2 final].decklist"],
+    "gambit_species": {"rillaboom/base": 6, "incineroar/base": 6, "gholdengo/base": 4, "floette/floetteeternal": 2},
+    "nice_species": {"rillaboom/base": 2, "incineroar/base": 2, "gholdengo/base": 2, "floette/floetteeternal": 1},
+    "combined": {"eligible_rosters": 10, "unknown_stat_points": 60, "incineroar_rillaboom_pair": 7, "gholdengo_incineroar_rillaboom_triple": 6},
+    "floette": {"item": "floettite", "nature": "modest", "ability": "flowerveil", "registered_mega": "floettemega", "move": "protect", "gambit_count": 2, "nice_count": 1}
+  },
+  "gambit": {
+    "event_id": "limitless:6ab9204c880ed327106dddf4",
+    "context_rosters": 31,
+    "eligible_complete_rosters": 8,
+    "unknown_stat_points": 48,
+    "participant_ids": ["limitless:azelle", "limitless:giac28", "limitless:happy_hannya", "limitless:imalbe", "limitless:martinb", "limitless:nanamixd", "limitless:nhannq2509", "limitless:wisdomlordraphael"]
+  },
+  "nice": {
+    "event_id": "limitless:6abe6180880ed327106e0cf4",
+    "context_rosters": 6,
+    "eligible_complete_rosters": 2,
+    "unknown_stat_points": 12,
+    "participant_ids": ["limitless:axtheb", "limitless:red5"]
+  }
+}
