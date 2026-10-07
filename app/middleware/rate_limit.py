@@ -112,9 +112,15 @@ class DynamoDBRateLimitMiddleware(BaseHTTPMiddleware):
         allowed, remaining, reset_secs = self.check_rate_limit(client_ip)
 
         if not allowed:
+            from app.v2.errors import error_body, is_v2
+
             return JSONResponse(
                 status_code=429,
-                content={"detail": "Rate limit exceeded. Try again in the next minute."},
+                content=error_body(
+                    request, "rate_limited", "Rate limit exceeded. Try again in the next minute."
+                )
+                if is_v2(request)
+                else {"detail": "Rate limit exceeded. Try again in the next minute."},
                 headers={
                     "Retry-After": str(reset_secs),
                     "X-RateLimit-Limit": str(self.rate_limit),
