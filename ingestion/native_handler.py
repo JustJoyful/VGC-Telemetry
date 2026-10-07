@@ -88,6 +88,9 @@ def handle_native_event(
                 )
                 outcomes.append({"status": "quarantined", "key": ref["key"], "quarantine_key": qk})
                 continue
+            from db.public_inputs import note_public_capture
+
+            run(lambda: note_public_capture(value.order, table=table))
             manifest = run(
                 lambda: stage_revision(
                     build_contributions(value),
@@ -111,6 +114,7 @@ def handle_native_event(
                     expected_revision=current["revision_id"] if current else None,
                     now=clock(),
                     clock=clock,
+                    observation=value,
                 )
             )
             release_lease(held, table=table)
@@ -183,16 +187,26 @@ def handle_native_event(
                 max_steps=max_steps,
             )
             advance_dirty_cursor(table, page)
+            public_published = resume_public(
+                table=table,
+                s3_client=s3_client,
+                owner=owner,
+                clock=clock,
+                run=run,
+                max_steps=max_steps,
+            )
             outcomes.append(
                 {
                     "status": "published"
                     if published
                     and not page.get("LastEvaluatedKey")
                     and not report.cursor
+                    and public_published
                     and not report.deferred
                     and not dirty_work_remaining(table)
                     else "pending",
                     "acknowledged": report.acknowledged,
+                    "public_status": "published" if public_published else "pending",
                 }
             )
         except (ClientError, BotoCoreError) as error:
@@ -206,7 +220,47 @@ def handle_native_event(
             )
     if any(r["status"] == "error" for r in outcomes):
         raise BatchFailure(outcomes)
-    return {"status": "completed", "results": outcomes}
+    return {
+        "status": "pending"
+        if any(r["status"] in ("pending", "pending_order") for r in outcomes)
+        else "completed",
+        "results": outcomes,
+    }
+
+
+def resume_public(*, table, s3_client, owner, clock, run, max_steps):
+    from db.schema_public import public_lease_key, public_state_key
+    from ingestion.public_snapshot import build_public_snapshot, publish_public_snapshot
+
+    state = get(table, public_state_key())
+    if not state or not state.get("dirty"):
+        return True
+    held = None
+    try:
+        held = run(
+            lambda: acquire_lease(
+                table=table, key=public_lease_key(), owner=owner, now=clock(), ttl=60
+            )
+        )
+        result = run(
+            lambda: build_public_snapshot(
+                table=table, s3_client=s3_client, lease=held, clock=clock, max_steps=max_steps
+            )
+        )
+        return result.status == "complete" and run(
+            lambda: publish_public_snapshot(result, table=table, lease=held, clock=clock)
+        )
+    except ClientError as error:
+        if not conditional_failure(error):
+            raise
+        return False
+    finally:
+        if held:
+            try:
+                release_lease(held, table=table)
+            except ClientError as error:
+                if not conditional_failure(error):
+                    raise
 
 
 def resume_generations(populations, *, table, owner, clock, run, max_steps):
