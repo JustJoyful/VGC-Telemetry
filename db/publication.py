@@ -2,9 +2,16 @@
 
 from botocore.exceptions import ClientError
 
-from core.models.publication import Lease, PromotionResult, RevisionManifest
+from core.models.publication import Lease, PromotionResult, RevisionInput, RevisionManifest
 from db.leases import clock_now, elapsed_clock, lease_guard
-from db.schema_v2 import event_key, intent_key, lease_key, population_key, revision_pk
+from db.public_inputs import (
+    PendingPublicOrder,
+    observation_from_metadata,
+    public_input,
+    public_registration_actions,
+)
+from db.schema_public import public_member_key
+from db.schema_v2 import event_key, intent_key, lease_key, native, population_key, revision_pk
 from ingestion.contributions import check_size, query_rows
 
 
@@ -39,6 +46,7 @@ def promote_revision(
     expected_revision: str | None,
     now: int | None = None,
     clock=None,
+    observation: RevisionInput | None = None,
 ) -> PromotionResult:
     clock = clock or (clock_now if now is None else elapsed_clock(now))
     now = clock_now() if now is None else now
@@ -89,6 +97,36 @@ def promote_revision(
             ExpressionAttributeValues={":old": expected_revision, ":order": current["order"]},
         )
     actions = [lease_guard(lease, clock()), {"Put": put}]
+    member = get(table, public_member_key(manifest.event_id))
+    selected_order = pointer["order"]
+    if observation is not None and observation.order == selected_order:
+        selected = public_input(observation)
+        if selected.event_id != manifest.event_id or selected.revision_id != manifest.revision_id:
+            raise ValueError("Observation differs from accepted revision")
+    elif (
+        member
+        and member["order"] == selected_order
+        and member["revision_id"] == manifest.revision_id
+    ):
+        # A pinned selection must not be replaced from mutable historical OBS metadata.
+        from core.models.public_read import PublicInput
+
+        selected = PublicInput(**native({k: v for k, v in member.items() if k not in ("PK", "SK")}))
+    else:
+        obs = get(table, {"PK": pk, "SK": f"OBS#{selected_order}"})
+        if not obs:
+            raise ValueError("Accepted order lacks exact observation metadata")
+        selected = observation_from_metadata(
+            obs["input"], event_id=manifest.event_id, rid=manifest.revision_id, order=selected_order
+        )
+    try:
+        actions.extend(
+            public_registration_actions(selected, current_pointer=current, current_member=member)
+        )
+    except PendingPublicOrder:
+        return PromotionResult(
+            status="pending_order", revision_id=current["revision_id"] if current else None
+        )
     if not duplicate:
         for pop in populations:
             actions.append(
