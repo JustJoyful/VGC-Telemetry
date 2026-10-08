@@ -1,0 +1,1430 @@
+{
+  "catalog_hash": "03bbc7d964276997a33cc823ac14ccc5a379422fb19bb43505a6d1a1b5b3853f",
+  "catalog_revision": "champions-mb-3661ce4",
+  "eligible_registration_ids": [
+    "abomasnow",
+    "absol",
+    "aegislash",
+    "aerodactyl",
+    "aggron",
+    "alakazam",
+    "alcremie",
+    "altaria",
+    "ampharos",
+    "annihilape",
+    "appletun",
+    "araquanid",
+    "arbok",
+    "arcanine",
+    "arcaninehisui",
+    "archaludon",
+    "ariados",
+    "armarouge",
+    "aromatisse",
+    "audino",
+    "aurorus",
+    "avalugg",
+    "avalugghisui",
+    "azumarill",
+    "banette",
+    "barbaracle",
+    "basculegion",
+    "basculegionf",
+    "bastiodon",
+    "beartic",
+    "beedrill",
+    "bellibolt",
+    "blastoise",
+    "blaziken",
+    "camerupt",
+    "castform",
+    "ceruledge",
+    "chandelure",
+    "charizard",
+    "chesnaught",
+    "chimecho",
+    "clawitzer",
+    "clefable",
+    "cofagrigus",
+    "conkeldurr",
+    "corviknight",
+    "crabominable",
+    "decidueye",
+    "decidueyehisui",
+    "dedenne",
+    "delphox",
+    "diggersby",
+    "ditto",
+    "dragalge",
+    "dragapult",
+    "dragonite",
+    "drampa",
+    "eelektross",
+    "emboar",
+    "emolga",
+    "empoleon",
+    "espathra",
+    "espeon",
+    "excadrill",
+    "falinks",
+    "farigiraf",
+    "feraligatr",
+    "flapple",
+    "flareon",
+    "floetteeternal",
+    "florges",
+    "forretress",
+    "froslass",
+    "furfrou",
+    "gallade",
+    "garbodor",
+    "garchomp",
+    "gardevoir",
+    "garganacl",
+    "gengar",
+    "gholdengo",
+    "glaceon",
+    "glalie",
+    "glimmora",
+    "gliscor",
+    "golurk",
+    "goodra",
+    "goodrahisui",
+    "gourgeist",
+    "gourgeistlarge",
+    "gourgeistsmall",
+    "gourgeistsuper",
+    "greninja",
+    "grimmsnarl",
+    "gyarados",
+    "hatterene",
+    "hawlucha",
+    "heliolisk",
+    "heracross",
+    "hippowdon",
+    "houndoom",
+    "houndstone",
+    "hydrapple",
+    "hydreigon",
+    "incineroar",
+    "infernape",
+    "jolteon",
+    "kangaskhan",
+    "kingambit",
+    "kleavor",
+    "klefki",
+    "kommoo",
+    "krookodile",
+    "leafeon",
+    "liepard",
+    "lopunny",
+    "lucario",
+    "luxray",
+    "lycanroc",
+    "lycanrocdusk",
+    "lycanrocmidnight",
+    "machamp",
+    "malamar",
+    "mamoswine",
+    "manectric",
+    "maushold",
+    "mawile",
+    "medicham",
+    "meganium",
+    "meowscarada",
+    "meowstic",
+    "meowsticf",
+    "metagross",
+    "milotic",
+    "mimikyu",
+    "morpeko",
+    "mrrime",
+    "mudsdale",
+    "musharna",
+    "ninetales",
+    "ninetalesalola",
+    "noivern",
+    "oranguru",
+    "orthworm",
+    "overqwil",
+    "palafin",
+    "pangoro",
+    "passimian",
+    "pelipper",
+    "pidgeot",
+    "pikachu",
+    "pinsir",
+    "politoed",
+    "polteageist",
+    "primarina",
+    "pyroar",
+    "quaquaval",
+    "qwilfish",
+    "raichu",
+    "raichualola",
+    "rampardos",
+    "reuniclus",
+    "rhyperior",
+    "roserade",
+    "rotom",
+    "rotomfan",
+    "rotomfrost",
+    "rotomheat",
+    "rotommow",
+    "rotomwash",
+    "runerigus",
+    "sableye",
+    "salazzle",
+    "samurott",
+    "samurotthisui",
+    "sandaconda",
+    "sceptile",
+    "scizor",
+    "scolipede",
+    "scovillain",
+    "scrafty",
+    "serperior",
+    "sharpedo",
+    "simipour",
+    "simisage",
+    "simisear",
+    "sinistcha",
+    "skarmory",
+    "skeledirge",
+    "slowbro",
+    "slowbrogalar",
+    "slowking",
+    "slowkinggalar",
+    "slurpuff",
+    "sneasler",
+    "snorlax",
+    "spiritomb",
+    "staraptor",
+    "starmie",
+    "steelix",
+    "stunfisk",
+    "stunfiskgalar",
+    "swampert",
+    "sylveon",
+    "talonflame",
+    "tauros",
+    "taurospaldeaaqua",
+    "taurospaldeablaze",
+    "taurospaldeacombat",
+    "tinkaton",
+    "torkoal",
+    "torterra",
+    "toucannon",
+    "toxapex",
+    "toxicroak",
+    "trevenant",
+    "tsareena",
+    "typhlosion",
+    "typhlosionhisui",
+    "tyranitar",
+    "tyrantrum",
+    "umbreon",
+    "vanilluxe",
+    "vaporeon",
+    "venusaur",
+    "victreebel",
+    "vileplume",
+    "vivillon",
+    "volcarona",
+    "watchog",
+    "weavile",
+    "whimsicott",
+    "wyrdeer",
+    "zoroark",
+    "zoroarkhisui"
+  ],
+  "evidence": {
+    "captured_at": "2026-10-04T15:23:19.923039+00:00",
+    "content_hash": "8b0c6db8dcd403bb1f5453c1c6f9ac35c80192762219a308c80023375a93d617",
+    "path": "const pokemons[*]",
+    "url": "https://web-view.app.pokemonchampions.jp/battle/pages/events/rs178066986988lmoqpm/en/pokemon.html"
+  },
+  "original_metadata_path": "tests/fixtures/sources/captures/5f5ef9c986605f656332bd4c48e2f54b878a52d8530665216a62435579de639e.json",
+  "pool": {
+    "path": "8b0c6db8dcd403bb1f5453c1c6f9ac35c80192762219a308c80023375a93d617.pool.body",
+    "sha256": "8b0c6db8dcd403bb1f5453c1c6f9ac35c80192762219a308c80023375a93d617"
+  },
+  "resolved_rows": [
+    {
+      "canonical_id": "venusaur",
+      "official_name": "Venusaur",
+      "source_index": 0
+    },
+    {
+      "canonical_id": "charizard",
+      "official_name": "Charizard",
+      "source_index": 1
+    },
+    {
+      "canonical_id": "blastoise",
+      "official_name": "Blastoise",
+      "source_index": 2
+    },
+    {
+      "canonical_id": "beedrill",
+      "official_name": "Beedrill",
+      "source_index": 3
+    },
+    {
+      "canonical_id": "pidgeot",
+      "official_name": "Pidgeot",
+      "source_index": 4
+    },
+    {
+      "canonical_id": "arbok",
+      "official_name": "Arbok",
+      "source_index": 5
+    },
+    {
+      "canonical_id": "pikachu",
+      "official_name": "Pikachu",
+      "source_index": 6
+    },
+    {
+      "canonical_id": "raichu",
+      "official_name": "Raichu",
+      "source_index": 7
+    },
+    {
+      "canonical_id": "raichualola",
+      "official_name": "Raichu (Alolan Form)",
+      "source_index": 8
+    },
+    {
+      "canonical_id": "clefable",
+      "official_name": "Clefable",
+      "source_index": 9
+    },
+    {
+      "canonical_id": "ninetales",
+      "official_name": "Ninetales",
+      "source_index": 10
+    },
+    {
+      "canonical_id": "ninetalesalola",
+      "official_name": "Ninetales (Alolan Form)",
+      "source_index": 11
+    },
+    {
+      "canonical_id": "vileplume",
+      "official_name": "Vileplume",
+      "source_index": 12
+    },
+    {
+      "canonical_id": "arcanine",
+      "official_name": "Arcanine",
+      "source_index": 13
+    },
+    {
+      "canonical_id": "arcaninehisui",
+      "official_name": "Arcanine (Hisuian Form)",
+      "source_index": 14
+    },
+    {
+      "canonical_id": "alakazam",
+      "official_name": "Alakazam",
+      "source_index": 15
+    },
+    {
+      "canonical_id": "machamp",
+      "official_name": "Machamp",
+      "source_index": 16
+    },
+    {
+      "canonical_id": "victreebel",
+      "official_name": "Victreebel",
+      "source_index": 17
+    },
+    {
+      "canonical_id": "slowbro",
+      "official_name": "Slowbro",
+      "source_index": 18
+    },
+    {
+      "canonical_id": "slowbrogalar",
+      "official_name": "Slowbro (Galarian Form)",
+      "source_index": 19
+    },
+    {
+      "canonical_id": "gengar",
+      "official_name": "Gengar",
+      "source_index": 20
+    },
+    {
+      "canonical_id": "kangaskhan",
+      "official_name": "Kangaskhan",
+      "source_index": 21
+    },
+    {
+      "canonical_id": "starmie",
+      "official_name": "Starmie",
+      "source_index": 22
+    },
+    {
+      "canonical_id": "pinsir",
+      "official_name": "Pinsir",
+      "source_index": 23
+    },
+    {
+      "canonical_id": "tauros",
+      "official_name": "Tauros",
+      "source_index": 24
+    },
+    {
+      "canonical_id": "taurospaldeacombat",
+      "official_name": "Tauros (Paldean Form (Combat Breed))",
+      "source_index": 25
+    },
+    {
+      "canonical_id": "taurospaldeablaze",
+      "official_name": "Tauros (Paldean Form (Blaze Breed))",
+      "source_index": 26
+    },
+    {
+      "canonical_id": "taurospaldeaaqua",
+      "official_name": "Tauros (Paldean Form (Aqua Breed))",
+      "source_index": 27
+    },
+    {
+      "canonical_id": "gyarados",
+      "official_name": "Gyarados",
+      "source_index": 28
+    },
+    {
+      "canonical_id": "ditto",
+      "official_name": "Ditto",
+      "source_index": 29
+    },
+    {
+      "canonical_id": "vaporeon",
+      "official_name": "Vaporeon",
+      "source_index": 30
+    },
+    {
+      "canonical_id": "jolteon",
+      "official_name": "Jolteon",
+      "source_index": 31
+    },
+    {
+      "canonical_id": "flareon",
+      "official_name": "Flareon",
+      "source_index": 32
+    },
+    {
+      "canonical_id": "aerodactyl",
+      "official_name": "Aerodactyl",
+      "source_index": 33
+    },
+    {
+      "canonical_id": "snorlax",
+      "official_name": "Snorlax",
+      "source_index": 34
+    },
+    {
+      "canonical_id": "dragonite",
+      "official_name": "Dragonite",
+      "source_index": 35
+    },
+    {
+      "canonical_id": "meganium",
+      "official_name": "Meganium",
+      "source_index": 36
+    },
+    {
+      "canonical_id": "typhlosion",
+      "official_name": "Typhlosion",
+      "source_index": 37
+    },
+    {
+      "canonical_id": "typhlosionhisui",
+      "official_name": "Typhlosion (Hisuian Form)",
+      "source_index": 38
+    },
+    {
+      "canonical_id": "feraligatr",
+      "official_name": "Feraligatr",
+      "source_index": 39
+    },
+    {
+      "canonical_id": "ariados",
+      "official_name": "Ariados",
+      "source_index": 40
+    },
+    {
+      "canonical_id": "ampharos",
+      "official_name": "Ampharos",
+      "source_index": 41
+    },
+    {
+      "canonical_id": "azumarill",
+      "official_name": "Azumarill",
+      "source_index": 42
+    },
+    {
+      "canonical_id": "politoed",
+      "official_name": "Politoed",
+      "source_index": 43
+    },
+    {
+      "canonical_id": "espeon",
+      "official_name": "Espeon",
+      "source_index": 44
+    },
+    {
+      "canonical_id": "umbreon",
+      "official_name": "Umbreon",
+      "source_index": 45
+    },
+    {
+      "canonical_id": "slowking",
+      "official_name": "Slowking",
+      "source_index": 46
+    },
+    {
+      "canonical_id": "slowkinggalar",
+      "official_name": "Slowking (Galarian Form)",
+      "source_index": 47
+    },
+    {
+      "canonical_id": "forretress",
+      "official_name": "Forretress",
+      "source_index": 48
+    },
+    {
+      "canonical_id": "steelix",
+      "official_name": "Steelix",
+      "source_index": 49
+    },
+    {
+      "canonical_id": "qwilfish",
+      "official_name": "Qwilfish",
+      "source_index": 50
+    },
+    {
+      "canonical_id": "scizor",
+      "official_name": "Scizor",
+      "source_index": 51
+    },
+    {
+      "canonical_id": "heracross",
+      "official_name": "Heracross",
+      "source_index": 52
+    },
+    {
+      "canonical_id": "skarmory",
+      "official_name": "Skarmory",
+      "source_index": 53
+    },
+    {
+      "canonical_id": "houndoom",
+      "official_name": "Houndoom",
+      "source_index": 54
+    },
+    {
+      "canonical_id": "tyranitar",
+      "official_name": "Tyranitar",
+      "source_index": 55
+    },
+    {
+      "canonical_id": "sceptile",
+      "official_name": "Sceptile",
+      "source_index": 56
+    },
+    {
+      "canonical_id": "blaziken",
+      "official_name": "Blaziken",
+      "source_index": 57
+    },
+    {
+      "canonical_id": "swampert",
+      "official_name": "Swampert",
+      "source_index": 58
+    },
+    {
+      "canonical_id": "pelipper",
+      "official_name": "Pelipper",
+      "source_index": 59
+    },
+    {
+      "canonical_id": "gardevoir",
+      "official_name": "Gardevoir",
+      "source_index": 60
+    },
+    {
+      "canonical_id": "sableye",
+      "official_name": "Sableye",
+      "source_index": 61
+    },
+    {
+      "canonical_id": "mawile",
+      "official_name": "Mawile",
+      "source_index": 62
+    },
+    {
+      "canonical_id": "aggron",
+      "official_name": "Aggron",
+      "source_index": 63
+    },
+    {
+      "canonical_id": "medicham",
+      "official_name": "Medicham",
+      "source_index": 64
+    },
+    {
+      "canonical_id": "manectric",
+      "official_name": "Manectric",
+      "source_index": 65
+    },
+    {
+      "canonical_id": "sharpedo",
+      "official_name": "Sharpedo",
+      "source_index": 66
+    },
+    {
+      "canonical_id": "camerupt",
+      "official_name": "Camerupt",
+      "source_index": 67
+    },
+    {
+      "canonical_id": "torkoal",
+      "official_name": "Torkoal",
+      "source_index": 68
+    },
+    {
+      "canonical_id": "altaria",
+      "official_name": "Altaria",
+      "source_index": 69
+    },
+    {
+      "canonical_id": "milotic",
+      "official_name": "Milotic",
+      "source_index": 70
+    },
+    {
+      "canonical_id": "castform",
+      "official_name": "Castform",
+      "source_index": 71
+    },
+    {
+      "canonical_id": "banette",
+      "official_name": "Banette",
+      "source_index": 72
+    },
+    {
+      "canonical_id": "chimecho",
+      "official_name": "Chimecho",
+      "source_index": 73
+    },
+    {
+      "canonical_id": "absol",
+      "official_name": "Absol",
+      "source_index": 74
+    },
+    {
+      "canonical_id": "glalie",
+      "official_name": "Glalie",
+      "source_index": 75
+    },
+    {
+      "canonical_id": "metagross",
+      "official_name": "Metagross",
+      "source_index": 76
+    },
+    {
+      "canonical_id": "torterra",
+      "official_name": "Torterra",
+      "source_index": 77
+    },
+    {
+      "canonical_id": "infernape",
+      "official_name": "Infernape",
+      "source_index": 78
+    },
+    {
+      "canonical_id": "empoleon",
+      "official_name": "Empoleon",
+      "source_index": 79
+    },
+    {
+      "canonical_id": "staraptor",
+      "official_name": "Staraptor",
+      "source_index": 80
+    },
+    {
+      "canonical_id": "luxray",
+      "official_name": "Luxray",
+      "source_index": 81
+    },
+    {
+      "canonical_id": "roserade",
+      "official_name": "Roserade",
+      "source_index": 82
+    },
+    {
+      "canonical_id": "rampardos",
+      "official_name": "Rampardos",
+      "source_index": 83
+    },
+    {
+      "canonical_id": "bastiodon",
+      "official_name": "Bastiodon",
+      "source_index": 84
+    },
+    {
+      "canonical_id": "lopunny",
+      "official_name": "Lopunny",
+      "source_index": 85
+    },
+    {
+      "canonical_id": "spiritomb",
+      "official_name": "Spiritomb",
+      "source_index": 86
+    },
+    {
+      "canonical_id": "garchomp",
+      "official_name": "Garchomp",
+      "source_index": 87
+    },
+    {
+      "canonical_id": "lucario",
+      "official_name": "Lucario",
+      "source_index": 88
+    },
+    {
+      "canonical_id": "hippowdon",
+      "official_name": "Hippowdon",
+      "source_index": 89
+    },
+    {
+      "canonical_id": "toxicroak",
+      "official_name": "Toxicroak",
+      "source_index": 90
+    },
+    {
+      "canonical_id": "abomasnow",
+      "official_name": "Abomasnow",
+      "source_index": 91
+    },
+    {
+      "canonical_id": "weavile",
+      "official_name": "Weavile",
+      "source_index": 92
+    },
+    {
+      "canonical_id": "rhyperior",
+      "official_name": "Rhyperior",
+      "source_index": 93
+    },
+    {
+      "canonical_id": "leafeon",
+      "official_name": "Leafeon",
+      "source_index": 94
+    },
+    {
+      "canonical_id": "glaceon",
+      "official_name": "Glaceon",
+      "source_index": 95
+    },
+    {
+      "canonical_id": "gliscor",
+      "official_name": "Gliscor",
+      "source_index": 96
+    },
+    {
+      "canonical_id": "mamoswine",
+      "official_name": "Mamoswine",
+      "source_index": 97
+    },
+    {
+      "canonical_id": "gallade",
+      "official_name": "Gallade",
+      "source_index": 98
+    },
+    {
+      "canonical_id": "froslass",
+      "official_name": "Froslass",
+      "source_index": 99
+    },
+    {
+      "canonical_id": "rotom",
+      "official_name": "Rotom (Rotom)",
+      "source_index": 100
+    },
+    {
+      "canonical_id": "rotomheat",
+      "official_name": "Rotom (Heat Rotom)",
+      "source_index": 101
+    },
+    {
+      "canonical_id": "rotomwash",
+      "official_name": "Rotom (Wash Rotom)",
+      "source_index": 102
+    },
+    {
+      "canonical_id": "rotomfrost",
+      "official_name": "Rotom (Frost Rotom)",
+      "source_index": 103
+    },
+    {
+      "canonical_id": "rotomfan",
+      "official_name": "Rotom (Fan Rotom)",
+      "source_index": 104
+    },
+    {
+      "canonical_id": "rotommow",
+      "official_name": "Rotom (Mow Rotom)",
+      "source_index": 105
+    },
+    {
+      "canonical_id": "serperior",
+      "official_name": "Serperior",
+      "source_index": 106
+    },
+    {
+      "canonical_id": "emboar",
+      "official_name": "Emboar",
+      "source_index": 107
+    },
+    {
+      "canonical_id": "samurott",
+      "official_name": "Samurott",
+      "source_index": 108
+    },
+    {
+      "canonical_id": "samurotthisui",
+      "official_name": "Samurott (Hisuian Form)",
+      "source_index": 109
+    },
+    {
+      "canonical_id": "watchog",
+      "official_name": "Watchog",
+      "source_index": 110
+    },
+    {
+      "canonical_id": "liepard",
+      "official_name": "Liepard",
+      "source_index": 111
+    },
+    {
+      "canonical_id": "simisage",
+      "official_name": "Simisage",
+      "source_index": 112
+    },
+    {
+      "canonical_id": "simisear",
+      "official_name": "Simisear",
+      "source_index": 113
+    },
+    {
+      "canonical_id": "simipour",
+      "official_name": "Simipour",
+      "source_index": 114
+    },
+    {
+      "canonical_id": "musharna",
+      "official_name": "Musharna",
+      "source_index": 115
+    },
+    {
+      "canonical_id": "excadrill",
+      "official_name": "Excadrill",
+      "source_index": 116
+    },
+    {
+      "canonical_id": "audino",
+      "official_name": "Audino",
+      "source_index": 117
+    },
+    {
+      "canonical_id": "conkeldurr",
+      "official_name": "Conkeldurr",
+      "source_index": 118
+    },
+    {
+      "canonical_id": "scolipede",
+      "official_name": "Scolipede",
+      "source_index": 119
+    },
+    {
+      "canonical_id": "whimsicott",
+      "official_name": "Whimsicott",
+      "source_index": 120
+    },
+    {
+      "canonical_id": "krookodile",
+      "official_name": "Krookodile",
+      "source_index": 121
+    },
+    {
+      "canonical_id": "scrafty",
+      "official_name": "Scrafty",
+      "source_index": 122
+    },
+    {
+      "canonical_id": "cofagrigus",
+      "official_name": "Cofagrigus",
+      "source_index": 123
+    },
+    {
+      "canonical_id": "garbodor",
+      "official_name": "Garbodor",
+      "source_index": 124
+    },
+    {
+      "canonical_id": "zoroark",
+      "official_name": "Zoroark",
+      "source_index": 125
+    },
+    {
+      "canonical_id": "zoroarkhisui",
+      "official_name": "Zoroark (Hisuian Form)",
+      "source_index": 126
+    },
+    {
+      "canonical_id": "reuniclus",
+      "official_name": "Reuniclus",
+      "source_index": 127
+    },
+    {
+      "canonical_id": "vanilluxe",
+      "official_name": "Vanilluxe",
+      "source_index": 128
+    },
+    {
+      "canonical_id": "emolga",
+      "official_name": "Emolga",
+      "source_index": 129
+    },
+    {
+      "canonical_id": "eelektross",
+      "official_name": "Eelektross",
+      "source_index": 130
+    },
+    {
+      "canonical_id": "chandelure",
+      "official_name": "Chandelure",
+      "source_index": 131
+    },
+    {
+      "canonical_id": "beartic",
+      "official_name": "Beartic",
+      "source_index": 132
+    },
+    {
+      "canonical_id": "stunfisk",
+      "official_name": "Stunfisk",
+      "source_index": 133
+    },
+    {
+      "canonical_id": "stunfiskgalar",
+      "official_name": "Stunfisk (Galarian Form)",
+      "source_index": 134
+    },
+    {
+      "canonical_id": "golurk",
+      "official_name": "Golurk",
+      "source_index": 135
+    },
+    {
+      "canonical_id": "hydreigon",
+      "official_name": "Hydreigon",
+      "source_index": 136
+    },
+    {
+      "canonical_id": "volcarona",
+      "official_name": "Volcarona",
+      "source_index": 137
+    },
+    {
+      "canonical_id": "chesnaught",
+      "official_name": "Chesnaught",
+      "source_index": 138
+    },
+    {
+      "canonical_id": "delphox",
+      "official_name": "Delphox",
+      "source_index": 139
+    },
+    {
+      "canonical_id": "greninja",
+      "official_name": "Greninja",
+      "source_index": 140
+    },
+    {
+      "canonical_id": "diggersby",
+      "official_name": "Diggersby",
+      "source_index": 141
+    },
+    {
+      "canonical_id": "talonflame",
+      "official_name": "Talonflame",
+      "source_index": 142
+    },
+    {
+      "canonical_id": "vivillon",
+      "official_name": "Vivillon",
+      "source_index": 143
+    },
+    {
+      "canonical_id": "pyroar",
+      "official_name": "Pyroar",
+      "source_index": 144
+    },
+    {
+      "canonical_id": "floetteeternal",
+      "official_name": "Floette",
+      "source_index": 145
+    },
+    {
+      "canonical_id": "florges",
+      "official_name": "Florges",
+      "source_index": 146
+    },
+    {
+      "canonical_id": "pangoro",
+      "official_name": "Pangoro",
+      "source_index": 147
+    },
+    {
+      "canonical_id": "furfrou",
+      "official_name": "Furfrou",
+      "source_index": 148
+    },
+    {
+      "canonical_id": "meowstic",
+      "official_name": "Meowstic (Male)",
+      "source_index": 149
+    },
+    {
+      "canonical_id": "meowsticf",
+      "official_name": "Meowstic (Female)",
+      "source_index": 150
+    },
+    {
+      "canonical_id": "aegislash",
+      "official_name": "Aegislash",
+      "source_index": 151
+    },
+    {
+      "canonical_id": "aromatisse",
+      "official_name": "Aromatisse",
+      "source_index": 152
+    },
+    {
+      "canonical_id": "slurpuff",
+      "official_name": "Slurpuff",
+      "source_index": 153
+    },
+    {
+      "canonical_id": "malamar",
+      "official_name": "Malamar",
+      "source_index": 154
+    },
+    {
+      "canonical_id": "barbaracle",
+      "official_name": "Barbaracle",
+      "source_index": 155
+    },
+    {
+      "canonical_id": "dragalge",
+      "official_name": "Dragalge",
+      "source_index": 156
+    },
+    {
+      "canonical_id": "clawitzer",
+      "official_name": "Clawitzer",
+      "source_index": 157
+    },
+    {
+      "canonical_id": "heliolisk",
+      "official_name": "Heliolisk",
+      "source_index": 158
+    },
+    {
+      "canonical_id": "tyrantrum",
+      "official_name": "Tyrantrum",
+      "source_index": 159
+    },
+    {
+      "canonical_id": "aurorus",
+      "official_name": "Aurorus",
+      "source_index": 160
+    },
+    {
+      "canonical_id": "sylveon",
+      "official_name": "Sylveon",
+      "source_index": 161
+    },
+    {
+      "canonical_id": "hawlucha",
+      "official_name": "Hawlucha",
+      "source_index": 162
+    },
+    {
+      "canonical_id": "dedenne",
+      "official_name": "Dedenne",
+      "source_index": 163
+    },
+    {
+      "canonical_id": "goodra",
+      "official_name": "Goodra",
+      "source_index": 164
+    },
+    {
+      "canonical_id": "goodrahisui",
+      "official_name": "Goodra (Hisuian Form)",
+      "source_index": 165
+    },
+    {
+      "canonical_id": "klefki",
+      "official_name": "Klefki",
+      "source_index": 166
+    },
+    {
+      "canonical_id": "trevenant",
+      "official_name": "Trevenant",
+      "source_index": 167
+    },
+    {
+      "canonical_id": "gourgeist",
+      "official_name": "Gourgeist (Medium Variety)",
+      "source_index": 168
+    },
+    {
+      "canonical_id": "gourgeistsmall",
+      "official_name": "Gourgeist (Small Variety)",
+      "source_index": 169
+    },
+    {
+      "canonical_id": "gourgeistlarge",
+      "official_name": "Gourgeist (Large Variety)",
+      "source_index": 170
+    },
+    {
+      "canonical_id": "gourgeistsuper",
+      "official_name": "Gourgeist (Jumbo Variety)",
+      "source_index": 171
+    },
+    {
+      "canonical_id": "avalugg",
+      "official_name": "Avalugg",
+      "source_index": 172
+    },
+    {
+      "canonical_id": "avalugghisui",
+      "official_name": "Avalugg (Hisuian Form)",
+      "source_index": 173
+    },
+    {
+      "canonical_id": "noivern",
+      "official_name": "Noivern",
+      "source_index": 174
+    },
+    {
+      "canonical_id": "decidueye",
+      "official_name": "Decidueye",
+      "source_index": 175
+    },
+    {
+      "canonical_id": "decidueyehisui",
+      "official_name": "Decidueye (Hisuian Form)",
+      "source_index": 176
+    },
+    {
+      "canonical_id": "incineroar",
+      "official_name": "Incineroar",
+      "source_index": 177
+    },
+    {
+      "canonical_id": "primarina",
+      "official_name": "Primarina",
+      "source_index": 178
+    },
+    {
+      "canonical_id": "toucannon",
+      "official_name": "Toucannon",
+      "source_index": 179
+    },
+    {
+      "canonical_id": "crabominable",
+      "official_name": "Crabominable",
+      "source_index": 180
+    },
+    {
+      "canonical_id": "lycanroc",
+      "official_name": "Lycanroc (Midday Form)",
+      "source_index": 181
+    },
+    {
+      "canonical_id": "lycanrocmidnight",
+      "official_name": "Lycanroc (Midnight Form)",
+      "source_index": 182
+    },
+    {
+      "canonical_id": "lycanrocdusk",
+      "official_name": "Lycanroc (Dusk Form)",
+      "source_index": 183
+    },
+    {
+      "canonical_id": "toxapex",
+      "official_name": "Toxapex",
+      "source_index": 184
+    },
+    {
+      "canonical_id": "mudsdale",
+      "official_name": "Mudsdale",
+      "source_index": 185
+    },
+    {
+      "canonical_id": "araquanid",
+      "official_name": "Araquanid",
+      "source_index": 186
+    },
+    {
+      "canonical_id": "salazzle",
+      "official_name": "Salazzle",
+      "source_index": 187
+    },
+    {
+      "canonical_id": "tsareena",
+      "official_name": "Tsareena",
+      "source_index": 188
+    },
+    {
+      "canonical_id": "oranguru",
+      "official_name": "Oranguru",
+      "source_index": 189
+    },
+    {
+      "canonical_id": "passimian",
+      "official_name": "Passimian",
+      "source_index": 190
+    },
+    {
+      "canonical_id": "mimikyu",
+      "official_name": "Mimikyu",
+      "source_index": 191
+    },
+    {
+      "canonical_id": "drampa",
+      "official_name": "Drampa",
+      "source_index": 192
+    },
+    {
+      "canonical_id": "kommoo",
+      "official_name": "Kommo-o",
+      "source_index": 193
+    },
+    {
+      "canonical_id": "corviknight",
+      "official_name": "Corviknight",
+      "source_index": 194
+    },
+    {
+      "canonical_id": "flapple",
+      "official_name": "Flapple",
+      "source_index": 195
+    },
+    {
+      "canonical_id": "appletun",
+      "official_name": "Appletun",
+      "source_index": 196
+    },
+    {
+      "canonical_id": "sandaconda",
+      "official_name": "Sandaconda",
+      "source_index": 197
+    },
+    {
+      "canonical_id": "polteageist",
+      "official_name": "Polteageist",
+      "source_index": 198
+    },
+    {
+      "canonical_id": "hatterene",
+      "official_name": "Hatterene",
+      "source_index": 199
+    },
+    {
+      "canonical_id": "grimmsnarl",
+      "official_name": "Grimmsnarl",
+      "source_index": 200
+    },
+    {
+      "canonical_id": "mrrime",
+      "official_name": "Mr. Rime",
+      "source_index": 201
+    },
+    {
+      "canonical_id": "runerigus",
+      "official_name": "Runerigus",
+      "source_index": 202
+    },
+    {
+      "canonical_id": "alcremie",
+      "official_name": "Alcremie",
+      "source_index": 203
+    },
+    {
+      "canonical_id": "falinks",
+      "official_name": "Falinks",
+      "source_index": 204
+    },
+    {
+      "canonical_id": "morpeko",
+      "official_name": "Morpeko",
+      "source_index": 205
+    },
+    {
+      "canonical_id": "dragapult",
+      "official_name": "Dragapult",
+      "source_index": 206
+    },
+    {
+      "canonical_id": "wyrdeer",
+      "official_name": "Wyrdeer",
+      "source_index": 207
+    },
+    {
+      "canonical_id": "kleavor",
+      "official_name": "Kleavor",
+      "source_index": 208
+    },
+    {
+      "canonical_id": "basculegion",
+      "official_name": "Basculegion (Male)",
+      "source_index": 209
+    },
+    {
+      "canonical_id": "basculegionf",
+      "official_name": "Basculegion (Female)",
+      "source_index": 210
+    },
+    {
+      "canonical_id": "sneasler",
+      "official_name": "Sneasler",
+      "source_index": 211
+    },
+    {
+      "canonical_id": "overqwil",
+      "official_name": "Overqwil",
+      "source_index": 212
+    },
+    {
+      "canonical_id": "meowscarada",
+      "official_name": "Meowscarada",
+      "source_index": 213
+    },
+    {
+      "canonical_id": "skeledirge",
+      "official_name": "Skeledirge",
+      "source_index": 214
+    },
+    {
+      "canonical_id": "quaquaval",
+      "official_name": "Quaquaval",
+      "source_index": 215
+    },
+    {
+      "canonical_id": "maushold",
+      "official_name": "Maushold",
+      "source_index": 216
+    },
+    {
+      "canonical_id": "garganacl",
+      "official_name": "Garganacl",
+      "source_index": 217
+    },
+    {
+      "canonical_id": "armarouge",
+      "official_name": "Armarouge",
+      "source_index": 218
+    },
+    {
+      "canonical_id": "ceruledge",
+      "official_name": "Ceruledge",
+      "source_index": 219
+    },
+    {
+      "canonical_id": "bellibolt",
+      "official_name": "Bellibolt",
+      "source_index": 220
+    },
+    {
+      "canonical_id": "scovillain",
+      "official_name": "Scovillain",
+      "source_index": 221
+    },
+    {
+      "canonical_id": "espathra",
+      "official_name": "Espathra",
+      "source_index": 222
+    },
+    {
+      "canonical_id": "tinkaton",
+      "official_name": "Tinkaton",
+      "source_index": 223
+    },
+    {
+      "canonical_id": "palafin",
+      "official_name": "Palafin",
+      "source_index": 224
+    },
+    {
+      "canonical_id": "orthworm",
+      "official_name": "Orthworm",
+      "source_index": 225
+    },
+    {
+      "canonical_id": "glimmora",
+      "official_name": "Glimmora",
+      "source_index": 226
+    },
+    {
+      "canonical_id": "houndstone",
+      "official_name": "Houndstone",
+      "source_index": 227
+    },
+    {
+      "canonical_id": "annihilape",
+      "official_name": "Annihilape",
+      "source_index": 228
+    },
+    {
+      "canonical_id": "farigiraf",
+      "official_name": "Farigiraf",
+      "source_index": 229
+    },
+    {
+      "canonical_id": "kingambit",
+      "official_name": "Kingambit",
+      "source_index": 230
+    },
+    {
+      "canonical_id": "gholdengo",
+      "official_name": "Gholdengo",
+      "source_index": 231
+    },
+    {
+      "canonical_id": "sinistcha",
+      "official_name": "Sinistcha",
+      "source_index": 232
+    },
+    {
+      "canonical_id": "archaludon",
+      "official_name": "Archaludon",
+      "source_index": 233
+    },
+    {
+      "canonical_id": "hydrapple",
+      "official_name": "Hydrapple",
+      "source_index": 234
+    }
+  ],
+  "source_row_count": 235
+}

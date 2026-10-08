@@ -1,0 +1,22 @@
+{
+  "eligibility": {
+    "champions-mb-3661ce4": {
+      "path": "ca78cee844cbd13795247a05eab9d4780ea3e36eb5d83dd42e589deed1509bd8.eligibility.json",
+      "sha256": "ca78cee844cbd13795247a05eab9d4780ea3e36eb5d83dd42e589deed1509bd8"
+    },
+    "champions-mc-3661ce4": {
+      "path": "153f8ef44eeeccea2a9d5c07adb22cb03d06b4826f18db61c7c1212674662909.eligibility.json",
+      "sha256": "153f8ef44eeeccea2a9d5c07adb22cb03d06b4826f18db61c7c1212674662909"
+    }
+  },
+  "index": {
+    "path": "ffd238f69d14ede794358fb24d8a691144a0f594d03a6122081736438a1c0aab.index.json",
+    "sha256": "ffd238f69d14ede794358fb24d8a691144a0f594d03a6122081736438a1c0aab"
+  },
+  "license": {
+    "path": "b2002a9fd52ba8db3783a05fbdebfb09c34fd09513b90f6b390a2c0dfbc93ed0.license.txt",
+    "sha256": "b2002a9fd52ba8db3783a05fbdebfb09c34fd09513b90f6b390a2c0dfbc93ed0"
+  },
+  "original_index_hash": "0cbaf4125d66703f2dfa4f307d4fd369b9d12090ef60fd809c1cd6d7e2192f41",
+  "schema": "public-reference-v1"
+}
