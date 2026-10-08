@@ -1,0 +1,27 @@
+{
+  "authority": "Literal expectations independently checked in retained bracket leaves and eligible raw decklist slots; no production reducer generated these values.",
+  "context": 37,
+  "cut_participants": 10,
+  "eligible_complete_rosters": 10,
+  "unknown_stat_points": 60,
+  "queries": [
+    {"route": "/v2/meta", "params": {"species_id": "rillaboom"}, "identity": "rillaboom/base", "count": 8, "denominator": 10},
+    {"route": "/v2/meta", "params": {"species_id": "floette", "form_id": "floetteeternal"}, "identity": "floette/floetteeternal", "count": 3, "denominator": 10},
+    {"route": "/v2/meta", "params": {"metric": "item", "species_id": "floette", "form_id": "floetteeternal"}, "identity": "floette/floetteeternal", "value": "floettite", "count": 3, "denominator": 3},
+    {"route": "/v2/meta", "params": {"metric": "registered_mega", "species_id": "floette", "form_id": "floetteeternal"}, "identity": "floette/floetteeternal", "value": "floettemega", "count": 3, "denominator": 3},
+    {"route": "/v2/cores", "params": {"size": 2}, "identity": "incineroar/base+rillaboom/base", "count": 7, "denominator": 10},
+    {"route": "/v2/cores", "params": {"size": 3}, "identity": "gholdengo/base+incineroar/base+rillaboom/base", "count": 6, "denominator": 10}
+  ],
+  "team_ids": [
+    "limitless:6ab9204c880ed327106dddf4:azelle",
+    "limitless:6ab9204c880ed327106dddf4:giac28",
+    "limitless:6ab9204c880ed327106dddf4:happy_hannya",
+    "limitless:6ab9204c880ed327106dddf4:imalbe",
+    "limitless:6ab9204c880ed327106dddf4:martinb",
+    "limitless:6ab9204c880ed327106dddf4:nanamixd",
+    "limitless:6ab9204c880ed327106dddf4:nhannq2509",
+    "limitless:6ab9204c880ed327106dddf4:wisdomlordraphael",
+    "limitless:6abe6180880ed327106e0cf4:axtheb",
+    "limitless:6abe6180880ed327106e0cf4:red5"
+  ]
+}
