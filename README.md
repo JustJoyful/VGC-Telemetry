@@ -4,7 +4,7 @@ A REST API project for **Pokémon Champions tournament analysis**: registered te
 
 ## Project status
 
-The repository contains a working prototype and offline tests, not a verified production data service. Existing `/v1` routes serve tournament teams, player history, and species/move/ability/legacy-spread/partner counts. Phase 0 adds verified real-source fixtures, native/partial contracts, M-C/M-B catalogs, and isolated previews. Phase 1 adds isolated revision and generation publication with offline replay proof. Automatic catalog updates remain pending.
+Phase 2 now implements the bounded `/v2` read API, manual public snapshot replay, and a version-pinned reference projection. Its evidence is offline: two retained Limitless events, mocked AWS, and test results recorded below and in MEMORY.md. This does not establish live AWS capacity, IAM, scheduled source freshness, or deployment readiness. Existing `/v1` routes and stored legacy EV units remain unchanged.
 
 The target `/v2` API reliably serves verified Limitless Pokémon Champions VGC top-cut tournament data, preserves historical regulations, and reports provenance, sample coverage, and freshness. Limitless is the only initial tournament source. Ranked ladder feeds and brittle or mismatched sources are out of scope. RK9 is excluded because its published Terms prohibit automated screen scraping.
 
@@ -35,7 +35,7 @@ uv run pytest -v
 uv run uvicorn app.main:app --reload
 ```
 
-Visit `/docs` for the current OpenAPI interface. Data endpoints require configured DynamoDB access; tests use mocked AWS resources. Environment settings include `AWS_DEFAULT_REGION`, `DYNAMODB_TABLE_NAME`, `S3_RAW_BUCKET_NAME`, and the current prototype's `ACTIVE_REGULATION`. Do not commit credentials.
+Visit `/docs` for the OpenAPI interface. Data endpoints require configured DynamoDB access; tests use mocked AWS resources. Native operation uses `AWS_DEFAULT_REGION`, `DYNAMODB_TABLE_NAME`, `S3_RAW_BUCKET_NAME`, `V2_CURSOR_SECRET` (at least 32 random bytes), and `V2_DEFAULT_CATALOG_REVISION` (bundled default: `champions-mc-3661ce4`). Do not commit credentials. `/v1` units are not migrated by `/v2`.
 
 ```bash
 uv run pytest -v --cov=core --cov=db --cov=app --cov=ingestion --cov=scraper
@@ -128,3 +128,66 @@ indefinitely; no cleanup or TTL is enabled. Readers pin a complete generation ID
 previous complete generations stay readable. Automated expiration requires a reviewed
 retention policy that protects publication pointers, active builds, and reader windows.
 Offline Moto checks establish logic, not AWS throughput, permissions, or deployment.
+
+## Phase 2 public API and manual replay
+
+`/v2` reads only a complete immutable public snapshot. Pin the returned snapshot ID
+for detail requests and send it with every later page; keep endpoint filters and
+`limit` unchanged for the continuation cursor. Cursors are signed, query/snapshot
+scoped, and expire at a fixed 24 hours. Listing defaults to 25 rows (maximum 100);
+a request can inspect at most 20 queries/2,000 candidates, analytics at most 50
+queries/5,000 contributions over an inclusive UTC window of at most 90 days.
+Responses are capped at 350,000 bytes and may return an advancing cursor before the
+requested page is full. Unknown values and private allocations remain unknown;
+known-empty is distinct. Dates and source captures are separate, and undated events
+are not assigned a capture date. Ordering is deterministic: dated events newest first
+(unknown last), standings rank with unknown last, then stable identity.
+
+```text
+GET /v2/tournaments?limit=25
+GET /v2/tournaments/limitless:6ab9204c880ed327106dddf4/standings?limit=25
+GET /v2/teams?eligibility=all&tournament_id=limitless:6ab9204c880ed327106dddf4
+GET /v2/teams/limitless:<team-id>
+GET /v2/players/limitless:axtheb
+GET /v2/regulations?limit=25
+GET /v2/pokemon?catalog_revision=champions-mb-3661ce4&limit=25
+GET /v2/meta?metric=species&from=2026-09-01&to=2026-10-01&placement_max=8
+GET /v2/meta?metric=nature&population_id=<exact-population-id>
+GET /v2/cores?size=3&from=2026-09-01&to=2026-10-01
+```
+
+Use each response's `snapshot.id` on following pages and details. Team detail may
+show a partial or absent roster. Native Stat Points are six integers (0–32, total
+at most 66) only when observed; supported metrics are species/form, moves, abilities,
+items, natures, native Stat Points, and registered Mega. Legacy EV data is never converted. A registered
+Mega is capability evidence, not battle activation. Core sizes are 2 or 3. Analytics
+require an unambiguous population; select an exact returned population when multiple
+divisions/catalogs/rulesets match. Match rates use linked verified cut matches; ties
+count half a win and half a loss, mirrors remove both sides, and byes/double
+losses/automatic or pending results are excluded. Zero eligible matches yield null.
+
+Manual replay requires configured AWS access and operator-reviewed event IDs. It
+writes durable checkpoints and does not delete retained inputs or snapshots:
+
+```bash
+uv run --frozen python -m ingestion.public_replay inventory --events-file /tmp/vgc-phase2-event-ids.json
+uv run --frozen python -m ingestion.public_replay seed --events-file /tmp/vgc-phase2-event-ids.json --max-steps 100
+uv run --frozen python -m ingestion.public_replay build --max-steps 100
+uv run --frozen python -m ingestion.public_replay recover --max-steps 100
+uv run --frozen python -m ingestion.public_replay invalidate --policy-version limitless-single-bracket-v1
+uv run --frozen python -m ingestion.public_replay rollback --snapshot-id <retained-complete-id> --expected-snapshot-id <current-id>
+```
+
+`pending` means repeat/resume with `recover` or `build`, not publication success.
+Inventory is read-only. Invalidation and rollback are explicit operations; recovery
+is not scheduled. Rollback changes the current reader pointer while preserving newer
+input membership and dirty work. Phase 3 owns automated discovery/refetch,
+checkpointed schedules, catalog activation and historical M-A/patch coverage,
+verified enrichment, and alerts. Phase 4 owns same-revision deployment, IAM/client-IP
+and runtime smoke checks, AWS capacity/cost/latency measurements, and restore proof.
+
+Phase 2 offline verification: `uv run --frozen pytest -q` passed 320 tests with one
+existing Starlette/httpx deprecation warning. Coverage and final command evidence are
+recorded in the plan ledger. Moto timings and derived-row sizes are not live AWS
+capacity or cost evidence; see SOURCE_UPDATE.md and MEMORY.md for source hashes and
+unchecked live gates.
