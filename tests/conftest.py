@@ -13,6 +13,28 @@ os.environ["S3_RAW_BUCKET_NAME"] = "vgc-telemetry-raw-dev"
 os.environ["S3_QUARANTINE_PREFIX"] = "quarantine/"
 
 
+@pytest.fixture(autouse=True)
+def release_moto_transaction_dashboard_copies(monkeypatch):
+    """Keep Moto's real rollback implementation; discard dashboard-only copies.
+
+    Moto 5 records every BaseModel copy in a strong global dashboard list. Its
+    transaction backups otherwise retain entire table copies until mock shutdown.
+    Backend tables and rollback state retain their own live references.
+    """
+    from moto.core.model_instances import reset_model_data
+    from moto.dynamodb.models import DynamoDBBackend
+
+    original = DynamoDBBackend.transact_write_items
+
+    def transact(self, actions):
+        try:
+            return original(self, actions)
+        finally:
+            reset_model_data()
+
+    monkeypatch.setattr(DynamoDBBackend, "transact_write_items", transact)
+
+
 @pytest.fixture
 def aws_credentials():
     """Mocked AWS Credentials for moto."""
