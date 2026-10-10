@@ -11,9 +11,11 @@ resource "aws_lambda_function" "api" {
 
   environment {
     variables = {
-      DYNAMODB_TABLE_NAME = var.table_name
-      PORT                = "8080"
-      AWS_LWA_PORT        = "8080"
+      DYNAMODB_TABLE_NAME     = var.table_name
+      S3_RAW_BUCKET_NAME      = var.bucket_name
+      CATALOG_RUNTIME_ENABLED = tostring(var.catalog_runtime_enabled)
+      PORT                    = "8080"
+      AWS_LWA_PORT            = "8080"
     }
   }
 

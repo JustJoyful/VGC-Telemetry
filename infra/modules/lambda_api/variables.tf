@@ -23,3 +23,14 @@ variable "reserved_concurrency" {
   type        = number
   default     = 5
 }
+
+variable "bucket_name" {
+  description = "Bucket holding immutable verified catalog evidence"
+  type        = string
+}
+
+variable "catalog_runtime_enabled" {
+  description = "Read retained active catalogs after operator activation"
+  type        = bool
+  default     = false
+}
