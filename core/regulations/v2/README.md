@@ -28,4 +28,52 @@ The exporter uses each named VGC format's resolved Dex and validator, including 
 
 ## Coverage limits
 
-M-A and intermediate historical game-data patches are unverified. Official notices do not provide all mechanical/learnset details. These community snapshots support the declared acceptance fixtures; automated update detection, candidate validation, historical backfill, and activation are Phase 3 work. Captured tournaments do not publish native Stat Points; unavailable private allocations stay unknown.
+M-A and intermediate historical game-data patches are unverified. Official notices do not provide all mechanical/learnset details. These community snapshots support the declared acceptance fixtures. Captured tournaments do not publish native Stat Points; unavailable private allocations stay unknown.
+
+## Phase 3 catalog operations
+
+The disabled 24-hour `reference` schedule checks official news, retained M-B/M-C
+notices and pools, pinned Showdown evidence, and its public branch revision. It
+retains successful and failed HTTP evidence under `staging/v2/catalog/`, outside
+the legacy raw trigger. Changed sources stay pending until a resolved export and
+official evidence are reviewed. The Python Lambda does not run Node or infer
+legal pools from source diffs.
+
+Bootstrap must match a hash-verified bundled resolved export. Later candidates
+compare all five collections to the retained verified baseline. Changed IDs or
+mechanics require a reviewer, exact additions/removals, and quotations resolving
+to retained official evidence. Unknown intervals, incomplete official pools,
+unsupported evidence, and failed validation cannot activate.
+
+Supply a JSON bundle containing `snapshot` (the existing CatalogSnapshot shape),
+`documents` (URL to CapturedDocument), and optional `review` (CatalogChangeReview).
+Use the existing CJS exporter above to resolve supported upstream data first.
+Candidate IDs and snapshot IDs are content-derived; submissions preserve prior
+catalogs and their evidence.
+
+```bash
+uv run --frozen python -m scripts.catalog_operator submit /tmp/catalog-bundle.json
+# Use the returned candidate ID and current ACTIVE epoch (0 before bootstrap).
+uv run --frozen python -m scripts.catalog_operator queue CANDIDATE_ID --expected-epoch 0
+uv run --frozen python -m scripts.catalog_operator activate CANDIDATE_ID --expected-epoch 0
+uv run --frozen python -m scripts.catalog_operator rollback RETAINED_ID --expected-epoch 1 --operator OPERATOR --reason REASON
+```
+
+Queueing selects one verified candidate for the reference worker. The worker
+rechecks supporting evidence, waits for the official interval, and uses epoch
+CAS to activate it. `activate` performs the guarded operation immediately;
+`rollback` retains history and records operator/reason. These commands write AWS
+state when configured; Phase 3 verification uses mocked resources only. Event
+catalog pins are unchanged by activation or rollback. API runtime reads require
+`catalog_runtime_enabled = true` after activation; its default is false.
+
+Public JSON build acquisition has no admitted source (`core/sources/builds.json`
+is empty). Explicit evidence can enter ingestion with `mode: "build"`, a `build`
+object containing `document`, reviewed `source` access evidence, and `captured_at`,
+plus 1–10 exact `normalized` references. The `published-build-v1` JSON body declares
+author, build ID, source event/player or entrant IDs, Pokemon fields, and optional
+`supersedes`. A reviewed `cross_reference` may provide an exact correspondence.
+Links require the current native event revision and identical roster identity.
+Build revisions and conflicts remain under `V2#BUILD`; no observations or
+population counts are overwritten. Use `BuildStore.links` with 1–100 rows and its
+returned cursor to inspect retained per-team outcomes.
