@@ -26,3 +26,58 @@ variable "notification_email" {
   type        = string
   default     = "alerts@example.com"
 }
+
+variable "source_admission_verified" {
+  type    = bool
+  default = false
+}
+
+variable "discovery_hours" {
+  type    = number
+  default = 6
+}
+
+variable "reference_hours" {
+  type    = number
+  default = 24
+}
+
+variable "recovery_minutes" {
+  type    = number
+  default = 30
+}
+
+variable "reconcile_expression" {
+  type    = string
+  default = "cron(0 6 ? * MON *)"
+}
+
+variable "collection_page_size" {
+  type    = number
+  default = 50
+}
+
+variable "collection_batch_size" {
+  type    = number
+  default = 10
+}
+
+variable "collection_max_pages" {
+  type    = number
+  default = 10
+}
+
+variable "recent_days" {
+  type    = number
+  default = 7
+}
+
+variable "reconcile_days" {
+  type    = number
+  default = 90
+}
+variable "catalog_runtime_enabled" {
+  description = "Enable retained runtime catalog reads after guarded activation"
+  type        = bool
+  default     = false
+}

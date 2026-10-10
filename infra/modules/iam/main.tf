@@ -8,6 +8,8 @@ data "aws_iam_policy_document" "lambda_assume_role" {
   }
 }
 
+data "aws_caller_identity" "current" {}
+
 # =============================================================
 # 1. API Lambda IAM Role (Read-only + LeadingKeys Rate Limiter)
 # =============================================================
@@ -49,6 +51,12 @@ resource "aws_iam_role_policy" "api_policy" {
           var.table_arn,
           "${var.table_arn}/index/*"
         ]
+      },
+      {
+        Sid      = "S3VerifiedCatalogRead"
+        Effect   = "Allow"
+        Action   = ["s3:GetObject"]
+        Resource = "${var.bucket_arn}/staging/v2/catalog/*"
       },
       {
         Sid    = "DynamoDBRateLimitScopedUpdate"
@@ -98,27 +106,80 @@ resource "aws_iam_role_policy" "ingestion_policy" {
         Resource = "arn:aws:logs:*:*:*"
       },
       {
-        Sid    = "DynamoDBReadWrite"
+        Sid      = "AutomationMetrics"
+        Effect   = "Allow"
+        Action   = ["cloudwatch:PutMetricData"]
+        Resource = "*"
+        Condition = {
+          StringEquals = { "cloudwatch:namespace" = "VGCTelemetry/Automation" }
+        }
+      },
+      {
+        Sid    = "DynamoDBIngestionScoped"
         Effect = "Allow"
         Action = [
           "dynamodb:GetItem",
           "dynamodb:PutItem",
           "dynamodb:UpdateItem",
+          "dynamodb:DeleteItem",
           "dynamodb:Query",
-          "dynamodb:BatchWriteItem"
+          "dynamodb:BatchWriteItem",
+          "dynamodb:ConditionCheckItem"
         ]
-        Resource = [
-          var.table_arn,
-          "${var.table_arn}/index/*"
-        ]
+        Resource = var.table_arn
+        Condition = {
+          "ForAllValues:StringLike" = {
+            "dynamodb:LeadingKeys" = [
+              "TOURNAMENT#*", "REGULATION#*", "V2#EVENT#*", "V2#REV#*",
+              "V2#POP#*", "V2#GEN#*", "V2#WORK", "V2#DIRTY",
+              "V2#PUBLIC*", "V2#RECOVERY", "V2#BUILD*"
+            ]
+          }
+        }
+      },
+      {
+        Sid      = "CatalogMetadataRead"
+        Effect   = "Allow"
+        Action   = ["dynamodb:GetItem"]
+        Resource = var.table_arn
+        Condition = {
+          "ForAllValues:StringEquals" = {
+            "dynamodb:LeadingKeys" = ["V2#CATALOG"]
+          }
+        }
       },
       {
         Sid    = "S3RawRead"
         Effect = "Allow"
         Action = [
-          "s3:GetObject"
+          "s3:GetObject",
+          "s3:GetObjectVersion"
         ]
         Resource = "${var.bucket_arn}/raw/*"
+      },
+      {
+        Sid    = "S3NativeRead"
+        Effect = "Allow"
+        Action = ["s3:GetObject", "s3:GetObjectVersion"]
+        Resource = [
+          "${var.bucket_arn}/staging/v2/captures/*",
+          "${var.bucket_arn}/staging/v2/normalized/*",
+          "${var.bucket_arn}/staging/v2/contributions/*",
+          "${var.bucket_arn}/staging/v2/catalog/*",
+          "${var.bucket_arn}/staging/v2/builds/*"
+        ]
+      },
+      {
+        Sid      = "S3BuildEvidenceWrite"
+        Effect   = "Allow"
+        Action   = ["s3:PutObject"]
+        Resource = "${var.bucket_arn}/staging/v2/builds/*"
+      },
+      {
+        Sid      = "S3NativeContributionsWrite"
+        Effect   = "Allow"
+        Action   = ["s3:PutObject"]
+        Resource = "${var.bucket_arn}/staging/v2/contributions/*"
       },
       {
         Sid    = "S3QuarantineWrite"
@@ -133,7 +194,7 @@ resource "aws_iam_role_policy" "ingestion_policy" {
 }
 
 # =============================================================
-# 3. Scraper Lambda IAM Role (S3 Write only — Zero DynamoDB)
+# 3. Scraper Lambda IAM Role
 # =============================================================
 resource "aws_iam_role" "scraper_role" {
   name               = "vgc-telemetry-scraper-role-${var.environment}"
@@ -163,13 +224,53 @@ resource "aws_iam_role_policy" "scraper_policy" {
         Resource = "arn:aws:logs:*:*:*"
       },
       {
-        Sid    = "S3RawWrite"
+        Sid      = "AutomationMetrics"
+        Effect   = "Allow"
+        Action   = ["cloudwatch:PutMetricData"]
+        Resource = "*"
+        Condition = {
+          StringEquals = { "cloudwatch:namespace" = "VGCTelemetry/Automation" }
+        }
+      },
+      {
+        Sid    = "S3StagingWrite"
         Effect = "Allow"
         Action = [
           "s3:PutObject",
           "s3:GetObject"
         ]
-        Resource = "${var.bucket_arn}/raw/*"
+        Resource = [
+          "${var.bucket_arn}/staging/v2/captures/*",
+          "${var.bucket_arn}/staging/v2/normalized/*",
+          "${var.bucket_arn}/staging/v2/catalog/*"
+        ]
+      },
+      {
+        Sid    = "CollectionState"
+        Effect = "Allow"
+        Action = [
+          "dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem",
+          "dynamodb:DeleteItem", "dynamodb:Query",
+          "dynamodb:ConditionCheckItem"
+        ]
+        Resource = var.table_arn
+        Condition = {
+          "ForAllValues:StringLike" = {
+            "dynamodb:LeadingKeys" = ["V2#COLLECT#*", "V2#COLLECTION_WORK#limitless", "V2#CATALOG"]
+          }
+        }
+      },
+      {
+        Sid      = "NativeIngestionHandoff"
+        Effect   = "Allow"
+        Action   = ["lambda:InvokeFunction"]
+        Resource = "arn:aws:lambda:${var.aws_region}:${data.aws_caller_identity.current.account_id}:function:${var.ingestion_lambda_name}"
+      },
+      {
+        Sid      = "CollectionContinuation"
+        Effect   = "Allow"
+        Action   = ["lambda:InvokeFunction"]
+        Resource = "arn:aws:lambda:${var.aws_region}:${data.aws_caller_identity.current.account_id}:function:vgc-telemetry-scraper-${var.environment}"
       }
     ]
   })
