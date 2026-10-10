@@ -4,7 +4,7 @@ A REST API project for **Pokémon Champions tournament analysis**: registered te
 
 ## Project status
 
-Phase 2 now implements the bounded `/v2` read API, manual public snapshot replay, and a version-pinned reference projection. Its evidence is offline: two retained Limitless events, mocked AWS, and test results recorded below and in MEMORY.md. This does not establish live AWS capacity, IAM, scheduled source freshness, or deployment readiness. Existing `/v1` routes and stored legacy EV units remain unchanged.
+Phase 3 adds offline-tested collection, versioned catalog candidates, exact public-build links, and worker telemetry/alarms to the bounded `/v2` API. Limitless admission and schedules remain disabled; source continuity, AWS delivery, subscription confirmation, and production readiness require Phase 4. Existing `/v1` routes and stored legacy EV units remain unchanged.
 
 The target `/v2` API reliably serves verified Limitless Pokémon Champions VGC top-cut tournament data, preserves historical regulations, and reports provenance, sample coverage, and freshness. Limitless is the only initial tournament source. Ranked ladder feeds and brittle or mismatched sources are out of scope. RK9 is excluded because its published Terms prohibit automated screen scraping.
 
@@ -129,6 +129,47 @@ previous complete generations stay readable. Automated expiration requires a rev
 retention policy that protects publication pointers, active builds, and reader windows.
 Offline Moto checks establish logic, not AWS throughput, permissions, or deployment.
 
+## Phase 3 automation operations
+
+Offline verification on 2026-10-10: `uv run --frozen pytest -q` passed 394 tests
+with one existing Starlette/httpx deprecation warning; Ruff lint, formatting,
+and diff checks passed. Terraform CLI was unavailable and Docker daemon access
+was denied, so Terraform formatting/plans and container builds remain unverified.
+
+Admitted Limitless discovery/recent checks are configured for every six hours,
+reference checks daily, reconciliation weekly, and native recovery every 30
+minutes. All EventBridge rules are disabled until `source_admission_verified`
+and the independently reviewed `core/sources/admission.json` source admission
+are enabled during Phase 4. Discovery stores event work before advancing its
+page. A full work page enqueues a bounded continuation to the scraper Lambda;
+failures replay from the last committed page. Unknown completion dates remain
+eligible for recent checks; the upstream API does not currently provide a
+verified completion timestamp to prove live 7/90-day windows.
+
+For an operator-approved older replay, invoke the scraper Lambda with an
+explicit bounded payload and increase `backfill_order` for a new replay:
+
+```json
+{"mode":"backfill","event_ids":["<Limitless event ID>"],"backfill_order":1}
+```
+
+Use at most 100 event IDs. For a retained, reviewed catalog bundle, run
+`uv run --frozen python scripts/catalog_operator.py submit <bundle.json>`, then
+`queue <candidate-id> --expected-epoch <epoch>` for scheduled activation.
+`activate` and `rollback` require the exact expected epoch; rollback also
+requires `--operator` and `--reason`. New upstream mechanics exports still
+need operator resolution and official evidence review. Public build acquisition
+remains disabled until a source passes access review.
+
+CloudWatch custom metrics use `VGCTelemetry/Automation` with only environment,
+source, and worker dimensions. The dev/prod Terraform module routes quarantine,
+retry exhaustion, repeated worker error, unresolved catalog, tournament/reference
+check age, and publication lag alarms to one SNS topic per environment. The
+configured `notification_email` recipient must confirm the SNS subscription
+after apply. See [the alarm runbook](SOURCE_UPDATE.md#phase-3-alarms). Freshness
+and publication-lag alarms treat missing data as breaching, including before
+the first run; they will show the disabled-worker state until live admission.
+
 ## Phase 2 public API and manual replay
 
 `/v2` reads only a complete immutable public snapshot. Pin the returned snapshot ID
@@ -179,11 +220,10 @@ uv run --frozen python -m ingestion.public_replay rollback --snapshot-id <retain
 ```
 
 `pending` means repeat/resume with `recover` or `build`, not publication success.
-Inventory is read-only. Invalidation and rollback are explicit operations; recovery
-is not scheduled. Rollback changes the current reader pointer while preserving newer
-input membership and dirty work. Phase 3 owns automated discovery/refetch,
-checkpointed schedules, catalog activation and historical M-A/patch coverage,
-verified enrichment, and alerts. Phase 4 owns same-revision deployment, IAM/client-IP
+Inventory is read-only. Invalidation and rollback are explicit operations; Phase 3
+defines a disabled recovery schedule. Rollback changes the current reader pointer
+while preserving newer input membership and dirty work. Historical M-A/patch
+coverage and build-source admission remain open. Phase 4 owns same-revision deployment, IAM/client-IP
 and runtime smoke checks, AWS capacity/cost/latency measurements, and restore proof.
 
 Phase 2 offline verification: `uv run --frozen pytest -q` passed 320 tests with one

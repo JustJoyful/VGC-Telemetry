@@ -18,6 +18,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY core/ /var/task/core/
 COPY db/ /var/task/db/
 COPY app/ /var/task/app/
+COPY ingestion/ /var/task/ingestion/
 
 CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
 
@@ -35,6 +36,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY core/ ${LAMBDA_TASK_ROOT}/core/
 COPY db/ ${LAMBDA_TASK_ROOT}/db/
 COPY ingestion/ ${LAMBDA_TASK_ROOT}/ingestion/
+COPY app/ ${LAMBDA_TASK_ROOT}/app/
 
 CMD ["ingestion.handler.lambda_handler"]
 
@@ -51,6 +53,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY core/ ${LAMBDA_TASK_ROOT}/core/
 COPY scraper/ ${LAMBDA_TASK_ROOT}/scraper/
+COPY db/ ${LAMBDA_TASK_ROOT}/db/
 COPY ingestion/ ${LAMBDA_TASK_ROOT}/ingestion/
 
 CMD ["scraper.handler.lambda_handler"]
