@@ -121,7 +121,9 @@ def promote_revision(
         )
     try:
         actions.extend(
-            public_registration_actions(selected, current_pointer=current, current_member=member)
+            public_registration_actions(
+                selected, current_pointer=current, current_member=member, validated_at=clock()
+            )
         )
     except PendingPublicOrder:
         return PromotionResult(

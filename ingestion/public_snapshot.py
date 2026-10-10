@@ -359,7 +359,8 @@ def publish_public_snapshot(
                 "Update": {
                     "Key": public_state_key(),
                     "UpdateExpression": (
-                        "SET snapshot_id = :id, dirty = :false, published_at = :time"
+                        "SET snapshot_id = :id, dirty = :false, published_at = :time "
+                        "REMOVE first_validated_at"
                     ),
                     "ConditionExpression": conditions,
                     "ExpressionAttributeValues": values,

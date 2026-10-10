@@ -43,7 +43,11 @@ def public_input(observation: RevisionInput) -> PublicInput:
 
 
 def public_registration_actions(
-    input: PublicInput, *, current_pointer: dict | None, current_member: dict | None
+    input: PublicInput,
+    *,
+    current_pointer: dict | None,
+    current_member: dict | None,
+    validated_at: int | None = None,
 ) -> list[dict]:
     if current_pointer and input.order < current_pointer["order"]:
         return []
@@ -72,8 +76,17 @@ def public_registration_actions(
         {
             "Update": {
                 "Key": public_state_key(),
-                "UpdateExpression": "SET dirty = :true ADD epoch :one",
-                "ExpressionAttributeValues": {":true": True, ":one": 1},
+                "UpdateExpression": (
+                    "SET dirty = :true, "
+                    "first_validated_at = if_not_exists(first_validated_at, :at) ADD epoch :one"
+                ),
+                "ExpressionAttributeValues": {
+                    ":true": True,
+                    ":one": 1,
+                    ":at": validated_at
+                    if validated_at is not None
+                    else int(datetime.now(UTC).timestamp()),
+                },
             }
         },
     ]
