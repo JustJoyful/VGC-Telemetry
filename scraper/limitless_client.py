@@ -20,8 +20,11 @@ class LimitlessAPIClient:
     No API key required for tournament standings and pairings.
     """
 
-    def __init__(self, base_url: str = LIMITLESS_BASE_URL, client: httpx.Client | None = None):
+    def __init__(
+        self, base_url: str = LIMITLESS_BASE_URL, client: httpx.Client | None = None, on_retry=None
+    ):
         self.base_url = base_url.rstrip("/")
+        self.on_retry = on_retry
         self.client = client or httpx.Client(
             timeout=15.0,
             headers={
@@ -31,7 +34,12 @@ class LimitlessAPIClient:
         )
 
     def _response(self, endpoint: str, params: dict[str, Any] | None = None):
-        return request_public(self.client, f"{self.base_url}/{endpoint.lstrip('/')}", params=params)
+        return request_public(
+            self.client,
+            f"{self.base_url}/{endpoint.lstrip('/')}",
+            params=params,
+            on_retry=self.on_retry,
+        )
 
     def _request(self, endpoint: str, params: dict[str, Any] | None = None) -> Any:
         response = self._response(endpoint, params)
@@ -59,6 +67,8 @@ class LimitlessAPIClient:
         self, game: str = "VGC", format: str | None = None, limit: int = 50, page: int | None = None
     ) -> list[dict[str, Any]]:
         """List tournaments filtered by game (e.g. VGC) and format."""
+        if not 1 <= limit <= 100 or (page is not None and page < 1):
+            raise ValueError("Invalid Limitless page or limit")
         params: dict[str, Any] = {"game": game, "limit": limit}
         if page is not None:
             params["page"] = page
