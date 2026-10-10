@@ -42,7 +42,12 @@ def stage_capture(capture: SourceCapture, *, s3_client: Any, bucket_name: str) -
 
 
 def stage_normalized(
-    result: NormalizationResult, *, capture_key: str, s3_client: Any, bucket_name: str
+    result: NormalizationResult,
+    *,
+    capture_key: str,
+    s3_client: Any,
+    bucket_name: str,
+    capture_version_id: str | None = None,
 ) -> str:
     if not capture_key.startswith("staging/v2/captures/"):
         raise ValueError("Normalized staging requires an isolated capture reference")
@@ -53,6 +58,8 @@ def stage_normalized(
         "result": result.model_dump(mode="json"),
         "semantic_hash": normalized_content_hash(result.tournament) if result.tournament else None,
     }
+    if capture_version_id:
+        payload["capture_version_id"] = capture_version_id
     body = canonical_bytes(payload)
     digest = hashlib.sha256(body).hexdigest()
     return _put_immutable(

@@ -46,7 +46,7 @@ def _read(*, s3_client, bucket, key, version_id, prefix):
 
 
 def read_staged_result(
-    *, s3_client, bucket: str, key: str, version_id: str | None
+    *, s3_client, bucket: str, key: str, version_id: str | None, catalog_store=None
 ) -> RevisionInput:
     payload, _ = _read(
         s3_client=s3_client,
@@ -77,7 +77,9 @@ def read_staged_result(
     if semantic_hash != envelope.semantic_hash:
         raise InvalidRevisionInput("Normalized semantic hash mismatch")
     catalog = load_catalog(
-        tournament.metadata.catalog_revision, index_path=Path("core/regulations/v2/index.json")
+        tournament.metadata.catalog_revision,
+        index_path=Path("core/regulations/v2/index.json"),
+        store=catalog_store,
     )
     trusted = [ref.model_dump(mode="json") for ref in catalog.evidence]
     for admission in load_admissions(Path("core/sources/admission.json")):

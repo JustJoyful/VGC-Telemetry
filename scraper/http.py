@@ -9,19 +9,23 @@ import httpx
 from core.models.champions import CapturedDocument
 
 
-def request_public(client, url, *, params=None, before_request=None):
+def request_public(client, url, *, params=None, before_request=None, on_retry=None):
     for attempt in range(3):
         if before_request:
             before_request()
         try:
             response = client.get(url, params=params, timeout=15.0, follow_redirects=False)
         except httpx.TimeoutException:
+            if on_retry:
+                on_retry(attempt + 1, attempt == 2)
             if attempt == 2:
                 raise
             time.sleep(min(2**attempt, 30))
             continue
         if response.status_code not in (429, 502, 503, 504):
             return response
+        if on_retry:
+            on_retry(attempt + 1, attempt == 2)
         if attempt == 2:
             response.raise_for_status()
         try:

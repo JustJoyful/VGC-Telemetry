@@ -24,14 +24,16 @@ RETRYABLE = {
 class BatchFailure(RuntimeError):
     def __init__(self, results: list[dict]):
         self.results = results
-        super().__init__(f"Operational batch failure: {results}")
+        super().__init__("Operational batch failure")
 
 
 class WriteExhausted(RuntimeError):
     pass
 
 
-def retry(operation: Callable[[], T], *, sleep=time.sleep, random=randomness.random) -> T:
+def retry(
+    operation: Callable[[], T], *, sleep=time.sleep, random=randomness.random, on_retry=None
+) -> T:
     for attempt in range(3):
         try:
             return operation()
@@ -41,6 +43,8 @@ def retry(operation: Callable[[], T], *, sleep=time.sleep, random=randomness.ran
                 status = error.response.get("ResponseMetadata", {}).get("HTTPStatusCode", 0)
                 if code not in RETRYABLE and status < 500:
                     raise
+            if on_retry is not None:
+                on_retry(attempt + 1, attempt == 2)
             if attempt == 2:
                 raise
             sleep(0.05 * 2**attempt * (1 + random()))

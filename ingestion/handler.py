@@ -9,6 +9,7 @@ import boto3
 from botocore.exceptions import BotoCoreError, ClientError
 from pydantic import ValidationError
 
+from core.telemetry import RunTelemetry
 from db.client import get_dynamodb_table
 from ingestion.parser import parse_tournament_export
 from ingestion.quarantine import quarantine_payload
@@ -27,6 +28,19 @@ def handle_s3_event(
     Validates incoming tournament export against Pydantic contract.
     Quarantines corrupt/invalid payloads and ignores quarantine/ prefix defensively.
     """
+    telemetry = RunTelemetry("legacy", context=context)
+    try:
+        result = _handle_s3_event(event, sleep=sleep, random=random, telemetry=telemetry)
+    except Exception as error:
+        if not isinstance(error, BatchFailure):
+            telemetry.failure(error)
+        telemetry.finish("error")
+        raise
+    telemetry.finish(result["status"])
+    return result
+
+
+def _handle_s3_event(event, *, sleep, random, telemetry):
     s3_client = boto3.client("s3")
     table = None
 
@@ -42,7 +56,7 @@ def handle_s3_event(
 
         # Defensive check against recursive trigger loops
         if key.startswith("quarantine/"):
-            logger.warning("Ignoring event for quarantine prefix key: %s", key)
+            logger.warning("Ignoring event for quarantine prefix")
             results.append({"status": "skipped", "reason": "quarantine_prefix_ignored", "key": key})
             continue
 
@@ -54,10 +68,15 @@ def handle_s3_event(
             args = {"Bucket": bucket, "Key": key}
             if record["s3"]["object"].get("versionId"):
                 args["VersionId"] = record["s3"]["object"]["versionId"]
-            response = retry(lambda: s3_client.get_object(**args), sleep=sleep, random=random)
+            response = retry(
+                lambda: s3_client.get_object(**args),
+                sleep=sleep,
+                random=random,
+                on_retry=telemetry.retry,
+            )
             raw_bytes = response["Body"].read()
         except (ClientError, BotoCoreError) as e:
-            logger.error("Failed to read S3 object %s/%s: %s", bucket, key, e)
+            telemetry.failure(e, result="error")
             results.append({"status": "error", "reason": "s3_read_failed", "error": str(e)})
             continue
 
@@ -68,7 +87,7 @@ def handle_s3_event(
                 continue
             parsed = parse_tournament_export(payload)
         except (json.JSONDecodeError, UnicodeDecodeError, ValidationError) as e:
-            logger.warning("Payload in %s failed contract validation: %s. Quarantining.", key, e)
+            telemetry.failure(e, result="quarantine")
             validation_message = str(e)
             try:
                 quarantine_key = retry(
@@ -81,7 +100,9 @@ def handle_s3_event(
                     ),
                     sleep=sleep,
                     random=random,
+                    on_retry=telemetry.retry,
                 )
+                telemetry.emit("Quarantines")
                 results.append(
                     {
                         "status": "quarantined",
@@ -91,6 +112,7 @@ def handle_s3_event(
                     }
                 )
             except (ClientError, BotoCoreError) as failure:
+                telemetry.failure(failure)
                 results.append({"status": "error", "key": key, "error": str(failure)})
             continue
 
@@ -98,9 +120,13 @@ def handle_s3_event(
             table = get_dynamodb_table()
         try:
             success = retry(
-                lambda: write_tournament_data(table, parsed), sleep=sleep, random=random
+                lambda: write_tournament_data(table, parsed),
+                sleep=sleep,
+                random=random,
+                on_retry=telemetry.retry,
             )
         except (ClientError, BotoCoreError, WriteExhausted) as failure:
+            telemetry.failure(failure)
             results.append({"status": "error", "key": key, "error": str(failure)})
             continue
         results.append(
@@ -110,6 +136,8 @@ def handle_s3_event(
                 "tid": parsed.export.metadata.tid,
             }
         )
+        if success:
+            telemetry.emit("Publications")
 
     if any(r["status"] == "error" for r in results):
         raise BatchFailure(results)
@@ -119,4 +147,12 @@ def handle_s3_event(
 
 
 def lambda_handler(event: dict[str, Any], context: Any = None) -> dict[str, Any]:
+    if event.get("mode") == "build":
+        from ingestion.build_handler import handle_build_event
+
+        return handle_build_event(event, context)
+    if event.get("mode") == "native":
+        from ingestion.native_handler import handle_native_event
+
+        return handle_native_event(event, context)
     return handle_s3_event(event, context)
