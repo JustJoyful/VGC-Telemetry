@@ -11,13 +11,14 @@ from core.models.champions import (
     SourceCapture,
 )
 from core.source_admission import SourceAdmission
-from scraper.limitless_normalizer import normalize_limitless_capture
 
 
 def normalize_capture(
     capture: SourceCapture, *, admission: SourceAdmission, catalog: CatalogSnapshot
 ) -> NormalizationResult:
     if capture.source == "limitless":
+        from scraper.limitless_normalizer import normalize_limitless_capture
+
         return normalize_limitless_capture(capture, admission, catalog)
     return NormalizationResult(
         admission_status="rejected",
