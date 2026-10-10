@@ -19,11 +19,13 @@ def _parse_snapshot(body: bytes) -> CatalogSnapshot:
     return CatalogSnapshot.model_validate_json(body)
 
 
-def load_catalog(snapshot_id: str, *, index_path: Path) -> CatalogSnapshot:
+def load_catalog(snapshot_id: str, *, index_path: Path, store=None) -> CatalogSnapshot:
     index_path = index_path.resolve()
     index = json.loads(index_path.read_text())
     entry = index["snapshots"].get(snapshot_id)
     if entry is None:
+        if store is not None:
+            return store.load_revision(snapshot_id)
         raise ValueError(f"Unknown catalog snapshot: {snapshot_id}")
     path = (index_path.parent / entry["path"]).resolve()
     if not path.is_relative_to(index_path.parent):

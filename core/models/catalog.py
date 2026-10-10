@@ -4,7 +4,7 @@ from typing import Any, Literal
 
 from pydantic import AwareDatetime, Field, model_validator
 
-from core.models.champions import EvidenceRef, Identifier, StrictModel
+from core.models.champions import CapturedDocument, EvidenceRef, Identifier, StrictModel
 
 
 class ReferenceEntry(StrictModel):
@@ -43,7 +43,7 @@ class CatalogSnapshot(StrictModel):
     coverage_complete: bool
     source_kind: Literal["official", "community", "synthetic"]
     upstream_revision: Identifier
-    evidence: list[EvidenceRef] = Field(min_length=1)
+    evidence: list[EvidenceRef] = Field(min_length=1, max_length=20)
     species: dict[str, SpeciesReference]
     items: dict[str, ItemReference]
     abilities: dict[str, ReferenceEntry]
@@ -67,3 +67,29 @@ class CatalogSnapshot(StrictModel):
         ):
             raise ValueError("A complete catalog cannot have empty reference collections")
         return self
+
+
+class CatalogChangeReview(StrictModel):
+    reviewer: Identifier
+    reason: Identifier
+    evidence: list[EvidenceRef] = Field(min_length=1)
+    quotations: dict[str, str] = Field(min_length=1)
+    additions: dict[str, list[str]]
+    removals: dict[str, list[str]]
+
+
+class CatalogCandidate(StrictModel):
+    model_config = {"extra": "forbid", "frozen": True}
+    candidate_id: Identifier
+    input_snapshot: dict
+    previous_snapshot: CatalogSnapshot | None = None
+    snapshot: CatalogSnapshot | None = None
+    documents: dict[str, CapturedDocument]
+    review: CatalogChangeReview | None = None
+    status: Literal["verified", "pending"]
+    validation_errors: list[str]
+    registration_ids: list[str]
+    historical_coverage: str = "M-B/M-C only; M-A and intermediate historical patches unverified"
+    additions: dict[str, list[str]]
+    removals: dict[str, list[str]]
+    unchanged: bool = False
