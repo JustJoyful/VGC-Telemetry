@@ -12,6 +12,7 @@ resource "aws_lambda_function" "ingestion" {
       DYNAMODB_TABLE_NAME  = var.table_name
       S3_RAW_BUCKET_NAME   = var.bucket_name
       S3_QUARANTINE_PREFIX = "quarantine/"
+      ENVIRONMENT          = var.environment
     }
   }
 
