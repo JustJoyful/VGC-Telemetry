@@ -60,7 +60,14 @@ class Budget:
             position = cursor["SK"]
 
 
-def catalog(revision, *, default=False):
+def catalog(revision, *, default=False, config=None):
+    if config and config.catalog_runtime:
+        from app.v2.catalog import resolve_catalog
+
+        try:
+            return resolve_catalog(revision, config=config)
+        except ValueError as error:
+            raise unavailable("Runtime catalog is unavailable") from error
     reference = load_public_reference(None)
     if revision not in reference["catalogs"]:
         if default:
@@ -74,7 +81,7 @@ def _select(snapshot, query, reader, budget, *, default_catalog_revision=None):
     revision = query.catalog_revision or (
         (default_catalog_revision or reader.config.default_catalog_revision) if default else None
     )
-    chosen_catalog = catalog(revision, default=default) if revision else None
+    chosen_catalog = catalog(revision, default=default, config=reader.config) if revision else None
     start, end = _window(snapshot, query, reader)
     populations = {}
     for page in budget.pages(snapshot, "POPULATIONS"):
@@ -143,7 +150,9 @@ def _select(snapshot, query, reader, budget, *, default_catalog_revision=None):
             chosen_catalog = candidates[0]
         else:
             chosen_catalog = catalog(
-                default_catalog_revision or reader.config.default_catalog_revision, default=True
+                default_catalog_revision or reader.config.default_catalog_revision,
+                default=True,
+                config=reader.config,
             )
     if (
         query.regulation is not None
@@ -297,7 +306,7 @@ def _read(snapshot, query, reader, *, default_catalog_revision=None):
         snapshot, query, reader, budget, default_catalog_revision=default_catalog_revision
     )
     pid = population_id(population)
-    pinned_catalog = catalog(population.catalog_revision)
+    pinned_catalog = catalog(population.catalog_revision, config=reader.config)
     if query.form_id:
         form = pinned_catalog.species.get(query.form_id)
         if form is None or form.base_species_id != query.species_id:

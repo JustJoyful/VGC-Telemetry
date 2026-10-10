@@ -2,7 +2,6 @@
 
 import logging
 from datetime import UTC, datetime
-from pathlib import Path
 from typing import TypeVar
 
 from boto3.dynamodb.conditions import Key
@@ -19,10 +18,10 @@ from app.models.v2 import (
     TeamView,
 )
 from app.models.v2_queries import canonical_query
+from app.v2.catalog import resolve_catalog
 from app.v2.config import V2ReadConfig, get_v2_config
 from app.v2.cursors import decode_cursor, decode_snapshot, encode_cursor, encode_snapshot
 from app.v2.errors import V2Error, unavailable
-from core.catalog import load_catalog
 from core.models.public_read import PUBLIC_SCHEMA
 from core.top_cut import POLICY_VERSION
 from db.client import get_dynamodb_table
@@ -233,10 +232,10 @@ class PublicReader:
             raise ValueError("Unknown public collection section")
         if getattr(query, "form_id", None) and getattr(query, "species_id", None):
             try:
-                catalog = load_catalog(
+                catalog = resolve_catalog(
                     getattr(query, "catalog_revision", None)
                     or self.config.default_catalog_revision,
-                    index_path=Path("core/regulations/v2/index.json"),
+                    config=self.config,
                 )
             except ValueError as error:
                 raise unavailable("Catalog is unavailable") from error

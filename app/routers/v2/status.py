@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, Query
 from app.db.public_queries import PublicReader, get_public_reader
 from app.models.v2 import Coverage, StatusView
 from app.models.v2_queries import NoQuery
+from db.catalog import PENDING_KEY, STATE_KEY
 from db.schema_public import public_capture_key, public_state_key, snapshot_row_key
 
 router = APIRouter(prefix="/v2", tags=["Manual data status"])
@@ -24,6 +25,11 @@ def data_status(*, reader: PublicReader, now: datetime) -> StatusView:
     ]
     last_capture = max(known_times, key=datetime.fromisoformat) if known_times else None
     captured = datetime.fromisoformat(last_capture) if last_capture else None
+    catalog = reader.get(STATE_KEY) or {}
+    pending = reader.get(PENDING_KEY) or {}
+    check = reader.get({"PK": "V2#CATALOG", "SK": "CHECK"}) or {}
+    checked = check.get("last_successful_check")
+    runtime = reader.config.catalog_runtime
     return StatusView(
         snapshot_id=snapshot_id,
         dirty=state.get("dirty", False),
@@ -32,6 +38,19 @@ def data_status(*, reader: PublicReader, now: datetime) -> StatusView:
         published_at=state.get("published_at"),
         stale=(now - captured).total_seconds() > 86400 if captured else None,
         coverage=Coverage(**summary.get("coverage", {})),
+        catalog_active_revision=runtime.current.snapshot_id
+        if runtime and runtime.current
+        else catalog.get("active_revision"),
+        catalog_pending_revision=pending.get("pending_revision"),
+        catalog_verification_status=catalog.get("verification_status")
+        or ("pending" if pending or check.get("pending") else None),
+        catalog_last_successful_check=checked,
+        catalog_checked_at=check.get("checked_at"),
+        catalog_stale=True
+        if runtime and runtime.stale
+        else (now - datetime.fromisoformat(checked)).total_seconds() > 172800
+        if checked
+        else None,
         catalog_coverage=[
             "Pinned M-B/M-C; historical M-A/unknown patches unverified",
             "Supplementary community mechanics; no official game export verification",

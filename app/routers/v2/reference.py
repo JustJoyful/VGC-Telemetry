@@ -6,11 +6,11 @@ from fastapi import APIRouter, Depends, Query
 
 from app.models.v2 import MoveView, Page, PokemonView, PublicEvidence, RegulationView, SnapshotInfo
 from app.models.v2_queries import PageQuery, PokemonQuery, ReferenceQuery, canonical_query
+from app.v2.catalog import reference as load_reference
 from app.v2.config import V2ReadConfig, get_v2_config
 from app.v2.cursors import _decode, decode_cursor, decode_snapshot, encode_cursor, encode_snapshot
 from app.v2.errors import V2Error, unavailable
 from core.catalog import to_id
-from core.public_reference import load_public_reference
 from ingestion.staging import canonical_bytes
 
 router = APIRouter(prefix="/v2", tags=["Pinned native reference"])
@@ -40,7 +40,9 @@ def _request(query, endpoint, config):
         if len(parts) != 3 or parts[0] != "reference":
             raise V2Error(400, "invalid_cursor", "Not a reference snapshot")
         digest, default = parts[1:]
-    ref = load_public_reference(digest)
+    ref = load_reference(digest, config=config, revision=getattr(query, "catalog_revision", None))
+    if not pinned:
+        default = ref.get("default_revision", default)
     if default not in ref["catalogs"]:
         raise unavailable("Default native catalog is unavailable")
     revision = getattr(query, "catalog_revision", None) or default
@@ -149,7 +151,7 @@ def reference_page(
 ) -> Page[PokemonView]:
     config = config or get_v2_config()
     config.require_secret()
-    reference = load_public_reference(reference_manifest_hash)
+    reference = load_reference(reference_manifest_hash, config=config, revision=catalog_revision)
     if catalog_revision not in reference["catalogs"]:
         raise V2Error(404, "not_found", "Catalog not found")
     catalog = reference["catalogs"][catalog_revision]
@@ -195,7 +197,7 @@ def regulation_page(
 ) -> Page[RegulationView]:
     config = config or get_v2_config()
     config.require_secret()
-    ref = load_public_reference(reference_manifest_hash)
+    ref = load_reference(reference_manifest_hash, config=config)
     snapshot = snapshot or SnapshotInfo(
         snapshot_id=f"reference:{reference_manifest_hash}:{config.default_catalog_revision}",
         expires_at=config.clock() + config.token_seconds,

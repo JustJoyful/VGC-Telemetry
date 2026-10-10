@@ -4,6 +4,7 @@ import os
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Any
 
 from app.v2.errors import unavailable
 
@@ -21,6 +22,7 @@ class V2ReadConfig:
     analytics_days: int = 90
     response_bytes: int = 350_000
     token_seconds: int = 86400
+    catalog_runtime: Any = None
 
     def __post_init__(self):
         if self.secret is not None and (
@@ -37,11 +39,17 @@ class V2ReadConfig:
 def get_v2_config() -> V2ReadConfig:
     secret = os.environ.get("V2_CURSOR_SECRET")
     try:
+        runtime = None
+        if os.environ.get("CATALOG_RUNTIME_ENABLED") == "true":
+            from app.v2.catalog import runtime_catalog
+
+            runtime = runtime_catalog(os.environ["S3_RAW_BUCKET_NAME"])
         return V2ReadConfig(
             secret=secret.encode() if secret else None,
             default_catalog_revision=os.environ.get(
                 "V2_DEFAULT_CATALOG_REVISION", "champions-mc-3661ce4"
             ),
+            catalog_runtime=runtime,
         )
     except ValueError as error:
         raise unavailable("Cursor configuration is unavailable") from error

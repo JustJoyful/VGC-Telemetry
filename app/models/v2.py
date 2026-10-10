@@ -189,6 +189,7 @@ class RegulationView(StrictModel):
     coverage: str
     authority: str = "Official registration pool; supplementary community mechanics"
     provenance: list[PublicEvidence] = Field(default_factory=list)
+    verification_status: Literal["verified", "pending"] = "verified"
 
 
 class PokemonView(StrictModel):
@@ -233,6 +234,12 @@ class StatusView(StrictModel):
     stale: bool | None = None
     source_errors: list[str] | None = None
     catalog_coverage: list[str] = Field(default_factory=list)
+    catalog_active_revision: str | None = None
+    catalog_pending_revision: str | None = None
+    catalog_verification_status: Literal["verified", "pending"] | None = None
+    catalog_last_successful_check: datetime | None = None
+    catalog_checked_at: datetime | None = None
+    catalog_stale: bool | None = None
     coverage: Coverage = Field(default_factory=Coverage)
 
 
