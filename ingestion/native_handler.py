@@ -1,4 +1,4 @@
-"""Explicit offline/native publication entry point; not enabled by the collector."""
+"""Explicit native publication and recovery entry point."""
 
 import random as randomness
 import time
@@ -7,6 +7,7 @@ from uuid import uuid4
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
 
+from core.telemetry import RunTelemetry
 from db.client import get_dynamodb_table
 from db.leases import acquire_lease, release_lease
 from db.publication import get, promote_revision
@@ -46,6 +47,28 @@ def handle_native_event(
     random=randomness.random,
     max_steps: int = 100,
 ) -> dict:
+    telemetry = RunTelemetry("native", context=context)
+    try:
+        result = _handle_native_event(
+            event,
+            table=table,
+            s3_client=s3_client,
+            now=now,
+            sleep=sleep,
+            random=random,
+            max_steps=max_steps,
+            telemetry=telemetry,
+        )
+    except Exception as error:
+        if not isinstance(error, BatchFailure):
+            telemetry.failure(error)
+        telemetry.finish("error")
+        raise
+    telemetry.finish(result["status"])
+    return result
+
+
+def _handle_native_event(event, *, table, s3_client, now, sleep, random, max_steps, telemetry):
     if max_steps < 1:
         raise ValueError("max_steps must be positive")
     table = table if table is not None else get_dynamodb_table()
@@ -56,19 +79,24 @@ def handle_native_event(
         return int(time.time()) if now is None else now
 
     def run(operation):
-        return retry(operation, sleep=sleep, random=random)
+        return retry(operation, sleep=sleep, random=random, on_retry=telemetry.retry)
 
     outcomes = []
     for ref in event.get("normalized", []):
         held = None
         try:
             try:
+                from db.catalog import CatalogStore
+
                 value = run(
                     lambda: read_staged_result(
                         s3_client=s3_client,
                         bucket=ref["bucket"],
                         key=ref["key"],
                         version_id=ref.get("version_id"),
+                        catalog_store=CatalogStore(
+                            table=table, s3_client=s3_client, bucket=ref["bucket"]
+                        ),
                     )
                 )
             except InvalidRevisionInput as invalid:
@@ -87,6 +115,8 @@ def handle_native_event(
                     )
                 )
                 outcomes.append({"status": "quarantined", "key": ref["key"], "quarantine_key": qk})
+                telemetry.emit("Quarantines")
+                telemetry.failure(invalid, event_ref=ref.get("key"), result="quarantined")
                 continue
             from db.public_inputs import note_public_capture
 
@@ -117,10 +147,14 @@ def handle_native_event(
                     observation=value,
                 )
             )
+            if promotion.status == "promoted":
+                telemetry.emit("AcceptedWork")
+                telemetry.emit("NormalizedRevisions")
             release_lease(held, table=table)
             held = None
             if promotion.status in ("stale", "pending_order"):
                 outcomes.append({"status": promotion.status, "event_id": manifest.event_id})
+                telemetry.emit("RejectedWork" if promotion.status == "stale" else "PendingWork")
                 continue
             # A bounded page plus durable cursor; repeated invocations continue recovery.
             recovery = run(
@@ -155,6 +189,8 @@ def handle_native_event(
                     "revision_id": manifest.revision_id,
                 }
             )
+            if outcomes[-1]["status"] == "pending":
+                telemetry.emit("PendingWork")
         except (ClientError, BotoCoreError) as failure:
             status = (
                 "pending"
@@ -162,6 +198,9 @@ def handle_native_event(
                 else "error"
             )
             outcomes.append({"status": status, "key": ref["key"], "error": str(failure)})
+            telemetry.failure(failure, event_ref=ref.get("key"), result=status)
+            if status == "pending":
+                telemetry.emit("PendingWork")
         finally:
             if held:
                 try:
@@ -194,6 +233,7 @@ def handle_native_event(
                 clock=clock,
                 run=run,
                 max_steps=max_steps,
+                telemetry=telemetry,
             )
             outcomes.append(
                 {
@@ -209,7 +249,10 @@ def handle_native_event(
                     "public_status": "published" if public_published else "pending",
                 }
             )
+            if outcomes[-1]["status"] == "pending":
+                telemetry.emit("PendingWork")
         except (ClientError, BotoCoreError) as error:
+            telemetry.failure(error, result="error")
             outcomes.append(
                 {
                     "status": "pending"
@@ -228,11 +271,20 @@ def handle_native_event(
     }
 
 
-def resume_public(*, table, s3_client, owner, clock, run, max_steps):
+def resume_public(*, table, s3_client, owner, clock, run, max_steps, telemetry=None):
     from db.schema_public import public_lease_key, public_state_key
     from ingestion.public_snapshot import build_public_snapshot, publish_public_snapshot
 
     state = get(table, public_state_key())
+    if telemetry:
+        if not state or not state.get("dirty"):
+            telemetry.emit("PublicationLag", 0)
+        elif state.get("first_validated_at") is not None:
+            telemetry.emit("PublicationLag", max(0, clock() - int(state["first_validated_at"])))
+        else:
+            telemetry.failure(
+                ValueError("Validation time unknown"), result="pending_timestamp_unknown"
+            )
     if not state or not state.get("dirty"):
         return True
     held = None
@@ -247,9 +299,12 @@ def resume_public(*, table, s3_client, owner, clock, run, max_steps):
                 table=table, s3_client=s3_client, lease=held, clock=clock, max_steps=max_steps
             )
         )
-        return result.status == "complete" and run(
+        published = result.status == "complete" and run(
             lambda: publish_public_snapshot(result, table=table, lease=held, clock=clock)
         )
+        if published and telemetry:
+            telemetry.emit("Publications")
+        return published
     except ClientError as error:
         if not conditional_failure(error):
             raise

@@ -6,7 +6,7 @@ import boto3
 import httpx
 import pytest
 
-from scraper.dispatcher import CollectionFailure, CollectionReport, SourceReport, collect_sources
+from scraper.dispatcher import CollectionFailure, collect_sources
 from scraper.limitless_client import LimitlessAPIClient
 from tests.source_helpers import INDEX, real_inputs
 
@@ -86,12 +86,12 @@ def test_scraper_handler_single_capture_error(s3_bucket):
     )  # HTTP failure evidence and explicit pending result.
 
 
-def test_scraper_lambda_handler(s3_bucket, monkeypatch):
+def test_scraper_lambda_handler_disabled_admission_does_not_collect(monkeypatch):
     from scraper.handler import lambda_handler
 
-    report = CollectionReport(sources={"limitless": SourceReport(captured=1)})
-    monkeypatch.setattr("scraper.handler.collect_sources", lambda **kwargs: report)
+    def unexpected_collection(**kwargs):
+        pytest.fail("Disabled admission must not collect")
+
+    monkeypatch.setattr("scraper.handler.collect_sources", unexpected_collection)
     result = lambda_handler({})
-    assert (
-        result["status"] == "success" and result["report"]["sources"]["limitless"]["captured"] == 1
-    )
+    assert result == {"status": "disabled", "reason": "source_admission_not_enabled"}
