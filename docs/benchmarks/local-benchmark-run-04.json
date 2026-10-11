@@ -1,0 +1,562 @@
+{
+  "schema_version": 1,
+  "measured_at": "2026-10-11T08:57:00.462308+00:00",
+  "revision": "83cae645bfa5a71ae3da6ae692aaede1abc3e8dc",
+  "source_tree_sha256": "de2eef73e2bd865673d58a36ffdef1fc2da38c49a1c25354adaaf1774c15ec15",
+  "command": [
+    "uv",
+    "run",
+    "--frozen",
+    "python",
+    "-m",
+    "scripts.benchmarks.run_local",
+    "--confirm-reset",
+    "--repeats",
+    "2",
+    "--output",
+    "docs/benchmarks/phase-4a-run-4.json"
+  ],
+  "inputs": {
+    "tests/fixtures/phase2/analyst-queries.json": "ea84d8604e88ef13f4f024828b919fe2682c89f3dc2a1c59d5b157478ed4f860",
+    "tests/fixtures/phase2/expected-real.json": "288d7ce73b4996bb62957aabd3c7d6be29cae2be92d0073d59ee9fc1a2597490",
+    "tests/fixtures/phase2/source-evidence.json": "c3dd693c5e7ca247c5e3e007592f9b0cbe6ab6b843465b1ee80fb0d1b69fd529",
+    "tests/fixtures/sources/captures/01a89493ed65030a6deb3e624141b70b7d3bb11db27d82e7f25ad5a36b680afb.body": "fede7a249c4505a45d17c9bf3bc5f45d351314ee15ab49b5af3091e5ac1a3b3b",
+    "tests/fixtures/sources/captures/01a89493ed65030a6deb3e624141b70b7d3bb11db27d82e7f25ad5a36b680afb.json": "9e0238efb942a9143d49afe5213a093fb409a55b2233cc09cc63e7476f24a756",
+    "tests/fixtures/sources/captures/04a27aeaa1225ccd5b58f717a109bd5ed04a6f80da5fafc30f8df15ad63ddcde.body": "4ea0f81d4e44168dcf1a01bcc3482d5a1c013e321d087b25d72908b132114c40",
+    "tests/fixtures/sources/captures/04a27aeaa1225ccd5b58f717a109bd5ed04a6f80da5fafc30f8df15ad63ddcde.json": "d3f2460e7ec0db91f7c4c58118848eb9f4011c98cc1cc4d49f777541b907f987",
+    "tests/fixtures/sources/captures/06dcf3bab2cfa1c28abfe4b76eaba19a7848e77df53f89bb094e1d0351161997.body": "f457c2499d0261fe51f097a23fe7be9caf63be858e25ef39db47891e3d339070",
+    "tests/fixtures/sources/captures/06dcf3bab2cfa1c28abfe4b76eaba19a7848e77df53f89bb094e1d0351161997.json": "87275ca2f3f953e87a71313e02e26a7ae5671244ac1f0177e2cd8ef9f3aa9362",
+    "tests/fixtures/sources/captures/0741d9c4ab2047c83b2d4b0b050515133a28a5256be2e23378cbb0f03196636d.body": "a9aad09593f50c6827ebe7062a10f436c57c0a6b657e5ed8dd57011cb469568f",
+    "tests/fixtures/sources/captures/0741d9c4ab2047c83b2d4b0b050515133a28a5256be2e23378cbb0f03196636d.json": "40fcf7a5947e66b6ee17d5692bc2e43093e2a60bef865799450ae9de093a9638",
+    "tests/fixtures/sources/captures/1f3571dc5f9030bfd2fa5381bca7c34ce0a83033b9acc25840d26de7a7ccdc19.body": "a32e7a3e83c4397a38c259ede97ff86abdd44523f1c159b3f2273dcf5d923b56",
+    "tests/fixtures/sources/captures/1f3571dc5f9030bfd2fa5381bca7c34ce0a83033b9acc25840d26de7a7ccdc19.json": "b2268a70ea0efffefe7a80e78d84036fb69507cddf56666ca1de2de7d8697ba6",
+    "tests/fixtures/sources/captures/308cae1f93d27d514c6f53e70de0f874c512c69f28886e43bc96cd866e20267d.body": "c195592cdf52c8ce193cc02d444b19c3272234be66a04764356064be35ff1985",
+    "tests/fixtures/sources/captures/308cae1f93d27d514c6f53e70de0f874c512c69f28886e43bc96cd866e20267d.json": "1caafc164653779ed60867df373f04876af4b917d92598b3b8c74baa7792c4c4",
+    "tests/fixtures/sources/captures/37301186e2edb4e8cc70ce220b32539e024e8fa9c6e4b71af6b244fa535a3a5a.body": "df6e5622f4811d7957c6a58af4761fac38f9729ac303a4a0f798875589d2a233",
+    "tests/fixtures/sources/captures/37301186e2edb4e8cc70ce220b32539e024e8fa9c6e4b71af6b244fa535a3a5a.json": "015901e58598a2d2d9665aaa0ccfa1c9f3dcee0f354f8e2c9b45f8a1027fcc04",
+    "tests/fixtures/sources/captures/3a5d20febab3b58deb7088e58a0c4d8d82b8d3e81cfbad4e4ecd1cd043c12289.body": "101464991628fe01d1daa4acba06603aec1d4b0c962dacb5bf2af18967396f1e",
+    "tests/fixtures/sources/captures/3a5d20febab3b58deb7088e58a0c4d8d82b8d3e81cfbad4e4ecd1cd043c12289.json": "24bddba6e69a2164688ccc631ac46bbcb06bebfa5e31a2942d9b998598542abd",
+    "tests/fixtures/sources/captures/3c998c966b36ab420be7e1d244ddb09f9cc94e4888a997894e5fe6f3f4e1c8f5.body": "b48f2e12d1b391210bbf9a19f2434a61ba8bd7e564c42614988512846c3f4a9d",
+    "tests/fixtures/sources/captures/3c998c966b36ab420be7e1d244ddb09f9cc94e4888a997894e5fe6f3f4e1c8f5.json": "b58b6c641e3988d72f2598c3762a21ba7b816a8c44e81e0b482cc405facc21d5",
+    "tests/fixtures/sources/captures/40a52a8316fd8a4e3201d04b8530ddbcdcb2481ebf677d94ef7be96df63251f4.body": "f22d14965e68ac5e7640d8e7e0ffe213d9cb85d9e6c6c0703b0258467b924686",
+    "tests/fixtures/sources/captures/40a52a8316fd8a4e3201d04b8530ddbcdcb2481ebf677d94ef7be96df63251f4.json": "6722b3ede98f14e9dda35222ba7aab1dc9f1e5c206e42d6e858c512d5395811b",
+    "tests/fixtures/sources/captures/483cd98be6f6740df4550514a286700591f0ea8845bd70e11b5e2ea53ff41b34.body": "e99b6fdb0ac711251e19744596f00b083ec18ab6838d0f6e4cc0c984e342967f",
+    "tests/fixtures/sources/captures/483cd98be6f6740df4550514a286700591f0ea8845bd70e11b5e2ea53ff41b34.json": "b1420d1f0826a873fab12db4ca23bf3d029a61efbce7640017c45f9e9ab95f00",
+    "tests/fixtures/sources/captures/5008a02e235ee011fe52259c5af4677dc37eefad071b153c6633868cb086e45f.body": "7810beb34e93cca6a93722cbac1e762d2a919e2b30777bae601b8e554d89f68b",
+    "tests/fixtures/sources/captures/5008a02e235ee011fe52259c5af4677dc37eefad071b153c6633868cb086e45f.json": "af49f87dd751c70174c294ec594dc175630e1a6e2d128447bc66f422cf684e9c",
+    "tests/fixtures/sources/captures/50817a558b8da1f4c7b79236b99ba4dc8993e5f792fc3b0886f470f6e0f21196.body": "b77ce16b04161b46714e798ed8e337770886e418a4972b5da1ab94f72576105d",
+    "tests/fixtures/sources/captures/50817a558b8da1f4c7b79236b99ba4dc8993e5f792fc3b0886f470f6e0f21196.json": "aef01a5223affabbd334fedaefbf1be141e614e1f1f0ddd41625ebc3111bd840",
+    "tests/fixtures/sources/captures/53d9300ec98bf0015446cc413b0988aa23ce1854a68f83cbcdcc0af292b83992.body": "05a4742235556c535591c8e24ecdad2f390b8bb5435542441d118522196f32d7",
+    "tests/fixtures/sources/captures/53d9300ec98bf0015446cc413b0988aa23ce1854a68f83cbcdcc0af292b83992.json": "64bc650dca5498e849aac4ee8abc5a3b640cd70efedebbde20b5c3f31b6be1e1",
+    "tests/fixtures/sources/captures/5b9666d5fe758bc9f72f39bf9afcffcc35b953ffe3fbf8e6f97350c840647a22.body": "ea1dff2a5f500db89371799f2e7cf03675231fcaf0a2a784eca39599f9ff9f9a",
+    "tests/fixtures/sources/captures/5b9666d5fe758bc9f72f39bf9afcffcc35b953ffe3fbf8e6f97350c840647a22.json": "11be1795ad832e9163e42c264bb0412df692e6ec476ee187608938fad0d51dbc",
+    "tests/fixtures/sources/captures/5f5ef9c986605f656332bd4c48e2f54b878a52d8530665216a62435579de639e.body": "8b0c6db8dcd403bb1f5453c1c6f9ac35c80192762219a308c80023375a93d617",
+    "tests/fixtures/sources/captures/5f5ef9c986605f656332bd4c48e2f54b878a52d8530665216a62435579de639e.json": "f91448473601989d661908c3c16938e7cc14d796acafe0b6e347b3cc5147360e",
+    "tests/fixtures/sources/captures/62cfc293da695b2cf2c22edfc051a07d373272c16a30ec26692b325d8f191ab5.body": "2a0aadc5046940c41584fea73b3a3b25d2af6ac25c78530100f5cde338316085",
+    "tests/fixtures/sources/captures/62cfc293da695b2cf2c22edfc051a07d373272c16a30ec26692b325d8f191ab5.json": "0897b53ab8bd90f45ab147d0915b3bda6185d28c75718a4d47d46742dce81af6",
+    "tests/fixtures/sources/captures/6d6c5764646e69364f48e0a375dd7aaadde7b82a56f2ed43026d8ce3e21eed30.body": "a6cc11eeb525ad58dee9010dd0d42274a5b4dacb39ce8653f4888cbd2f4f459d",
+    "tests/fixtures/sources/captures/6d6c5764646e69364f48e0a375dd7aaadde7b82a56f2ed43026d8ce3e21eed30.json": "20444339e1618b6ad539c4fd58879da32a24d75ef28394f3ca4ed8ea00b0c43c",
+    "tests/fixtures/sources/captures/6fef7cf2b06ffcb33b5df0c5da2c206a22365438afc7174bab0b80cfd39abf1b.body": "94ac9f4ea4be767603d35336e8019d7daef4fa0a24f1b66727f2ceb8efa9e545",
+    "tests/fixtures/sources/captures/6fef7cf2b06ffcb33b5df0c5da2c206a22365438afc7174bab0b80cfd39abf1b.json": "510de0536fde57ff1caaa417280cee31128151f742dd3f2f6454e2301dfb2092",
+    "tests/fixtures/sources/captures/79acc84d3de95e5899320ca105c3e6871a36c7494c947190624097c498389290.body": "fede7a249c4505a45d17c9bf3bc5f45d351314ee15ab49b5af3091e5ac1a3b3b",
+    "tests/fixtures/sources/captures/79acc84d3de95e5899320ca105c3e6871a36c7494c947190624097c498389290.json": "172c566d7eef1c104909dabf039a608876a490e65fd954f8586b8ad9bbf08bdf",
+    "tests/fixtures/sources/captures/828bf4e1bfc9abb38ec084b1b18140d2837ddb3feaba45bfec380eba0e84d2c9.body": "122529cebbc15cd2a22c781e0fb43ca814be86a18951f1ceaf37cf65297a3627",
+    "tests/fixtures/sources/captures/828bf4e1bfc9abb38ec084b1b18140d2837ddb3feaba45bfec380eba0e84d2c9.json": "a07c82665367cd45167ee5b36fdba2379df3738067774f6fa7b8e073a3348979",
+    "tests/fixtures/sources/captures/82aa860f3b351dca905741dd664e236cd9d758f9cd4cc65400f3011499b343a5.body": "93bc04bd24bd95cfc5b2677cbb58097d20fa80bfc7f778ef9854745ac8c30f8d",
+    "tests/fixtures/sources/captures/82aa860f3b351dca905741dd664e236cd9d758f9cd4cc65400f3011499b343a5.json": "2e93366d84c351a5ac15f8bbab5b3e8c5421e06a4e6d71866e4b79363e41e314",
+    "tests/fixtures/sources/captures/948b607c76a30171e21b460b32ca477b8d63353d0be20c3c8c047b994998202b.body": "875a72d221dae45eb1ebd4822c38ecba0efae575dc2404c79f2bc1193742ce0c",
+    "tests/fixtures/sources/captures/948b607c76a30171e21b460b32ca477b8d63353d0be20c3c8c047b994998202b.json": "99a41b61fff8587cbacad158cf8888f93d6d55ab360a37307113b732ed160909",
+    "tests/fixtures/sources/captures/c59f59450740375239b72be5c384fa5d100606635896e6d5cb5b8f34ce2e1a0b.body": "f66f7c310bb3c722e26d4bdb1d417f9f3a18ec740731e030cc302de4797cb082",
+    "tests/fixtures/sources/captures/c59f59450740375239b72be5c384fa5d100606635896e6d5cb5b8f34ce2e1a0b.json": "0ba60d0883bdafb5fe1338858d8f37d9ea43ab1a0761b2751834b01b9da1c06b",
+    "tests/fixtures/sources/captures/c9c7a03522306637668e1182226c6d5abfd6e2f37bb4246c58a074cc01f9e962.body": "d5558cd419c8d46bdc958064cb97f963d1ea793866414c025906ec15033512ed",
+    "tests/fixtures/sources/captures/c9c7a03522306637668e1182226c6d5abfd6e2f37bb4246c58a074cc01f9e962.json": "9415d88bee0e591fb1e9739966c6dedb48276f13d071be9d69cdb6c6b90edf4a",
+    "tests/fixtures/sources/captures/ccac7ed5566bad6b60bba196fd3091a78cc65f086c918fef0d766fd6c8a81709.body": "f9d069c85bbfa805e45681516ae53af9d3c14299cdaffca5876d0fbc0928fd9e",
+    "tests/fixtures/sources/captures/ccac7ed5566bad6b60bba196fd3091a78cc65f086c918fef0d766fd6c8a81709.json": "2fde9cafbcb4740c2ea5fde141d3f9b5fcd9e682f37b73062c086fa4f0fb1e56",
+    "tests/fixtures/sources/captures/d09eb6d07ca9929dfb01e42e53529ba068712b3c81d8b3361682edc6986dc5cf.body": "b2002a9fd52ba8db3783a05fbdebfb09c34fd09513b90f6b390a2c0dfbc93ed0",
+    "tests/fixtures/sources/captures/d09eb6d07ca9929dfb01e42e53529ba068712b3c81d8b3361682edc6986dc5cf.json": "66a265de6c540342a1ed55088b28ce384b59ae6132968ac35f2085abb44a7423",
+    "tests/fixtures/sources/captures/fa257e748e0bc5b2e1cbb82480aa6b8e98a3247deac6d736cd9c543133ad513e.body": "a27ae5700862174dd9fb7ef62bf58ca2d3ed664d73103ff5649fac007c7aa382",
+    "tests/fixtures/sources/captures/fa257e748e0bc5b2e1cbb82480aa6b8e98a3247deac6d736cd9c543133ad513e.json": "2374d9fa4331e9da51469994b2d1099adf875447a4d2ba6a51007449187fd09c",
+    "tests/fixtures/sources/limitless/accepted-capture.json": "eeb869cbb427845b979a51b40464d08ceaf004237f324d3f9c0818f99d002735",
+    "tests/fixtures/sources/limitless/second-accepted-capture.json": "4bf8ff44c41aa227617c03bbef2f0c8f53bff7d3c2b5977f4fce32586f31c3d2",
+    "tests/fixtures/sources/manifest.json": "7dc9ed83979114cea644e050bf0411b0a6c93471f983fd9affd63d385b7b978d",
+    "core/regulations/v2/README.md": "4f72c48f5d7ef5ed8706e184c266098609588d482622b844511b36f01daf3ab4",
+    "core/regulations/v2/UPSTREAM_LICENSE.txt": "b2002a9fd52ba8db3783a05fbdebfb09c34fd09513b90f6b390a2c0dfbc93ed0",
+    "core/regulations/v2/champions-mb-3661ce4.json": "03bbc7d964276997a33cc823ac14ccc5a379422fb19bb43505a6d1a1b5b3853f",
+    "core/regulations/v2/champions-mc-3661ce4.json": "33c614be1bc47c123ad112facf34da29bc9b9918852a4a432bb9b131e37b6862",
+    "core/regulations/v2/index.json": "0cbaf4125d66703f2dfa4f307d4fd369b9d12090ef60fd809c1cd6d7e2192f41",
+    "core/regulations/v2/public/03bbc7d964276997a33cc823ac14ccc5a379422fb19bb43505a6d1a1b5b3853f.catalog.json": "03bbc7d964276997a33cc823ac14ccc5a379422fb19bb43505a6d1a1b5b3853f",
+    "core/regulations/v2/public/122529cebbc15cd2a22c781e0fb43ca814be86a18951f1ceaf37cf65297a3627.pool.body": "122529cebbc15cd2a22c781e0fb43ca814be86a18951f1ceaf37cf65297a3627",
+    "core/regulations/v2/public/153f8ef44eeeccea2a9d5c07adb22cb03d06b4826f18db61c7c1212674662909.eligibility.json": "153f8ef44eeeccea2a9d5c07adb22cb03d06b4826f18db61c7c1212674662909",
+    "core/regulations/v2/public/1b9560c32f1dcf7d73b686af84c5dc2da971a76100a21195d485a3ee6bb3eee3.json": "1b9560c32f1dcf7d73b686af84c5dc2da971a76100a21195d485a3ee6bb3eee3",
+    "core/regulations/v2/public/33c614be1bc47c123ad112facf34da29bc9b9918852a4a432bb9b131e37b6862.catalog.json": "33c614be1bc47c123ad112facf34da29bc9b9918852a4a432bb9b131e37b6862",
+    "core/regulations/v2/public/8b0c6db8dcd403bb1f5453c1c6f9ac35c80192762219a308c80023375a93d617.pool.body": "8b0c6db8dcd403bb1f5453c1c6f9ac35c80192762219a308c80023375a93d617",
+    "core/regulations/v2/public/b2002a9fd52ba8db3783a05fbdebfb09c34fd09513b90f6b390a2c0dfbc93ed0.license.txt": "b2002a9fd52ba8db3783a05fbdebfb09c34fd09513b90f6b390a2c0dfbc93ed0",
+    "core/regulations/v2/public/bundled.json": "3b359d0b1600b33d36ca52a901939774491a8479afe8517e4cb71af5732b25bd",
+    "core/regulations/v2/public/ca78cee844cbd13795247a05eab9d4780ea3e36eb5d83dd42e589deed1509bd8.eligibility.json": "ca78cee844cbd13795247a05eab9d4780ea3e36eb5d83dd42e589deed1509bd8",
+    "core/regulations/v2/public/ffd238f69d14ede794358fb24d8a691144a0f594d03a6122081736438a1c0aab.index.json": "ffd238f69d14ede794358fb24d8a691144a0f594d03a6122081736438a1c0aab"
+  },
+  "environment": {
+    "host_os": "Linux-7.2.3-1-cachyos-x86_64-with-glibc2.44",
+    "host_architecture": "x86_64",
+    "host_cpu": "12th Gen Intel(R) Core(TM) i5-12450HX",
+    "host_ram": "MemTotal:       16068420 kB",
+    "host_cpu_count": 12,
+    "uv": "uv 0.5.9",
+    "docker": "29.7.2",
+    "compose": "5.5.1",
+    "uv_lock_sha256": "77ea672be38e756aa8106beb213eba02ab91c9d313faf3579408edb7c41b8f8c",
+    "containers": [
+      {
+        "name": "/vgc-phase4a-api-1",
+        "image_id": "sha256:82d30901d70b3918900ed029036199ca10e672dfd4bf1e5919a59e4dfc8d4638",
+        "memory_limit_bytes": 1073741824,
+        "nano_cpus": 2000000000
+      },
+      {
+        "name": "/vgc-phase4a-dynamodb-1",
+        "image_id": "sha256:7ef4a2c45b58c2901e70a4f28e0953a422c2c631baaaf5e2c15e0805740c7752",
+        "memory_limit_bytes": 1073741824,
+        "nano_cpus": 2000000000
+      },
+      {
+        "name": "/vgc-phase4a-scheduler-1",
+        "image_id": "sha256:82d30901d70b3918900ed029036199ca10e672dfd4bf1e5919a59e4dfc8d4638",
+        "memory_limit_bytes": 1073741824,
+        "nano_cpus": 2000000000
+      },
+      {
+        "name": "/vgc-phase4a-storage-1",
+        "image_id": "sha256:1803faef57627e2d9c2e7d89d655d712ddded5389040054987163043fecb6a3c",
+        "memory_limit_bytes": 1073741824,
+        "nano_cpus": 2000000000
+      },
+      {
+        "name": "/vgc-phase4a-worker-1",
+        "image_id": "sha256:82d30901d70b3918900ed029036199ca10e672dfd4bf1e5919a59e4dfc8d4638",
+        "memory_limit_bytes": 1073741824,
+        "nano_cpus": 2000000000
+      }
+    ],
+    "verified_api_source_tree_sha256": "de2eef73e2bd865673d58a36ffdef1fc2da38c49a1c25354adaaf1774c15ec15",
+    "python": "3.12.15 (main, Oct  1 2026, 21:47:32) [GCC 14.2.0]",
+    "container_os": "Linux-7.2.3-1-cachyos-x86_64-with-glibc2.41",
+    "architecture": "x86_64",
+    "dependencies": {
+      "boto3": "1.43.103",
+      "botocore": "1.43.103",
+      "fastapi": "0.141.1",
+      "pydantic": "2.13.5",
+      "httpx": "0.28.1",
+      "uvicorn": "0.54.0"
+    },
+    "memory_method": "Linux process cumulative ru_maxrss KiB; excludes child/server RSS",
+    "peak_rss_kib": 182848,
+    "prior_peak_rss_kib": 58392,
+    "benchmark_image_id": "sha256:82d30901d70b3918900ed029036199ca10e672dfd4bf1e5919a59e4dfc8d4638"
+  },
+  "dataset": {
+    "retained_events": 2,
+    "context_rosters": 37,
+    "largest_event_rosters": 31,
+    "baseline_eligible_rosters": 10,
+    "corrected_eligible_rosters": 9,
+    "maximum_roster_slots": 6,
+    "maximum_moves_per_slot": 4,
+    "query_window_days": 90,
+    "query_page_limit": 100,
+    "core_size": 3,
+    "repeated_invocations": 2,
+    "persisted_items": 45318,
+    "semantic_results_equal": true
+  },
+  "timings": {
+    "collection_normalization_largest_retained": {
+      "first_seconds": 0.08439220598665997,
+      "repeated_seconds": {
+        "count": 2,
+        "min": 0.0841261720051989,
+        "median": 0.0904701980180107,
+        "p95": 0.09681422403082252,
+        "max": 0.09681422403082252,
+        "total": 0.1809403960360214
+      },
+      "samples_seconds": [
+        0.08439220598665997,
+        0.0841261720051989,
+        0.09681422403082252
+      ]
+    },
+    "collection_normalization_representative": {
+      "first_seconds": 0.032470970996655524,
+      "repeated_seconds": {
+        "count": 2,
+        "min": 0.03138883400242776,
+        "median": 0.031779797485796735,
+        "p95": 0.03217076096916571,
+        "max": 0.03217076096916571,
+        "total": 0.06355959497159347
+      },
+      "samples_seconds": [
+        0.032470970996655524,
+        0.03138883400242776,
+        0.03217076096916571
+      ]
+    },
+    "native_ingestion": {
+      "first_seconds": 90.0138761549606,
+      "repeated_seconds": {
+        "count": 2,
+        "min": 83.88795793399913,
+        "median": 85.3789953055093,
+        "p95": 86.87003267701948,
+        "max": 86.87003267701948,
+        "total": 170.7579906110186
+      },
+      "samples_seconds": [
+        90.0138761549606,
+        86.87003267701948,
+        83.88795793399913
+      ]
+    },
+    "complete_snapshot_build": {
+      "first_seconds": 110.06430538598215,
+      "repeated_seconds": {
+        "count": 2,
+        "min": 104.65048409602605,
+        "median": 106.65578078152612,
+        "p95": 108.66107746702619,
+        "max": 108.66107746702619,
+        "total": 213.31156156305224
+      },
+      "samples_seconds": [
+        110.06430538598215,
+        108.66107746702619,
+        104.65048409602605
+      ]
+    },
+    "duplicate_ingestion": {
+      "first_seconds": 7.829757261031773,
+      "repeated_seconds": {
+        "count": 2,
+        "min": 6.739082737010904,
+        "median": 7.178192213992588,
+        "p95": 7.617301690974273,
+        "max": 7.617301690974273,
+        "total": 14.356384427985176
+      },
+      "samples_seconds": [
+        7.829757261031773,
+        7.617301690974273,
+        6.739082737010904
+      ]
+    },
+    "duplicate_recovery": {
+      "first_seconds": 0.01786396198440343,
+      "repeated_seconds": {
+        "count": 2,
+        "min": 0.01890192902646959,
+        "median": 0.019173171021975577,
+        "p95": 0.019444413017481565,
+        "max": 0.019444413017481565,
+        "total": 0.038346342043951154
+      },
+      "samples_seconds": [
+        0.01786396198440343,
+        0.019444413017481565,
+        0.01890192902646959
+      ]
+    },
+    "collection_normalization_synthetic_correction": {
+      "first_seconds": 0.030777487030718476,
+      "repeated_seconds": {
+        "count": 2,
+        "min": 0.029352527984883636,
+        "median": 0.029920234985183924,
+        "p95": 0.030487941985484213,
+        "max": 0.030487941985484213,
+        "total": 0.05984046997036785
+      },
+      "samples_seconds": [
+        0.030777487030718476,
+        0.029352527984883636,
+        0.030487941985484213
+      ]
+    },
+    "correction_ingestion": {
+      "first_seconds": 40.07077497796854,
+      "repeated_seconds": {
+        "count": 2,
+        "min": 39.00558430701494,
+        "median": 39.83822783999494,
+        "p95": 40.67087137297494,
+        "max": 40.67087137297494,
+        "total": 79.67645567998989
+      },
+      "samples_seconds": [
+        40.07077497796854,
+        40.67087137297494,
+        39.00558430701494
+      ]
+    },
+    "publication": {
+      "first_seconds": 6.663203996955417,
+      "repeated_seconds": {
+        "count": 2,
+        "min": 6.459491488989443,
+        "median": 6.558538903511362,
+        "p95": 6.657586318033282,
+        "max": 6.657586318033282,
+        "total": 13.117077807022724
+      },
+      "samples_seconds": [
+        6.663203996955417,
+        6.657586318033282,
+        6.459491488989443
+      ]
+    },
+    "interrupted_recovery": {
+      "first_seconds": 96.1721679570037,
+      "repeated_seconds": {
+        "count": 2,
+        "min": 89.52684858697467,
+        "median": 92.70796886450262,
+        "p95": 95.88908914203057,
+        "max": 95.88908914203057,
+        "total": 185.41593772900524
+      },
+      "samples_seconds": [
+        96.1721679570037,
+        95.88908914203057,
+        89.52684858697467
+      ]
+    },
+    "rollback": {
+      "first_seconds": 0.03033057803986594,
+      "repeated_seconds": {
+        "count": 2,
+        "min": 0.01826645602704957,
+        "median": 0.019772761006606743,
+        "p95": 0.021279065986163914,
+        "max": 0.021279065986163914,
+        "total": 0.039545522013213485
+      },
+      "samples_seconds": [
+        0.03033057803986594,
+        0.021279065986163914,
+        0.01826645602704957
+      ]
+    },
+    "replay_ingestion": {
+      "first_seconds": 1.7829478739877231,
+      "repeated_seconds": {
+        "count": 2,
+        "min": 1.5882771369651891,
+        "median": 1.6876037920010276,
+        "p95": 1.786930447036866,
+        "max": 1.786930447036866,
+        "total": 3.3752075840020552
+      },
+      "samples_seconds": [
+        1.7829478739877231,
+        1.786930447036866,
+        1.5882771369651891
+      ]
+    },
+    "rollback_replay_build": {
+      "first_seconds": 0.07538345898501575,
+      "repeated_seconds": {
+        "count": 2,
+        "min": 0.06445044098654762,
+        "median": 0.07123131948173977,
+        "p95": 0.07801219797693193,
+        "max": 0.07801219797693193,
+        "total": 0.14246263896347955
+      },
+      "samples_seconds": [
+        0.07538345898501575,
+        0.07801219797693193,
+        0.06445044098654762
+      ]
+    },
+    "api_representative": {
+      "first_seconds": 0.683774076984264,
+      "repeated_seconds": {
+        "count": 2,
+        "min": 0.5233662919490598,
+        "median": 0.53374165497371,
+        "p95": 0.5441170179983601,
+        "max": 0.5441170179983601,
+        "total": 1.06748330994742
+      },
+      "samples_seconds": [
+        0.683774076984264,
+        0.5233662919490598,
+        0.5441170179983601
+      ]
+    },
+    "api_max_window_and_page": {
+      "first_seconds": 0.5652910359785892,
+      "repeated_seconds": {
+        "count": 2,
+        "min": 0.5472040769527666,
+        "median": 0.5640406109741889,
+        "p95": 0.5808771449956112,
+        "max": 0.5808771449956112,
+        "total": 1.1280812219483778
+      },
+      "samples_seconds": [
+        0.5652910359785892,
+        0.5472040769527666,
+        0.5808771449956112
+      ]
+    },
+    "api_max_listing_page": {
+      "first_seconds": 0.15478067594813183,
+      "repeated_seconds": {
+        "count": 2,
+        "min": 0.15115003701066598,
+        "median": 0.17259963750257157,
+        "p95": 0.19404923799447715,
+        "max": 0.19404923799447715,
+        "total": 0.34519927500514314
+      },
+      "samples_seconds": [
+        0.15478067594813183,
+        0.15115003701066598,
+        0.19404923799447715
+      ]
+    },
+    "driver_wall_seconds": 1106.0298468560213,
+    "host_command_wall_seconds": 1109.2607538019656
+  },
+  "operations": {
+    "sdk_calls": {
+      "dynamodb.DeleteTable": 3,
+      "dynamodb.DescribeTable": 9,
+      "dynamodb.ListTables": 3,
+      "s3.ListBuckets": 6,
+      "dynamodb.CreateTable": 3,
+      "s3.PutBucketVersioning": 6,
+      "s3.PutObject": 42,
+      "s3.GetObject": 1077,
+      "dynamodb.PutItem": 146190,
+      "s3.HeadObject": 18,
+      "dynamodb.UpdateItem": 708,
+      "dynamodb.Query": 2781,
+      "dynamodb.GetItem": 47460,
+      "dynamodb.TransactWriteItems": 2598,
+      "dynamodb.DeleteItem": 1851,
+      "dynamodb.Scan": 23
+    },
+    "transaction_actions": {
+      "ConditionCheck": 3324,
+      "Put": 2535,
+      "Update": 72,
+      "Delete": 15
+    },
+    "scope": "pipeline and initializer DynamoDB/S3 clients; HTTP API server calls excluded"
+  },
+  "items": {
+    "stored_attribute_bytes": {
+      "count": 45318,
+      "min": 27,
+      "median": 402.0,
+      "p95": 679,
+      "max": 12757,
+      "total": 24185859
+    },
+    "serialized_wire_json_bytes": {
+      "count": 45318,
+      "min": 68,
+      "median": 495.0,
+      "p95": 945,
+      "max": 17043,
+      "total": 31703012
+    },
+    "minimum_storage_overhead_bytes": 4531800,
+    "gsi": {
+      "GSI1": {
+        "projection": "ALL",
+        "attribute_bytes": {
+          "count": 0
+        }
+      },
+      "GSI2": {
+        "projection": "ALL",
+        "attribute_bytes": {
+          "count": 0
+        }
+      }
+    },
+    "largest": [
+      {
+        "key": {
+          "PK": "V2#PUBLIC#SNAP#4e5e3e625cbae58f43f1d02b81530427a6c5940cb489fbd160309643e4e3a6b8#6e06a6523daa2aff918098629bc2554a6fbdc2ec791f3b1ae99d2a12e16db1f7",
+          "SK": "0:8208967599999999:limitless:6ab9204c880ed327106dddf4:limitless:6ab9204c880ed327106dddf4:wisdomlordraphael"
+        },
+        "stored_attribute_bytes": 12757,
+        "wire_json_bytes": 17043,
+        "storage_overhead_bytes": 100,
+        "estimated_single_write_units": 13,
+        "estimated_strong_read_units": 4
+      },
+      {
+        "key": {
+          "PK": "V2#PUBLIC#SNAP#949777b2a3468f9f124effb80d8bec386837ec1baf3da39363685992e6384d0f#6e06a6523daa2aff918098629bc2554a6fbdc2ec791f3b1ae99d2a12e16db1f7",
+          "SK": "0:8208967599999999:limitless:6ab9204c880ed327106dddf4:limitless:6ab9204c880ed327106dddf4:wisdomlordraphael"
+        },
+        "stored_attribute_bytes": 12757,
+        "wire_json_bytes": 17043,
+        "storage_overhead_bytes": 100,
+        "estimated_single_write_units": 13,
+        "estimated_strong_read_units": 4
+      },
+      {
+        "key": {
+          "PK": "V2#PUBLIC#SNAP#4e5e3e625cbae58f43f1d02b81530427a6c5940cb489fbd160309643e4e3a6b8#342f60fe6c9e6ac1d6723dcea6b066e9afae396bd08ecb5d71411d4ce49fe93e",
+          "SK": "limitless:6ab9204c880ed327106dddf4:limitless:6ab9204c880ed327106dddf4:wisdomlordraphael"
+        },
+        "stored_attribute_bytes": 12741,
+        "wire_json_bytes": 17027,
+        "storage_overhead_bytes": 100,
+        "estimated_single_write_units": 13,
+        "estimated_strong_read_units": 4
+      },
+      {
+        "key": {
+          "PK": "V2#PUBLIC#SNAP#949777b2a3468f9f124effb80d8bec386837ec1baf3da39363685992e6384d0f#342f60fe6c9e6ac1d6723dcea6b066e9afae396bd08ecb5d71411d4ce49fe93e",
+          "SK": "limitless:6ab9204c880ed327106dddf4:limitless:6ab9204c880ed327106dddf4:wisdomlordraphael"
+        },
+        "stored_attribute_bytes": 12741,
+        "wire_json_bytes": 17027,
+        "storage_overhead_bytes": 100,
+        "estimated_single_write_units": 13,
+        "estimated_strong_read_units": 4
+      },
+      {
+        "key": {
+          "PK": "V2#PUBLIC#SNAP#4e5e3e625cbae58f43f1d02b81530427a6c5940cb489fbd160309643e4e3a6b8#5e8811ccd250b4b14fb56e03c1119654a4ad5bd31017be0a15e53dc56dfdc89e",
+          "SK": "limitless:6ab9204c880ed327106dddf4:limitless:6ab9204c880ed327106dddf4:wisdomlordraphael"
+        },
+        "stored_attribute_bytes": 12735,
+        "wire_json_bytes": 17021,
+        "storage_overhead_bytes": 100,
+        "estimated_single_write_units": 13,
+        "estimated_strong_read_units": 4
+      }
+    ]
+  },
+  "limitations": [
+    "DynamoDB Local ignores provisioned throughput; transactions/concurrency differ from AWS.",
+    "First invocation is process/fixture cold; Docker/services/OS caches were already warm.",
+    "Number storage bytes follow AWS's approximate significant-digit formula.",
+    "Stored bytes, serialized wire bytes, storage overhead and estimated units are separate.",
+    "Strong read/write estimates per item are not consumed/billed AWS units; transactions double units.",
+    "GSI ALL projects whole items only where both index keys exist; not measured AWS amplification.",
+    "API operation counts and API/server/storage RSS are excluded from driver instrumentation.",
+    "Maximum legal query shapes on retained data do not saturate 5000-row/50-query budgets.",
+    "No finite global ingestion/event count bound exists; largest retained fixture is measured.",
+    "Synthetic correction and publication interruption are local fault cases, not source evidence.",
+    "No local result proves AWS latency, absence of throttling, cost, or Lambda/SAM memory."
+  ]
+}

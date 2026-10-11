@@ -1,0 +1,64 @@
+{
+  "before_versions": [
+    {
+      "key": "staging/v2/captures/limitless/6ab9204c880ed327106dddf4/b55f2e4a4aa5b13e3f8c6efad45a3c8b3c5bc816c980034874e7bf0f98f7c4c2.json",
+      "sha256": "b55f2e4a4aa5b13e3f8c6efad45a3c8b3c5bc816c980034874e7bf0f98f7c4c2",
+      "version_id": "3c16c2bf-9106-43b4-b224-15bb8dcf048d"
+    },
+    {
+      "key": "staging/v2/captures/limitless/6abe6180880ed327106e0cf4/1033230f14665bbdf28eeee165b658ca27a053da12811d739d23955d9f4229c1.json",
+      "sha256": "1033230f14665bbdf28eeee165b658ca27a053da12811d739d23955d9f4229c1",
+      "version_id": "608e1b24-8eaf-4ea1-9d16-026f17b049eb"
+    },
+    {
+      "key": "staging/v2/captures/limitless/6abe6180880ed327106e0cf4/15629c408eab7c7a28ae25e823acb4b76448221466d71f40fba4825614e87b6b.json",
+      "sha256": "15629c408eab7c7a28ae25e823acb4b76448221466d71f40fba4825614e87b6b",
+      "version_id": "b005ac67-07f6-4cbf-b49c-43120ba7ca20"
+    },
+    {
+      "key": "staging/v2/catalog/candidates/65c76fd05bf15b629b9a2aeab7a81882afe4171a34401fab013561e15b6604e0.json",
+      "sha256": "bf33b5747df9322c86c411c60fca7052411187aa87bb41597840f1b5b6b50bc5",
+      "version_id": "db598eef-a716-4b54-b8d8-274626e79a12"
+    },
+    {
+      "key": "staging/v2/catalog/candidates/e1e75b89a40528c4cfcb50d79a289a5ed425611dbb74985a6cf34ae2223a8b85.json",
+      "sha256": "97f1dbfb092f9c1c08af2c0f2c5f510061d8a6a900c5077787c7b189a607c9a9",
+      "version_id": "2f776dfa-a570-4b70-8663-50996db0a052"
+    },
+    {
+      "key": "staging/v2/contributions/4e80185010945baf7241b6eff66fa92a9780d29dcd99b84fea6d71394fc9124a.json",
+      "sha256": "4e80185010945baf7241b6eff66fa92a9780d29dcd99b84fea6d71394fc9124a",
+      "version_id": "df099c1c-7710-40aa-8849-5b11f6bdc6ce"
+    },
+    {
+      "key": "staging/v2/contributions/c07520cc37e6234040eafb9593d81fc65ff360657e0cdf1bceeba0701d65b6b1.json",
+      "sha256": "c07520cc37e6234040eafb9593d81fc65ff360657e0cdf1bceeba0701d65b6b1",
+      "version_id": "fe25b584-bfc4-4f84-b1bb-5a13f9efe475"
+    },
+    {
+      "key": "staging/v2/contributions/d33eb4429aa35fe832066dfc2d20b240c7b4641913cca0308d8b8cd9dee65682.json",
+      "sha256": "d33eb4429aa35fe832066dfc2d20b240c7b4641913cca0308d8b8cd9dee65682",
+      "version_id": "430cf161-5ef7-4b39-a2dc-9306cd25d30b"
+    },
+    {
+      "key": "staging/v2/normalized/759fe8e1028bf641bfbb5a9d22afe080e869e0a72001351b192906d71ff59e1e.json",
+      "sha256": "759fe8e1028bf641bfbb5a9d22afe080e869e0a72001351b192906d71ff59e1e",
+      "version_id": "b212bb2d-cd4b-470f-bb13-0a0672b5317b"
+    },
+    {
+      "key": "staging/v2/normalized/c5be5eb96b98e2d2eac107fb485dd5c1c88b347f1e747ac7aa23f613ba27193a.json",
+      "sha256": "c5be5eb96b98e2d2eac107fb485dd5c1c88b347f1e747ac7aa23f613ba27193a",
+      "version_id": "0b56f875-0ba3-40aa-97b4-3a8c1f58b418"
+    },
+    {
+      "key": "staging/v2/normalized/ffcba7d6278fa64a976fb0dd2bc7ff40e4fab4f8eb2ce2c6cdb13a777e3797b1.json",
+      "sha256": "ffcba7d6278fa64a976fb0dd2bc7ff40e4fab4f8eb2ce2c6cdb13a777e3797b1",
+      "version_id": "cae46ed9-98d9-418e-a963-1fce8ab06918"
+    }
+  ],
+  "after_evidence": "retention-after.json",
+  "retained_count": 11,
+  "exact_version_ids_and_body_hashes_preserved": true,
+  "benchmark_table_resets": 6,
+  "source_tree_sha256": "de2eef73e2bd865673d58a36ffdef1fc2da38c49a1c25354adaaf1774c15ec15"
+}
