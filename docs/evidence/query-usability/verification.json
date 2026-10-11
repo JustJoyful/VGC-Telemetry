@@ -1,0 +1,56 @@
+{
+  "code_revision": "b0adf71d695d86bbe587464446bedac94ccc264f",
+  "base_revision": "b85a6c6",
+  "branch": "phase5-query-usability",
+  "runtime_python_sha256": "53a811e64261a2651d06f4ccf05e06140a8af0f03153df4579a24665121cc234",
+  "image_id": "sha256:bb42b2fd43e2961525cbb774253542e23b43f2cbddb36636e157b519f61fe27a",
+  "full_suite": {
+    "command": ".venv/bin/pytest -q",
+    "passed": 458,
+    "failed": 0,
+    "warnings": 1,
+    "seconds": 2866.24
+  },
+  "baseline_application": {
+    "passed": 431,
+    "failed": 1,
+    "seconds": 2821.73,
+    "known_failure": "test_readme_reports_verified_local_acceptance"
+  },
+  "focused": {
+    "api": 51,
+    "local_v1": 51,
+    "native_pipeline": 4,
+    "moto_rollback": 2
+  },
+  "static": {
+    "ruff_check": "passed",
+    "ruff_format_files": 178,
+    "diff_check": "passed"
+  },
+  "local_proof": {
+    "matching_teams": 7,
+    "core": "7/10",
+    "scoped_protect": "3/3",
+    "known_zero": "0/3",
+    "recovery_http_checks": 65,
+    "eligible_sequence": [
+      10,
+      9,
+      10,
+      9
+    ],
+    "original_object_versions_retained": 8,
+    "object_versions_after": 11,
+    "restore_fingerprint_exact": true
+  },
+  "pending": [
+    "AWS deployment/capacity/cost/IAM",
+    "Live tunnel/source checks"
+  ],
+  "excluded": [
+    "Phase 6 frontend",
+    "Phase 7 extensions"
+  ],
+  "integration": "local commits only"
+}
