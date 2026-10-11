@@ -5,7 +5,13 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query
 
 from app.models.v2 import MoveView, Page, PokemonView, PublicEvidence, RegulationView, SnapshotInfo
-from app.models.v2_queries import PageQuery, PokemonQuery, ReferenceQuery, canonical_query
+from app.models.v2_queries import (
+    MoveQuery,
+    PageQuery,
+    PokemonQuery,
+    ReferenceQuery,
+    canonical_query,
+)
 from app.v2.catalog import reference as load_reference
 from app.v2.config import V2ReadConfig, get_v2_config
 from app.v2.cursors import _decode, decode_cursor, decode_snapshot, encode_cursor, encode_snapshot
@@ -66,10 +72,12 @@ def _request(query, endpoint, config):
     return ref, snapshot, revision, resolved, position
 
 
-def _page(items, *, model, snapshot, endpoint, resolved, position, limit, config):
+def _page(
+    items, *, model, snapshot, endpoint, resolved, position, limit, config, lookup_status=None
+):
     if not 1 <= limit <= 100:
         raise V2Error(422, "invalid_query", "Limit must be 1–100")
-    page = Page[model](items=[], snapshot=_token(snapshot, config))
+    page = Page[model](items=[], snapshot=_token(snapshot, config), lookup_status=lookup_status)
     last = None
     for ordinal, item in items:
         if position is not None and ordinal <= position:
@@ -139,6 +147,26 @@ def _resolve(identifier, catalog):
     return resolved
 
 
+def _name_choices(name, catalog, *, moves=False):
+    entries = catalog.moves if moves else catalog.species
+    if name in entries:
+        return {name}
+    key = to_id(name)
+    if not moves and key in catalog.aliases:
+        return {catalog.aliases[key]}
+    choices = {
+        identifier
+        for identifier, entry in entries.items()
+        if to_id(entry.name) == key
+        or identifier == key
+        or not moves
+        and entry.base_species_id == key
+    }
+    if not choices:
+        raise V2Error(404, "not_found", "Reference name not found")
+    return choices
+
+
 def reference_page(
     *,
     catalog_revision: str,
@@ -165,10 +193,12 @@ def reference_page(
         snapshot_id=f"reference:{reference_manifest_hash}:{config.default_catalog_revision}",
         expires_at=config.clock() + config.token_seconds,
     )
+    choices = _name_choices(query.name, catalog) if query.name else None
     items = [
         (identifier, _pokemon(identifier, catalog_revision, reference))
         for identifier, species in sorted(catalog.species.items())
-        if (not query.species_id or species.base_species_id == query.species_id)
+        if (choices is None or identifier in choices)
+        and (not query.species_id or species.base_species_id == query.species_id)
         and (not query.form_id or identifier == query.form_id)
         and (
             not query.legal_only
@@ -180,7 +210,7 @@ def reference_page(
         "catalog_revision": catalog_revision,
         "order": "canonical-id",
     }
-    return _page(
+    page = _page(
         items,
         model=PokemonView,
         snapshot=snapshot,
@@ -189,7 +219,11 @@ def reference_page(
         position=position,
         limit=limit,
         config=config,
+        lookup_status=("ambiguous" if len(choices) > 1 else "exact")
+        if choices is not None
+        else None,
     )
+    return page
 
 
 def regulation_page(
@@ -303,3 +337,60 @@ def learnset(identifier: str, config: Config, query: Annotated[ReferenceQuery, Q
         limit=query.limit,
         config=config,
     )
+
+
+@router.get("/moves", response_model=Page[MoveView])
+def moves(config: Config, query: Annotated[MoveQuery, Query()]):
+    ref, snap, revision, resolved, position = _request(query, "/v2/moves", config)
+    catalog = ref["catalogs"][revision]
+    choices = _name_choices(query.name, catalog, moves=True) if query.name else None
+    items = [
+        (
+            identifier,
+            MoveView(
+                move_id=identifier,
+                name=entry.name,
+                details=entry.details,
+                catalog_revision=revision,
+                catalog_hash=ref["index"]["snapshots"][revision]["sha256"],
+            ),
+        )
+        for identifier, entry in sorted(catalog.moves.items())
+        if choices is None or identifier in choices
+    ]
+    page = _page(
+        items,
+        model=MoveView,
+        snapshot=snap,
+        endpoint="/v2/moves",
+        resolved=resolved,
+        position=position,
+        limit=query.limit,
+        config=config,
+        lookup_status=("ambiguous" if len(choices) > 1 else "exact")
+        if choices is not None
+        else None,
+    )
+    return page
+
+
+@router.get("/moves/{identifier}", response_model=MoveView)
+def move(identifier: str, config: Config, query: Annotated[ReferenceQuery, Query()]):
+    ref, snap, revision, _, _ = _request(query, "/v2/moves/" + identifier, config)
+    catalog = ref["catalogs"][revision]
+    choices = _name_choices(identifier, catalog, moves=True)
+    if len(choices) != 1:
+        raise V2Error(409, "ambiguous_reference", "Select a canonical move ID")
+    identity = next(iter(choices))
+    entry = catalog.moves[identity]
+    value = MoveView(
+        move_id=identity,
+        name=entry.name,
+        details=entry.details,
+        catalog_revision=revision,
+        snapshot=_token(snap, config),
+        catalog_hash=ref["index"]["snapshots"][revision]["sha256"],
+    )
+    if len(canonical_bytes(value.model_dump(mode="json"))) > config.response_bytes:
+        raise unavailable("Reference item exceeds supported response size")
+    return value

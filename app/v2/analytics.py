@@ -243,19 +243,24 @@ def reduce_window(
             continue
         if query.form_id and row.identity != query.species_id + "/" + query.form_id:
             continue
-        if isinstance(query, CoreQuery) and not set(query.members).issubset(
-            row.identity.split("+")
+        if isinstance(query, CoreQuery) and not all(
+            member in row.identity.split("+")
+            if "/" in member
+            else member in {part.split("/")[0] for part in row.identity.split("+")}
+            for member in query.members
         ):
             continue
         if row.value is None and metric not in ("species", "core2", "core3"):
             for field in ("denominator", "known_count", "unknown_count", "excluded_count"):
                 denominators[row.identity][field] += getattr(row, field)
         else:
+            if query.move_id and row.value != query.move_id:
+                continue
             totals[(row.identity, row.value)]["count"] += row.count
             values[row.identity].add(row.value)
     for identity in denominators:
         if not values[identity]:
-            totals[(identity, None)]["count"] = 0
+            totals[(identity, query.move_id)]["count"] = 0
     result = []
     for (identity, value), counts in sorted(
         totals.items(), key=lambda pair: (pair[0][0], pair[0][1] or "")
@@ -293,7 +298,18 @@ def reduce_window(
             performance=perf,
         )
         result.append(
-            CoreView(**fields, members=identity.split("+"), size=query.size)
+            CoreView(
+                **fields,
+                members=identity.split("+"),
+                size=query.size,
+                team_members=[
+                    "species:" + part.split("/")[0]
+                    if query.group_by == "species"
+                    else "form:"
+                    + (part.split("/")[0] if part.split("/")[1] == "base" else part.split("/")[1])
+                    for part in identity.split("+")
+                ],
+            )
             if isinstance(query, CoreQuery)
             else MetricView(**fields)
         )
@@ -311,6 +327,30 @@ def _read(snapshot, query, reader, *, default_catalog_revision=None):
         form = pinned_catalog.species.get(query.form_id)
         if form is None or form.base_species_id != query.species_id:
             raise V2Error(422, "invalid_query", "Species and form are incompatible")
+    if isinstance(query, CoreQuery):
+        from app.v2.catalog import validate_members
+
+        selectors = []
+        for member in query.members:
+            parts = member.split("/")
+            if len(parts) == 1:
+                selectors.append("species:" + member)
+            elif len(parts) == 2 and parts[1] == "base":
+                selectors.append("species:" + parts[0])
+            elif len(parts) == 2 and (
+                parts[1] in pinned_catalog.species
+                and pinned_catalog.species[parts[1]].base_species_id == parts[0]
+            ):
+                selectors.append("form:" + parts[1])
+            else:
+                raise V2Error(422, "invalid_query", "Unknown core member")
+        validate_members(selectors, pinned_catalog)
+    if query.move_id and query.move_id not in pinned_catalog.moves:
+        raise V2Error(422, "invalid_query", "Move not found in selected catalog")
+    if query.registered_mega_id:
+        mega = pinned_catalog.species.get(query.registered_mega_id)
+        if mega is None or not mega.is_mega:
+            raise V2Error(422, "invalid_query", "Registered Mega not found in selected catalog")
     start, end = _window(snapshot, query, reader)
     days = set()
     for page in budget.pages(snapshot, "DAYS#" + pid):
@@ -331,6 +371,40 @@ def _read(snapshot, query, reader, *, default_catalog_revision=None):
             prefix=query.tournament_id + ":" if query.tournament_id else None,
         ):
             contributions.extend(DailyContribution.model_validate(row["data"]) for row in page)
+    matching, unknown = None, None
+    if query.registered_mega_id:
+        # Entry identity joins only evidence from this exact population and snapshot.
+        def key(r):
+            return (r.event_id, r.entry_id)
+
+        eligible = {
+            key(r)
+            for r in contributions
+            if _focal(r, query) and r.metric == "roster" and r.group_by == "form"
+        }
+        matching = {
+            key(r)
+            for r in contributions
+            if key(r) in eligible
+            and r.metric == "registered_mega"
+            and r.value == query.registered_mega_id
+            and r.count > 0
+        }
+        unknown = {
+            key(r)
+            for r in contributions
+            if _focal(r, query)
+            and r.group_by == "form"
+            and (
+                r.metric == "registered_mega"
+                and r.identity.split("/")[0] == mega.base_species_id
+                and r.unknown_count > 0
+                or r.metric.startswith("coverage:")
+                and r.known_count > 0
+                and r.denominator == 0
+            )
+        } - matching
+        contributions = [r for r in contributions if key(r) in matching]
     result = reduce_window(contributions, query=query)
     for row in result:
         row.catalog_revision, row.snapshot_id, row.generated_at = (
@@ -353,7 +427,10 @@ def _read(snapshot, query, reader, *, default_catalog_revision=None):
         "date_to": end.isoformat(),
         "order": "identity,value",
     }
-    coverage = Coverage()
+    coverage = Coverage(
+        scope_matching_rosters=len(matching) if matching is not None else 0,
+        scope_unknown_rosters=len(unknown) if unknown is not None else 0,
+    )
     for row in contributions:
         if row.group_by != "form" or not _focal(row, query):
             continue

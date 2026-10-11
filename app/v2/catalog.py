@@ -65,3 +65,24 @@ def resolve_catalog(revision, *, config):
     if config.catalog_runtime:
         return config.catalog_runtime.revision(revision)
     raise ValueError("Catalog not found")
+
+
+def validate_members(members, catalog):
+    """Reject redundant roster selectors and battle-only observed forms."""
+    from app.v2.errors import V2Error
+
+    bases = set()
+    for selector in members:
+        kind, identifier = selector.split(":")
+        entry = catalog.species.get(identifier)
+        if kind == "species":
+            valid = identifier in {s.base_species_id for s in catalog.species.values()}
+            base = identifier
+        else:
+            valid = entry is not None and (
+                entry.is_mega if kind == "mega" else not entry.battle_only
+            )
+            base = entry.base_species_id if entry else None
+        if not valid or base in bases:
+            raise V2Error(422, "invalid_query", "Unknown or incompatible member selectors")
+        bases.add(base)
