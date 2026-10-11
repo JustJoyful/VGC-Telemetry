@@ -1,0 +1,29 @@
+{
+  "fault": "synthetic-after-first-public-team-write",
+  "before": {
+    "snapshot_id": "7e61486a522d456d87b945008219ef02",
+    "summary": {
+      "rosters": 37,
+      "eligible_rosters": 9,
+      "unknown_stat_points": 54
+    }
+  },
+  "after_fault": {
+    "snapshot_id": "7e61486a522d456d87b945008219ef02",
+    "summary": {
+      "rosters": 37,
+      "eligible_rosters": 9,
+      "unknown_stat_points": 54
+    }
+  },
+  "after_restart": {
+    "snapshot_id": "4a03a81d9ddb49278b7db3d414f1e7e1",
+    "summary": {
+      "rosters": 37,
+      "eligible_rosters": 9,
+      "unknown_stat_points": 54
+    }
+  },
+  "complete_pointer_observations": 37,
+  "recovery_wall_seconds": 238.70230298204115
+}

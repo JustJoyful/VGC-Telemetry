@@ -63,4 +63,18 @@ SOURCE_UPDATE.md
 *.plan.md
 
 
-docs/
+docs/*
+!docs/runbooks/
+!docs/runbooks/self-hosted-phase-4a.md
+!docs/benchmarks/
+!docs/benchmarks/phase-4a*
+!docs/phase4a/
+
+# Phase 4A generated local state and owner-only tunnel configuration
+.local/
+local/tunnel.yml
+local/compose.sources.yaml
+
+# Local operational notes and reports stay in the workspace, outside commits.
+/docs/**/*.md
+/scripts/local/*.md

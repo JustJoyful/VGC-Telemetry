@@ -6,7 +6,7 @@ import os
 from collections import Counter
 from uuid import uuid4
 
-import boto3
+from core.aws import aws_client, local_mode, validate_local
 
 NAMESPACE = "VGCTelemetry/Automation"
 COUNTS = {
@@ -44,7 +44,7 @@ class RunTelemetry:
 
     def _client(self):
         if self.client is None:
-            self.client = boto3.client("cloudwatch")
+            self.client = aws_client("cloudwatch")
         return self.client
 
     def emit(self, name, value=1):
@@ -56,6 +56,10 @@ class RunTelemetry:
             raise ValueError("Invalid automation metric")
         if name in COUNTS:
             self.counts[name] += value
+        if local_mode():
+            validate_local()
+            logger.info("local_metric %s %s", name, value)
+            return
         try:
             self._client().put_metric_data(
                 Namespace=NAMESPACE,

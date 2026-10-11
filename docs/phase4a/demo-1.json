@@ -1,0 +1,468 @@
+{
+  "api": {
+    "after_fault": [
+      {
+        "bytes": 115,
+        "path": "/health",
+        "rows": null,
+        "status": 200
+      },
+      {
+        "bytes": 103,
+        "path": "/v1/teams?tournament_id=demo-legacy",
+        "rows": 0,
+        "status": 200
+      },
+      {
+        "bytes": 47,
+        "path": "/v1/meta",
+        "rows": 0,
+        "status": 200
+      },
+      {
+        "bytes": 33,
+        "path": "/v1/players/demo",
+        "rows": null,
+        "status": 200
+      },
+      {
+        "bytes": 8557,
+        "path": "/v2/tournaments?limit=100",
+        "rows": 2,
+        "status": 200
+      },
+      {
+        "bytes": 346039,
+        "path": "/v2/teams?eligibility=all&limit=100",
+        "rows": 25,
+        "status": 200
+      },
+      {
+        "bytes": 1046,
+        "path": "/v2/status",
+        "rows": null,
+        "status": 200
+      },
+      {
+        "bytes": 3356,
+        "path": "/v2/regulations",
+        "rows": 2,
+        "status": 200
+      },
+      {
+        "bytes": 164748,
+        "path": "/v2/pokemon?limit=100",
+        "rows": 100,
+        "status": 200
+      },
+      {
+        "bytes": 19523,
+        "path": "/v2/meta?metric=species&limit=100",
+        "rows": 26,
+        "status": 200
+      },
+      {
+        "bytes": 19557,
+        "path": "/v2/meta?metric=stat_points&limit=100",
+        "rows": 26,
+        "status": 200
+      },
+      {
+        "bytes": 83599,
+        "path": "/v2/cores?size=3&limit=100",
+        "rows": 100,
+        "status": 200
+      },
+      {
+        "bytes": 13999,
+        "path": "/v2/teams/<id>",
+        "provenance_checked": true,
+        "status": 200
+      }
+    ],
+    "baseline": [
+      {
+        "bytes": 115,
+        "path": "/health",
+        "rows": null,
+        "status": 200
+      },
+      {
+        "bytes": 103,
+        "path": "/v1/teams?tournament_id=demo-legacy",
+        "rows": 0,
+        "status": 200
+      },
+      {
+        "bytes": 47,
+        "path": "/v1/meta",
+        "rows": 0,
+        "status": 200
+      },
+      {
+        "bytes": 33,
+        "path": "/v1/players/demo",
+        "rows": null,
+        "status": 200
+      },
+      {
+        "bytes": 8557,
+        "path": "/v2/tournaments?limit=100",
+        "rows": 2,
+        "status": 200
+      },
+      {
+        "bytes": 346039,
+        "path": "/v2/teams?eligibility=all&limit=100",
+        "rows": 25,
+        "status": 200
+      },
+      {
+        "bytes": 1054,
+        "path": "/v2/status",
+        "rows": null,
+        "status": 200
+      },
+      {
+        "bytes": 3356,
+        "path": "/v2/regulations",
+        "rows": 2,
+        "status": 200
+      },
+      {
+        "bytes": 164748,
+        "path": "/v2/pokemon?limit=100",
+        "rows": 100,
+        "status": 200
+      },
+      {
+        "bytes": 19523,
+        "path": "/v2/meta?metric=species&limit=100",
+        "rows": 26,
+        "status": 200
+      },
+      {
+        "bytes": 19557,
+        "path": "/v2/meta?metric=stat_points&limit=100",
+        "rows": 26,
+        "status": 200
+      },
+      {
+        "bytes": 83599,
+        "path": "/v2/cores?size=3&limit=100",
+        "rows": 100,
+        "status": 200
+      },
+      {
+        "bytes": 13999,
+        "path": "/v2/teams/<id>",
+        "provenance_checked": true,
+        "status": 200
+      }
+    ],
+    "corrected": [
+      {
+        "bytes": 115,
+        "path": "/health",
+        "rows": null,
+        "status": 200
+      },
+      {
+        "bytes": 103,
+        "path": "/v1/teams?tournament_id=demo-legacy",
+        "rows": 0,
+        "status": 200
+      },
+      {
+        "bytes": 47,
+        "path": "/v1/meta",
+        "rows": 0,
+        "status": 200
+      },
+      {
+        "bytes": 33,
+        "path": "/v1/players/demo",
+        "rows": null,
+        "status": 200
+      },
+      {
+        "bytes": 8521,
+        "path": "/v2/tournaments?limit=100",
+        "rows": 2,
+        "status": 200
+      },
+      {
+        "bytes": 346038,
+        "path": "/v2/teams?eligibility=all&limit=100",
+        "rows": 25,
+        "status": 200
+      },
+      {
+        "bytes": 1046,
+        "path": "/v2/status",
+        "rows": null,
+        "status": 200
+      },
+      {
+        "bytes": 3356,
+        "path": "/v2/regulations",
+        "rows": 2,
+        "status": 200
+      },
+      {
+        "bytes": 164748,
+        "path": "/v2/pokemon?limit=100",
+        "rows": 100,
+        "status": 200
+      },
+      {
+        "bytes": 19604,
+        "path": "/v2/meta?metric=species&limit=100",
+        "rows": 26,
+        "status": 200
+      },
+      {
+        "bytes": 19556,
+        "path": "/v2/meta?metric=stat_points&limit=100",
+        "rows": 26,
+        "status": 200
+      },
+      {
+        "bytes": 83898,
+        "path": "/v2/cores?size=3&limit=100",
+        "rows": 100,
+        "status": 200
+      },
+      {
+        "bytes": 13999,
+        "path": "/v2/teams/<id>",
+        "provenance_checked": true,
+        "status": 200
+      }
+    ],
+    "replayed": [
+      {
+        "bytes": 115,
+        "path": "/health",
+        "rows": null,
+        "status": 200
+      },
+      {
+        "bytes": 103,
+        "path": "/v1/teams?tournament_id=demo-legacy",
+        "rows": 0,
+        "status": 200
+      },
+      {
+        "bytes": 47,
+        "path": "/v1/meta",
+        "rows": 0,
+        "status": 200
+      },
+      {
+        "bytes": 33,
+        "path": "/v1/players/demo",
+        "rows": null,
+        "status": 200
+      },
+      {
+        "bytes": 8521,
+        "path": "/v2/tournaments?limit=100",
+        "rows": 2,
+        "status": 200
+      },
+      {
+        "bytes": 346038,
+        "path": "/v2/teams?eligibility=all&limit=100",
+        "rows": 25,
+        "status": 200
+      },
+      {
+        "bytes": 1046,
+        "path": "/v2/status",
+        "rows": null,
+        "status": 200
+      },
+      {
+        "bytes": 3356,
+        "path": "/v2/regulations",
+        "rows": 2,
+        "status": 200
+      },
+      {
+        "bytes": 164748,
+        "path": "/v2/pokemon?limit=100",
+        "rows": 100,
+        "status": 200
+      },
+      {
+        "bytes": 19604,
+        "path": "/v2/meta?metric=species&limit=100",
+        "rows": 26,
+        "status": 200
+      },
+      {
+        "bytes": 19556,
+        "path": "/v2/meta?metric=stat_points&limit=100",
+        "rows": 26,
+        "status": 200
+      },
+      {
+        "bytes": 83898,
+        "path": "/v2/cores?size=3&limit=100",
+        "rows": 100,
+        "status": 200
+      },
+      {
+        "bytes": 13999,
+        "path": "/v2/teams/<id>",
+        "provenance_checked": true,
+        "status": 200
+      }
+    ],
+    "rollback": [
+      {
+        "bytes": 115,
+        "path": "/health",
+        "rows": null,
+        "status": 200
+      },
+      {
+        "bytes": 103,
+        "path": "/v1/teams?tournament_id=demo-legacy",
+        "rows": 0,
+        "status": 200
+      },
+      {
+        "bytes": 47,
+        "path": "/v1/meta",
+        "rows": 0,
+        "status": 200
+      },
+      {
+        "bytes": 33,
+        "path": "/v1/players/demo",
+        "rows": null,
+        "status": 200
+      },
+      {
+        "bytes": 8557,
+        "path": "/v2/tournaments?limit=100",
+        "rows": 2,
+        "status": 200
+      },
+      {
+        "bytes": 346039,
+        "path": "/v2/teams?eligibility=all&limit=100",
+        "rows": 25,
+        "status": 200
+      },
+      {
+        "bytes": 1046,
+        "path": "/v2/status",
+        "rows": null,
+        "status": 200
+      },
+      {
+        "bytes": 3356,
+        "path": "/v2/regulations",
+        "rows": 2,
+        "status": 200
+      },
+      {
+        "bytes": 164748,
+        "path": "/v2/pokemon?limit=100",
+        "rows": 100,
+        "status": 200
+      },
+      {
+        "bytes": 19523,
+        "path": "/v2/meta?metric=species&limit=100",
+        "rows": 26,
+        "status": 200
+      },
+      {
+        "bytes": 19557,
+        "path": "/v2/meta?metric=stat_points&limit=100",
+        "rows": 26,
+        "status": 200
+      },
+      {
+        "bytes": 83599,
+        "path": "/v2/cores?size=3&limit=100",
+        "rows": 100,
+        "status": 200
+      },
+      {
+        "bytes": 13999,
+        "path": "/v2/teams/<id>",
+        "provenance_checked": true,
+        "status": 200
+      }
+    ]
+  },
+  "baseline": {
+    "eligible_rosters": 10,
+    "rosters": 37,
+    "unknown_stat_points": 60
+  },
+  "catalogs": [
+    {
+      "bundled_revision": "champions-mc-3661ce4",
+      "candidate_id": "65c76fd05bf15b629b9a2aeab7a81882afe4171a34401fab013561e15b6604e0"
+    },
+    {
+      "bundled_revision": "champions-mb-3661ce4",
+      "candidate_id": "e1e75b89a40528c4cfcb50d79a289a5ed425611dbb74985a6cf34ae2223a8b85"
+    }
+  ],
+  "corrected": {
+    "eligible_rosters": 9,
+    "rosters": 37,
+    "unknown_stat_points": 54
+  },
+  "correction": {
+    "capture_key": "staging/v2/captures/limitless/6abe6180880ed327106e0cf4/15629c408eab7c7a28ae25e823acb4b76448221466d71f40fba4825614e87b6b.json",
+    "fixture_sha256": "4bf8ff44c41aa227617c03bbef2f0c8f53bff7d3c2b5977f4fce32586f31c3d2",
+    "id": "6abe6180880ed327106e0cf4",
+    "synthetic_correction": true
+  },
+  "correction_delta": -1,
+  "duplicate_unchanged": true,
+  "fault": {
+    "after_fault": "98b39c210a684452853e7bea044cb3c0",
+    "after_recovery": "573cb19fd8994e8cbd9f881fed93a816",
+    "before": "98b39c210a684452853e7bea044cb3c0",
+    "current_unchanged": true,
+    "name": "synthetic-after-first-public-team-write"
+  },
+  "fixtures": [
+    {
+      "capture_key": "staging/v2/captures/limitless/6ab9204c880ed327106dddf4/b55f2e4a4aa5b13e3f8c6efad45a3c8b3c5bc816c980034874e7bf0f98f7c4c2.json",
+      "fixture_sha256": "eeb869cbb427845b979a51b40464d08ceaf004237f324d3f9c0818f99d002735",
+      "id": "6ab9204c880ed327106dddf4",
+      "synthetic_correction": false
+    },
+    {
+      "capture_key": "staging/v2/captures/limitless/6abe6180880ed327106e0cf4/1033230f14665bbdf28eeee165b658ca27a053da12811d739d23955d9f4229c1.json",
+      "fixture_sha256": "4bf8ff44c41aa227617c03bbef2f0c8f53bff7d3c2b5977f4fce32586f31c3d2",
+      "id": "6abe6180880ed327106e0cf4",
+      "synthetic_correction": false
+    }
+  ],
+  "generations": {
+    "baseline": "98b39c210a684452853e7bea044cb3c0",
+    "corrected": "573cb19fd8994e8cbd9f881fed93a816",
+    "replayed": "573cb19fd8994e8cbd9f881fed93a816"
+  },
+  "replayed": {
+    "eligible_rosters": 9,
+    "rosters": 37,
+    "unknown_stat_points": 54
+  },
+  "rollback": {
+    "eligible_rosters": 10,
+    "rosters": 37,
+    "unknown_stat_points": 60
+  }
+}

@@ -1,0 +1,116 @@
+name: vgc-phase4a
+x-app: &app
+  image: vgc-phase4a:local
+  build:
+    context: .
+    dockerfile: Dockerfile.local
+  env_file: .env.local
+  networks: [private]
+  mem_limit: 1g
+  cpus: 2
+  init: true
+  stop_grace_period: 90s
+  depends_on:
+    bootstrap:
+      condition: service_completed_successfully
+services:
+  dynamodb:
+    image: amazon/dynamodb-local:3.1.0@sha256:7ef4a2c45b58c2901e70a4f28e0953a422c2c631baaaf5e2c15e0805740c7752
+    user: root
+    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-dbPath", "/data"]
+    volumes: ["dynamodb-data:/data"]
+    networks: [private]
+    mem_limit: 1g
+    cpus: 2
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -o /dev/null http://localhost:8000"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  storage:
+    image: rustfs/rustfs@sha256:1803faef57627e2d9c2e7d89d655d712ddded5389040054987163043fecb6a3c
+    # Exact dummy credentials: the storage network has no external route or host ports.
+    environment:
+      RUSTFS_ACCESS_KEY: localdemo
+      RUSTFS_SECRET_KEY: local-demo-secret
+      RUSTFS_CONSOLE_ENABLE: "false"
+      RUSTFS_OBS_LOG_DIRECTORY: /data/logs
+    user: root
+    volumes: ["s3-data:/data"]
+    networks: [private]
+    mem_limit: 1g
+    cpus: 2
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:9000/health/live"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  bootstrap:
+    <<: *app
+    depends_on:
+      dynamodb:
+        condition: service_healthy
+      storage:
+        condition: service_healthy
+    command: ["python", "-m", "scripts.local.cli", "init"]
+    restart: "no"
+  api:
+    <<: *app
+    networks: [private, edge]
+    ports: ["127.0.0.1:8080:8080"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+  worker:
+    <<: *app
+    command: ["python", "-m", "scripts.local.cli", "worker"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-m", "scripts.local.cli", "worker-health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+  scheduler:
+    <<: *app
+    command: ["python", "-m", "scripts.local.cli", "scheduler"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-m", "scripts.local.cli", "scheduler-health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+  admin:
+    image: aaronshaf/dynamodb-admin@sha256:ac41724cd99706256d405a14a5fb96f51f18c41a630c84fa3357f900cbd16d2e
+    profiles: [admin]
+    environment:
+      DYNAMO_ENDPOINT: http://dynamodb:8000
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: localdemo
+      AWS_SECRET_ACCESS_KEY: local-demo-secret
+    networks: [private, edge]
+    ports: ["127.0.0.1:8001:8001"]
+    depends_on: [dynamodb]
+  tunnel:
+    image: cloudflare/cloudflared:2026.10.0@sha256:9b49eed8f62806d5d45ddf59ecefb5710429598ea6d3fcccd2af938f621b2b07
+    profiles: [tunnel]
+    command: ["tunnel", "--config", "/etc/cloudflared/config.yml", "run"]
+    volumes:
+      - ./local/tunnel.yml:/etc/cloudflared/config.yml:ro
+      - ./.local/tunnel-credentials.json:/run/secrets/tunnel.json:ro
+    networks: [private, egress]
+    depends_on:
+      api:
+        condition: service_healthy
+networks:
+  private:
+    internal: true
+  edge: {}
+  egress: {}
+volumes:
+  dynamodb-data: {}
+  s3-data: {}

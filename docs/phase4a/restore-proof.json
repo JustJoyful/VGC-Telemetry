@@ -1,0 +1,144 @@
+{
+  "api": [
+    {
+      "bytes": 115,
+      "path": "/health",
+      "rows": null,
+      "status": 200
+    },
+    {
+      "bytes": 103,
+      "path": "/v1/teams?tournament_id=demo-legacy",
+      "rows": 0,
+      "status": 200
+    },
+    {
+      "bytes": 47,
+      "path": "/v1/meta",
+      "rows": 0,
+      "status": 200
+    },
+    {
+      "bytes": 33,
+      "path": "/v1/players/demo",
+      "rows": null,
+      "status": 200
+    },
+    {
+      "bytes": 8521,
+      "path": "/v2/tournaments?limit=100",
+      "rows": 2,
+      "status": 200
+    },
+    {
+      "bytes": 346038,
+      "path": "/v2/teams?eligibility=all&limit=100",
+      "rows": 25,
+      "status": 200
+    },
+    {
+      "bytes": 1046,
+      "path": "/v2/status",
+      "rows": null,
+      "status": 200
+    },
+    {
+      "bytes": 3356,
+      "path": "/v2/regulations",
+      "rows": 2,
+      "status": 200
+    },
+    {
+      "bytes": 164748,
+      "path": "/v2/pokemon?limit=100",
+      "rows": 100,
+      "status": 200
+    },
+    {
+      "bytes": 19604,
+      "path": "/v2/meta?metric=species&limit=100",
+      "rows": 26,
+      "status": 200
+    },
+    {
+      "bytes": 19556,
+      "path": "/v2/meta?metric=stat_points&limit=100",
+      "rows": 26,
+      "status": 200
+    },
+    {
+      "bytes": 83898,
+      "path": "/v2/cores?size=3&limit=100",
+      "rows": 100,
+      "status": 200
+    },
+    {
+      "bytes": 13999,
+      "path": "/v2/teams/<id>",
+      "provenance_checked": true,
+      "status": 200
+    }
+  ],
+  "summary": {
+    "eligible_rosters": 9,
+    "rosters": 37,
+    "unknown_stat_points": 54
+  },
+  "versioned_objects": [
+    {
+      "key": "staging/v2/captures/limitless/6ab9204c880ed327106dddf4/b55f2e4a4aa5b13e3f8c6efad45a3c8b3c5bc816c980034874e7bf0f98f7c4c2.json",
+      "sha256": "b55f2e4a4aa5b13e3f8c6efad45a3c8b3c5bc816c980034874e7bf0f98f7c4c2",
+      "version_id": "4a953f0d-94cb-4fac-a313-a2787c384745"
+    },
+    {
+      "key": "staging/v2/captures/limitless/6abe6180880ed327106e0cf4/1033230f14665bbdf28eeee165b658ca27a053da12811d739d23955d9f4229c1.json",
+      "sha256": "1033230f14665bbdf28eeee165b658ca27a053da12811d739d23955d9f4229c1",
+      "version_id": "26047978-180c-48f6-bcda-5ad1a7ed89ee"
+    },
+    {
+      "key": "staging/v2/captures/limitless/6abe6180880ed327106e0cf4/15629c408eab7c7a28ae25e823acb4b76448221466d71f40fba4825614e87b6b.json",
+      "sha256": "15629c408eab7c7a28ae25e823acb4b76448221466d71f40fba4825614e87b6b",
+      "version_id": "a8177457-8fac-4121-85d7-4bf712e434de"
+    },
+    {
+      "key": "staging/v2/catalog/candidates/65c76fd05bf15b629b9a2aeab7a81882afe4171a34401fab013561e15b6604e0.json",
+      "sha256": "bf33b5747df9322c86c411c60fca7052411187aa87bb41597840f1b5b6b50bc5",
+      "version_id": "f90c3240-d63a-4372-bc98-fb02e85a79dd"
+    },
+    {
+      "key": "staging/v2/catalog/candidates/e1e75b89a40528c4cfcb50d79a289a5ed425611dbb74985a6cf34ae2223a8b85.json",
+      "sha256": "97f1dbfb092f9c1c08af2c0f2c5f510061d8a6a900c5077787c7b189a607c9a9",
+      "version_id": "ff98032a-d2a5-4c09-85ab-95587be5acc5"
+    },
+    {
+      "key": "staging/v2/contributions/4e80185010945baf7241b6eff66fa92a9780d29dcd99b84fea6d71394fc9124a.json",
+      "sha256": "4e80185010945baf7241b6eff66fa92a9780d29dcd99b84fea6d71394fc9124a",
+      "version_id": "7e311d19-6acd-47ce-a1c1-b2235cd37682"
+    },
+    {
+      "key": "staging/v2/contributions/c07520cc37e6234040eafb9593d81fc65ff360657e0cdf1bceeba0701d65b6b1.json",
+      "sha256": "c07520cc37e6234040eafb9593d81fc65ff360657e0cdf1bceeba0701d65b6b1",
+      "version_id": "ea5f4b75-507d-4db1-a89e-73cff14f37fa"
+    },
+    {
+      "key": "staging/v2/contributions/d33eb4429aa35fe832066dfc2d20b240c7b4641913cca0308d8b8cd9dee65682.json",
+      "sha256": "d33eb4429aa35fe832066dfc2d20b240c7b4641913cca0308d8b8cd9dee65682",
+      "version_id": "2fe85cfd-f31d-4ec1-9774-82e877daccc7"
+    },
+    {
+      "key": "staging/v2/normalized/7075541d9cf4c250bef1c3f8a2aeb6ffcdbd8c9eaa44d4a647ad25b2bd672b6e.json",
+      "sha256": "7075541d9cf4c250bef1c3f8a2aeb6ffcdbd8c9eaa44d4a647ad25b2bd672b6e",
+      "version_id": "37516bb0-b201-4503-9626-24934f1dc6aa"
+    },
+    {
+      "key": "staging/v2/normalized/c1a035891032183da5ce9910d131eacd761d5f3481a0ed8f6c63b331677032b3.json",
+      "sha256": "c1a035891032183da5ce9910d131eacd761d5f3481a0ed8f6c63b331677032b3",
+      "version_id": "b0b5cf4d-c782-4d95-a8ed-c964f2aa41ad"
+    },
+    {
+      "key": "staging/v2/normalized/d70c406c4b41494cbe0e85a4296cf02ccd460320d4883ae48cf3a4ecfbde0e65.json",
+      "sha256": "d70c406c4b41494cbe0e85a4296cf02ccd460320d4883ae48cf3a4ecfbde0e65",
+      "version_id": "8b80dc4c-9b66-4da6-ac21-733ea2b3ebb0"
+    }
+  ]
+}

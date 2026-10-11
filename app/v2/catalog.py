@@ -3,9 +3,8 @@
 import hashlib
 from functools import lru_cache
 
-import boto3
-
 from app.v2.errors import unavailable
+from core.aws import aws_client
 from core.public_reference import load_public_reference
 from core.runtime_catalog import CatalogRuntime
 from db.catalog import CatalogStore
@@ -16,7 +15,7 @@ from ingestion.staging import canonical_bytes
 @lru_cache(maxsize=1)
 def runtime_catalog(bucket):
     return CatalogRuntime(
-        CatalogStore(table=get_dynamodb_table(), s3_client=boto3.client("s3"), bucket=bucket)
+        CatalogStore(table=get_dynamodb_table(), s3_client=aws_client("s3"), bucket=bucket)
     )
 
 

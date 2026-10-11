@@ -1,0 +1,83 @@
+{
+  "properties": {
+    "schema_version": {
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "measured_at": {
+      "title": "Measured At",
+      "type": "string"
+    },
+    "revision": {
+      "title": "Revision",
+      "type": "string"
+    },
+    "source_tree_sha256": {
+      "title": "Source Tree Sha256",
+      "type": "string"
+    },
+    "command": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Command",
+      "type": "array"
+    },
+    "inputs": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Inputs",
+      "type": "object"
+    },
+    "environment": {
+      "additionalProperties": true,
+      "title": "Environment",
+      "type": "object"
+    },
+    "dataset": {
+      "additionalProperties": true,
+      "title": "Dataset",
+      "type": "object"
+    },
+    "timings": {
+      "additionalProperties": true,
+      "title": "Timings",
+      "type": "object"
+    },
+    "operations": {
+      "additionalProperties": true,
+      "title": "Operations",
+      "type": "object"
+    },
+    "items": {
+      "additionalProperties": true,
+      "title": "Items",
+      "type": "object"
+    },
+    "limitations": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Limitations",
+      "type": "array"
+    }
+  },
+  "required": [
+    "measured_at",
+    "revision",
+    "source_tree_sha256",
+    "command",
+    "inputs",
+    "environment",
+    "dataset",
+    "timings",
+    "operations",
+    "items",
+    "limitations"
+  ],
+  "title": "BenchmarkReport",
+  "type": "object"
+}

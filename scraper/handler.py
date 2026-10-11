@@ -6,8 +6,7 @@ import os
 from pathlib import Path
 from typing import Any
 
-import boto3
-
+from core.aws import aws_client
 from core.source_admission import load_admissions
 from core.telemetry import RunTelemetry
 from db.client import get_dynamodb_table
@@ -62,13 +61,13 @@ def _run(event: dict[str, Any], telemetry: RunTelemetry) -> dict[str, Any]:
         with httpx.Client() as client:
             return check_references(
                 table=get_dynamodb_table(),
-                s3_client=boto3.client("s3"),
+                s3_client=aws_client("s3"),
                 bucket=os.environ["S3_RAW_BUCKET_NAME"],
                 client=client,
                 telemetry=telemetry,
             )
     if mode == "recover":
-        response = boto3.client("lambda").invoke(
+        response = aws_client("lambda").invoke(
             FunctionName=os.environ["INGESTION_FUNCTION_NAME"],
             InvocationType="Event",
             Payload=json.dumps({"mode": "native", "recover": True}).encode(),
@@ -83,7 +82,7 @@ def _run(event: dict[str, Any], telemetry: RunTelemetry) -> dict[str, Any]:
     if not active:
         return {"status": "disabled", "reason": "source_admission_not_enabled"}
     table = get_dynamodb_table() if active else None
-    s3 = boto3.client("s3")
+    s3 = aws_client("s3")
     catalog_index = Path(
         os.environ.get("CATALOG_INDEX_PATH", str(ROOT / "core/regulations/v2/index.json"))
     )
@@ -103,7 +102,7 @@ def _run(event: dict[str, Any], telemetry: RunTelemetry) -> dict[str, Any]:
         else None
     )
     if active:
-        lambda_client = boto3.client("lambda")
+        lambda_client = aws_client("lambda")
         for admission in active:
             client = LimitlessAPIClient(on_retry=telemetry.retry)
             try:

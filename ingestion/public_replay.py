@@ -6,8 +6,7 @@ import time
 from pathlib import Path
 from uuid import uuid4
 
-import boto3
-
+from core.aws import aws_client
 from db.client import get_dynamodb_table
 from db.leases import acquire_lease, release_lease
 from db.schema_public import public_lease_key
@@ -55,7 +54,7 @@ def main(argv=None):
     rollback.add_argument("--snapshot-id", required=True)
     rollback.add_argument("--expected-snapshot-id", required=True)
     args = parser.parse_args(argv)
-    table, s3 = get_dynamodb_table(), boto3.client("s3")
+    table, s3 = get_dynamodb_table(), aws_client("s3")
 
     def clock():
         return int(time.time())

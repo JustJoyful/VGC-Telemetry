@@ -1,0 +1,10 @@
+# Owner-only future opt-in: requires an independently admitted .local/admission.json.
+# Copy to local/compose.sources.yaml; never include it in default startup.
+services:
+  scheduler:
+    networks: [private, egress]
+    environment:
+      LOCAL_SCHEDULES_ENABLED: "true"
+      SOURCE_ADMISSION_PATH: /run/config/admission.json
+    volumes:
+      - ./.local/admission.json:/run/config/admission.json:ro

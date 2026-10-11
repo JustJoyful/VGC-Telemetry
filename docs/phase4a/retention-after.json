@@ -1,0 +1,221 @@
+{
+  "versions": [
+    {
+      "key": "staging/v2/captures/limitless/6ab9204c880ed327106dddf4/b55f2e4a4aa5b13e3f8c6efad45a3c8b3c5bc816c980034874e7bf0f98f7c4c2.json",
+      "version_id": "3c16c2bf-9106-43b4-b224-15bb8dcf048d",
+      "sha256": "b55f2e4a4aa5b13e3f8c6efad45a3c8b3c5bc816c980034874e7bf0f98f7c4c2"
+    },
+    {
+      "key": "staging/v2/captures/limitless/6abe6180880ed327106e0cf4/1033230f14665bbdf28eeee165b658ca27a053da12811d739d23955d9f4229c1.json",
+      "version_id": "608e1b24-8eaf-4ea1-9d16-026f17b049eb",
+      "sha256": "1033230f14665bbdf28eeee165b658ca27a053da12811d739d23955d9f4229c1"
+    },
+    {
+      "key": "staging/v2/captures/limitless/6abe6180880ed327106e0cf4/15629c408eab7c7a28ae25e823acb4b76448221466d71f40fba4825614e87b6b.json",
+      "version_id": "b005ac67-07f6-4cbf-b49c-43120ba7ca20",
+      "sha256": "15629c408eab7c7a28ae25e823acb4b76448221466d71f40fba4825614e87b6b"
+    },
+    {
+      "key": "staging/v2/catalog/candidates/65c76fd05bf15b629b9a2aeab7a81882afe4171a34401fab013561e15b6604e0.json",
+      "version_id": "db598eef-a716-4b54-b8d8-274626e79a12",
+      "sha256": "bf33b5747df9322c86c411c60fca7052411187aa87bb41597840f1b5b6b50bc5"
+    },
+    {
+      "key": "staging/v2/catalog/candidates/e1e75b89a40528c4cfcb50d79a289a5ed425611dbb74985a6cf34ae2223a8b85.json",
+      "version_id": "2f776dfa-a570-4b70-8663-50996db0a052",
+      "sha256": "97f1dbfb092f9c1c08af2c0f2c5f510061d8a6a900c5077787c7b189a607c9a9"
+    },
+    {
+      "key": "staging/v2/contributions/4e80185010945baf7241b6eff66fa92a9780d29dcd99b84fea6d71394fc9124a.json",
+      "version_id": "df099c1c-7710-40aa-8849-5b11f6bdc6ce",
+      "sha256": "4e80185010945baf7241b6eff66fa92a9780d29dcd99b84fea6d71394fc9124a"
+    },
+    {
+      "key": "staging/v2/contributions/c07520cc37e6234040eafb9593d81fc65ff360657e0cdf1bceeba0701d65b6b1.json",
+      "version_id": "fe25b584-bfc4-4f84-b1bb-5a13f9efe475",
+      "sha256": "c07520cc37e6234040eafb9593d81fc65ff360657e0cdf1bceeba0701d65b6b1"
+    },
+    {
+      "key": "staging/v2/contributions/d33eb4429aa35fe832066dfc2d20b240c7b4641913cca0308d8b8cd9dee65682.json",
+      "version_id": "430cf161-5ef7-4b39-a2dc-9306cd25d30b",
+      "sha256": "d33eb4429aa35fe832066dfc2d20b240c7b4641913cca0308d8b8cd9dee65682"
+    },
+    {
+      "key": "staging/v2/normalized/759fe8e1028bf641bfbb5a9d22afe080e869e0a72001351b192906d71ff59e1e.json",
+      "version_id": "b212bb2d-cd4b-470f-bb13-0a0672b5317b",
+      "sha256": "759fe8e1028bf641bfbb5a9d22afe080e869e0a72001351b192906d71ff59e1e"
+    },
+    {
+      "key": "staging/v2/normalized/c5be5eb96b98e2d2eac107fb485dd5c1c88b347f1e747ac7aa23f613ba27193a.json",
+      "version_id": "0b56f875-0ba3-40aa-97b4-3a8c1f58b418",
+      "sha256": "c5be5eb96b98e2d2eac107fb485dd5c1c88b347f1e747ac7aa23f613ba27193a"
+    },
+    {
+      "key": "staging/v2/normalized/ffcba7d6278fa64a976fb0dd2bc7ff40e4fab4f8eb2ce2c6cdb13a777e3797b1.json",
+      "version_id": "cae46ed9-98d9-418e-a963-1fce8ab06918",
+      "sha256": "ffcba7d6278fa64a976fb0dd2bc7ff40e4fab4f8eb2ce2c6cdb13a777e3797b1"
+    }
+  ],
+  "source_identity": [
+    "de2eef73e2bd865673d58a36ffdef1fc2da38c49a1c25354adaaf1774c15ec15",
+    {
+      "tests/fixtures/phase2/analyst-queries.json": "ea84d8604e88ef13f4f024828b919fe2682c89f3dc2a1c59d5b157478ed4f860",
+      "tests/fixtures/phase2/expected-real.json": "288d7ce73b4996bb62957aabd3c7d6be29cae2be92d0073d59ee9fc1a2597490",
+      "tests/fixtures/phase2/source-evidence.json": "c3dd693c5e7ca247c5e3e007592f9b0cbe6ab6b843465b1ee80fb0d1b69fd529",
+      "tests/fixtures/sources/captures/01a89493ed65030a6deb3e624141b70b7d3bb11db27d82e7f25ad5a36b680afb.body": "fede7a249c4505a45d17c9bf3bc5f45d351314ee15ab49b5af3091e5ac1a3b3b",
+      "tests/fixtures/sources/captures/01a89493ed65030a6deb3e624141b70b7d3bb11db27d82e7f25ad5a36b680afb.json": "9e0238efb942a9143d49afe5213a093fb409a55b2233cc09cc63e7476f24a756",
+      "tests/fixtures/sources/captures/04a27aeaa1225ccd5b58f717a109bd5ed04a6f80da5fafc30f8df15ad63ddcde.body": "4ea0f81d4e44168dcf1a01bcc3482d5a1c013e321d087b25d72908b132114c40",
+      "tests/fixtures/sources/captures/04a27aeaa1225ccd5b58f717a109bd5ed04a6f80da5fafc30f8df15ad63ddcde.json": "d3f2460e7ec0db91f7c4c58118848eb9f4011c98cc1cc4d49f777541b907f987",
+      "tests/fixtures/sources/captures/06dcf3bab2cfa1c28abfe4b76eaba19a7848e77df53f89bb094e1d0351161997.body": "f457c2499d0261fe51f097a23fe7be9caf63be858e25ef39db47891e3d339070",
+      "tests/fixtures/sources/captures/06dcf3bab2cfa1c28abfe4b76eaba19a7848e77df53f89bb094e1d0351161997.json": "87275ca2f3f953e87a71313e02e26a7ae5671244ac1f0177e2cd8ef9f3aa9362",
+      "tests/fixtures/sources/captures/0741d9c4ab2047c83b2d4b0b050515133a28a5256be2e23378cbb0f03196636d.body": "a9aad09593f50c6827ebe7062a10f436c57c0a6b657e5ed8dd57011cb469568f",
+      "tests/fixtures/sources/captures/0741d9c4ab2047c83b2d4b0b050515133a28a5256be2e23378cbb0f03196636d.json": "40fcf7a5947e66b6ee17d5692bc2e43093e2a60bef865799450ae9de093a9638",
+      "tests/fixtures/sources/captures/1f3571dc5f9030bfd2fa5381bca7c34ce0a83033b9acc25840d26de7a7ccdc19.body": "a32e7a3e83c4397a38c259ede97ff86abdd44523f1c159b3f2273dcf5d923b56",
+      "tests/fixtures/sources/captures/1f3571dc5f9030bfd2fa5381bca7c34ce0a83033b9acc25840d26de7a7ccdc19.json": "b2268a70ea0efffefe7a80e78d84036fb69507cddf56666ca1de2de7d8697ba6",
+      "tests/fixtures/sources/captures/308cae1f93d27d514c6f53e70de0f874c512c69f28886e43bc96cd866e20267d.body": "c195592cdf52c8ce193cc02d444b19c3272234be66a04764356064be35ff1985",
+      "tests/fixtures/sources/captures/308cae1f93d27d514c6f53e70de0f874c512c69f28886e43bc96cd866e20267d.json": "1caafc164653779ed60867df373f04876af4b917d92598b3b8c74baa7792c4c4",
+      "tests/fixtures/sources/captures/37301186e2edb4e8cc70ce220b32539e024e8fa9c6e4b71af6b244fa535a3a5a.body": "df6e5622f4811d7957c6a58af4761fac38f9729ac303a4a0f798875589d2a233",
+      "tests/fixtures/sources/captures/37301186e2edb4e8cc70ce220b32539e024e8fa9c6e4b71af6b244fa535a3a5a.json": "015901e58598a2d2d9665aaa0ccfa1c9f3dcee0f354f8e2c9b45f8a1027fcc04",
+      "tests/fixtures/sources/captures/3a5d20febab3b58deb7088e58a0c4d8d82b8d3e81cfbad4e4ecd1cd043c12289.body": "101464991628fe01d1daa4acba06603aec1d4b0c962dacb5bf2af18967396f1e",
+      "tests/fixtures/sources/captures/3a5d20febab3b58deb7088e58a0c4d8d82b8d3e81cfbad4e4ecd1cd043c12289.json": "24bddba6e69a2164688ccc631ac46bbcb06bebfa5e31a2942d9b998598542abd",
+      "tests/fixtures/sources/captures/3c998c966b36ab420be7e1d244ddb09f9cc94e4888a997894e5fe6f3f4e1c8f5.body": "b48f2e12d1b391210bbf9a19f2434a61ba8bd7e564c42614988512846c3f4a9d",
+      "tests/fixtures/sources/captures/3c998c966b36ab420be7e1d244ddb09f9cc94e4888a997894e5fe6f3f4e1c8f5.json": "b58b6c641e3988d72f2598c3762a21ba7b816a8c44e81e0b482cc405facc21d5",
+      "tests/fixtures/sources/captures/40a52a8316fd8a4e3201d04b8530ddbcdcb2481ebf677d94ef7be96df63251f4.body": "f22d14965e68ac5e7640d8e7e0ffe213d9cb85d9e6c6c0703b0258467b924686",
+      "tests/fixtures/sources/captures/40a52a8316fd8a4e3201d04b8530ddbcdcb2481ebf677d94ef7be96df63251f4.json": "6722b3ede98f14e9dda35222ba7aab1dc9f1e5c206e42d6e858c512d5395811b",
+      "tests/fixtures/sources/captures/483cd98be6f6740df4550514a286700591f0ea8845bd70e11b5e2ea53ff41b34.body": "e99b6fdb0ac711251e19744596f00b083ec18ab6838d0f6e4cc0c984e342967f",
+      "tests/fixtures/sources/captures/483cd98be6f6740df4550514a286700591f0ea8845bd70e11b5e2ea53ff41b34.json": "b1420d1f0826a873fab12db4ca23bf3d029a61efbce7640017c45f9e9ab95f00",
+      "tests/fixtures/sources/captures/5008a02e235ee011fe52259c5af4677dc37eefad071b153c6633868cb086e45f.body": "7810beb34e93cca6a93722cbac1e762d2a919e2b30777bae601b8e554d89f68b",
+      "tests/fixtures/sources/captures/5008a02e235ee011fe52259c5af4677dc37eefad071b153c6633868cb086e45f.json": "af49f87dd751c70174c294ec594dc175630e1a6e2d128447bc66f422cf684e9c",
+      "tests/fixtures/sources/captures/50817a558b8da1f4c7b79236b99ba4dc8993e5f792fc3b0886f470f6e0f21196.body": "b77ce16b04161b46714e798ed8e337770886e418a4972b5da1ab94f72576105d",
+      "tests/fixtures/sources/captures/50817a558b8da1f4c7b79236b99ba4dc8993e5f792fc3b0886f470f6e0f21196.json": "aef01a5223affabbd334fedaefbf1be141e614e1f1f0ddd41625ebc3111bd840",
+      "tests/fixtures/sources/captures/53d9300ec98bf0015446cc413b0988aa23ce1854a68f83cbcdcc0af292b83992.body": "05a4742235556c535591c8e24ecdad2f390b8bb5435542441d118522196f32d7",
+      "tests/fixtures/sources/captures/53d9300ec98bf0015446cc413b0988aa23ce1854a68f83cbcdcc0af292b83992.json": "64bc650dca5498e849aac4ee8abc5a3b640cd70efedebbde20b5c3f31b6be1e1",
+      "tests/fixtures/sources/captures/5b9666d5fe758bc9f72f39bf9afcffcc35b953ffe3fbf8e6f97350c840647a22.body": "ea1dff2a5f500db89371799f2e7cf03675231fcaf0a2a784eca39599f9ff9f9a",
+      "tests/fixtures/sources/captures/5b9666d5fe758bc9f72f39bf9afcffcc35b953ffe3fbf8e6f97350c840647a22.json": "11be1795ad832e9163e42c264bb0412df692e6ec476ee187608938fad0d51dbc",
+      "tests/fixtures/sources/captures/5f5ef9c986605f656332bd4c48e2f54b878a52d8530665216a62435579de639e.body": "8b0c6db8dcd403bb1f5453c1c6f9ac35c80192762219a308c80023375a93d617",
+      "tests/fixtures/sources/captures/5f5ef9c986605f656332bd4c48e2f54b878a52d8530665216a62435579de639e.json": "f91448473601989d661908c3c16938e7cc14d796acafe0b6e347b3cc5147360e",
+      "tests/fixtures/sources/captures/62cfc293da695b2cf2c22edfc051a07d373272c16a30ec26692b325d8f191ab5.body": "2a0aadc5046940c41584fea73b3a3b25d2af6ac25c78530100f5cde338316085",
+      "tests/fixtures/sources/captures/62cfc293da695b2cf2c22edfc051a07d373272c16a30ec26692b325d8f191ab5.json": "0897b53ab8bd90f45ab147d0915b3bda6185d28c75718a4d47d46742dce81af6",
+      "tests/fixtures/sources/captures/6d6c5764646e69364f48e0a375dd7aaadde7b82a56f2ed43026d8ce3e21eed30.body": "a6cc11eeb525ad58dee9010dd0d42274a5b4dacb39ce8653f4888cbd2f4f459d",
+      "tests/fixtures/sources/captures/6d6c5764646e69364f48e0a375dd7aaadde7b82a56f2ed43026d8ce3e21eed30.json": "20444339e1618b6ad539c4fd58879da32a24d75ef28394f3ca4ed8ea00b0c43c",
+      "tests/fixtures/sources/captures/6fef7cf2b06ffcb33b5df0c5da2c206a22365438afc7174bab0b80cfd39abf1b.body": "94ac9f4ea4be767603d35336e8019d7daef4fa0a24f1b66727f2ceb8efa9e545",
+      "tests/fixtures/sources/captures/6fef7cf2b06ffcb33b5df0c5da2c206a22365438afc7174bab0b80cfd39abf1b.json": "510de0536fde57ff1caaa417280cee31128151f742dd3f2f6454e2301dfb2092",
+      "tests/fixtures/sources/captures/79acc84d3de95e5899320ca105c3e6871a36c7494c947190624097c498389290.body": "fede7a249c4505a45d17c9bf3bc5f45d351314ee15ab49b5af3091e5ac1a3b3b",
+      "tests/fixtures/sources/captures/79acc84d3de95e5899320ca105c3e6871a36c7494c947190624097c498389290.json": "172c566d7eef1c104909dabf039a608876a490e65fd954f8586b8ad9bbf08bdf",
+      "tests/fixtures/sources/captures/828bf4e1bfc9abb38ec084b1b18140d2837ddb3feaba45bfec380eba0e84d2c9.body": "122529cebbc15cd2a22c781e0fb43ca814be86a18951f1ceaf37cf65297a3627",
+      "tests/fixtures/sources/captures/828bf4e1bfc9abb38ec084b1b18140d2837ddb3feaba45bfec380eba0e84d2c9.json": "a07c82665367cd45167ee5b36fdba2379df3738067774f6fa7b8e073a3348979",
+      "tests/fixtures/sources/captures/82aa860f3b351dca905741dd664e236cd9d758f9cd4cc65400f3011499b343a5.body": "93bc04bd24bd95cfc5b2677cbb58097d20fa80bfc7f778ef9854745ac8c30f8d",
+      "tests/fixtures/sources/captures/82aa860f3b351dca905741dd664e236cd9d758f9cd4cc65400f3011499b343a5.json": "2e93366d84c351a5ac15f8bbab5b3e8c5421e06a4e6d71866e4b79363e41e314",
+      "tests/fixtures/sources/captures/948b607c76a30171e21b460b32ca477b8d63353d0be20c3c8c047b994998202b.body": "875a72d221dae45eb1ebd4822c38ecba0efae575dc2404c79f2bc1193742ce0c",
+      "tests/fixtures/sources/captures/948b607c76a30171e21b460b32ca477b8d63353d0be20c3c8c047b994998202b.json": "99a41b61fff8587cbacad158cf8888f93d6d55ab360a37307113b732ed160909",
+      "tests/fixtures/sources/captures/c59f59450740375239b72be5c384fa5d100606635896e6d5cb5b8f34ce2e1a0b.body": "f66f7c310bb3c722e26d4bdb1d417f9f3a18ec740731e030cc302de4797cb082",
+      "tests/fixtures/sources/captures/c59f59450740375239b72be5c384fa5d100606635896e6d5cb5b8f34ce2e1a0b.json": "0ba60d0883bdafb5fe1338858d8f37d9ea43ab1a0761b2751834b01b9da1c06b",
+      "tests/fixtures/sources/captures/c9c7a03522306637668e1182226c6d5abfd6e2f37bb4246c58a074cc01f9e962.body": "d5558cd419c8d46bdc958064cb97f963d1ea793866414c025906ec15033512ed",
+      "tests/fixtures/sources/captures/c9c7a03522306637668e1182226c6d5abfd6e2f37bb4246c58a074cc01f9e962.json": "9415d88bee0e591fb1e9739966c6dedb48276f13d071be9d69cdb6c6b90edf4a",
+      "tests/fixtures/sources/captures/ccac7ed5566bad6b60bba196fd3091a78cc65f086c918fef0d766fd6c8a81709.body": "f9d069c85bbfa805e45681516ae53af9d3c14299cdaffca5876d0fbc0928fd9e",
+      "tests/fixtures/sources/captures/ccac7ed5566bad6b60bba196fd3091a78cc65f086c918fef0d766fd6c8a81709.json": "2fde9cafbcb4740c2ea5fde141d3f9b5fcd9e682f37b73062c086fa4f0fb1e56",
+      "tests/fixtures/sources/captures/d09eb6d07ca9929dfb01e42e53529ba068712b3c81d8b3361682edc6986dc5cf.body": "b2002a9fd52ba8db3783a05fbdebfb09c34fd09513b90f6b390a2c0dfbc93ed0",
+      "tests/fixtures/sources/captures/d09eb6d07ca9929dfb01e42e53529ba068712b3c81d8b3361682edc6986dc5cf.json": "66a265de6c540342a1ed55088b28ce384b59ae6132968ac35f2085abb44a7423",
+      "tests/fixtures/sources/captures/fa257e748e0bc5b2e1cbb82480aa6b8e98a3247deac6d736cd9c543133ad513e.body": "a27ae5700862174dd9fb7ef62bf58ca2d3ed664d73103ff5649fac007c7aa382",
+      "tests/fixtures/sources/captures/fa257e748e0bc5b2e1cbb82480aa6b8e98a3247deac6d736cd9c543133ad513e.json": "2374d9fa4331e9da51469994b2d1099adf875447a4d2ba6a51007449187fd09c",
+      "tests/fixtures/sources/limitless/accepted-capture.json": "eeb869cbb427845b979a51b40464d08ceaf004237f324d3f9c0818f99d002735",
+      "tests/fixtures/sources/limitless/second-accepted-capture.json": "4bf8ff44c41aa227617c03bbef2f0c8f53bff7d3c2b5977f4fce32586f31c3d2",
+      "tests/fixtures/sources/manifest.json": "7dc9ed83979114cea644e050bf0411b0a6c93471f983fd9affd63d385b7b978d",
+      "core/regulations/v2/README.md": "4f72c48f5d7ef5ed8706e184c266098609588d482622b844511b36f01daf3ab4",
+      "core/regulations/v2/UPSTREAM_LICENSE.txt": "b2002a9fd52ba8db3783a05fbdebfb09c34fd09513b90f6b390a2c0dfbc93ed0",
+      "core/regulations/v2/champions-mb-3661ce4.json": "03bbc7d964276997a33cc823ac14ccc5a379422fb19bb43505a6d1a1b5b3853f",
+      "core/regulations/v2/champions-mc-3661ce4.json": "33c614be1bc47c123ad112facf34da29bc9b9918852a4a432bb9b131e37b6862",
+      "core/regulations/v2/index.json": "0cbaf4125d66703f2dfa4f307d4fd369b9d12090ef60fd809c1cd6d7e2192f41",
+      "core/regulations/v2/public/03bbc7d964276997a33cc823ac14ccc5a379422fb19bb43505a6d1a1b5b3853f.catalog.json": "03bbc7d964276997a33cc823ac14ccc5a379422fb19bb43505a6d1a1b5b3853f",
+      "core/regulations/v2/public/122529cebbc15cd2a22c781e0fb43ca814be86a18951f1ceaf37cf65297a3627.pool.body": "122529cebbc15cd2a22c781e0fb43ca814be86a18951f1ceaf37cf65297a3627",
+      "core/regulations/v2/public/153f8ef44eeeccea2a9d5c07adb22cb03d06b4826f18db61c7c1212674662909.eligibility.json": "153f8ef44eeeccea2a9d5c07adb22cb03d06b4826f18db61c7c1212674662909",
+      "core/regulations/v2/public/1b9560c32f1dcf7d73b686af84c5dc2da971a76100a21195d485a3ee6bb3eee3.json": "1b9560c32f1dcf7d73b686af84c5dc2da971a76100a21195d485a3ee6bb3eee3",
+      "core/regulations/v2/public/33c614be1bc47c123ad112facf34da29bc9b9918852a4a432bb9b131e37b6862.catalog.json": "33c614be1bc47c123ad112facf34da29bc9b9918852a4a432bb9b131e37b6862",
+      "core/regulations/v2/public/8b0c6db8dcd403bb1f5453c1c6f9ac35c80192762219a308c80023375a93d617.pool.body": "8b0c6db8dcd403bb1f5453c1c6f9ac35c80192762219a308c80023375a93d617",
+      "core/regulations/v2/public/b2002a9fd52ba8db3783a05fbdebfb09c34fd09513b90f6b390a2c0dfbc93ed0.license.txt": "b2002a9fd52ba8db3783a05fbdebfb09c34fd09513b90f6b390a2c0dfbc93ed0",
+      "core/regulations/v2/public/bundled.json": "3b359d0b1600b33d36ca52a901939774491a8479afe8517e4cb71af5732b25bd",
+      "core/regulations/v2/public/ca78cee844cbd13795247a05eab9d4780ea3e36eb5d83dd42e589deed1509bd8.eligibility.json": "ca78cee844cbd13795247a05eab9d4780ea3e36eb5d83dd42e589deed1509bd8",
+      "core/regulations/v2/public/ffd238f69d14ede794358fb24d8a691144a0f594d03a6122081736438a1c0aab.index.json": "ffd238f69d14ede794358fb24d8a691144a0f594d03a6122081736438a1c0aab"
+    }
+  ],
+  "http_checks": [
+    {
+      "path": "/health",
+      "status": 200,
+      "rows": null,
+      "bytes": 115
+    },
+    {
+      "path": "/v1/teams?tournament_id=demo-legacy",
+      "status": 200,
+      "rows": 0,
+      "bytes": 103
+    },
+    {
+      "path": "/v1/meta",
+      "status": 200,
+      "rows": 0,
+      "bytes": 47
+    },
+    {
+      "path": "/v1/players/demo",
+      "status": 200,
+      "rows": null,
+      "bytes": 33
+    },
+    {
+      "path": "/v2/tournaments?limit=100",
+      "status": 200,
+      "rows": 2,
+      "bytes": 8521
+    },
+    {
+      "path": "/v2/teams?eligibility=all&limit=100",
+      "status": 200,
+      "rows": 25,
+      "bytes": 346038
+    },
+    {
+      "path": "/v2/status",
+      "status": 200,
+      "rows": null,
+      "bytes": 1046
+    },
+    {
+      "path": "/v2/regulations",
+      "status": 200,
+      "rows": 2,
+      "bytes": 3356
+    },
+    {
+      "path": "/v2/pokemon?limit=100",
+      "status": 200,
+      "rows": 100,
+      "bytes": 164748
+    },
+    {
+      "path": "/v2/meta?metric=species&limit=100",
+      "status": 200,
+      "rows": 26,
+      "bytes": 19604
+    },
+    {
+      "path": "/v2/meta?metric=stat_points&limit=100",
+      "status": 200,
+      "rows": 26,
+      "bytes": 19556
+    },
+    {
+      "path": "/v2/cores?size=3&limit=100",
+      "status": 200,
+      "rows": 100,
+      "bytes": 83898
+    },
+    {
+      "path": "/v2/teams/<id>",
+      "status": 200,
+      "bytes": 13999,
+      "provenance_checked": true
+    }
+  ]
+}
