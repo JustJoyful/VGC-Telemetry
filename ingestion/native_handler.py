@@ -4,9 +4,9 @@ import random as randomness
 import time
 from uuid import uuid4
 
-import boto3
 from botocore.exceptions import BotoCoreError, ClientError
 
+from core.aws import aws_client
 from core.telemetry import RunTelemetry
 from db.client import get_dynamodb_table
 from db.leases import acquire_lease, release_lease
@@ -72,7 +72,7 @@ def _handle_native_event(event, *, table, s3_client, now, sleep, random, max_ste
     if max_steps < 1:
         raise ValueError("max_steps must be positive")
     table = table if table is not None else get_dynamodb_table()
-    s3_client = s3_client if s3_client is not None else boto3.client("s3")
+    s3_client = s3_client if s3_client is not None else aws_client("s3")
     owner = uuid4().hex
 
     def clock():

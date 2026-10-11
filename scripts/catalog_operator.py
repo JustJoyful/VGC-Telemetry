@@ -6,8 +6,7 @@ import os
 from datetime import UTC, datetime
 from pathlib import Path
 
-import boto3
-
+from core.aws import aws_client
 from core.catalog_candidates import build_candidate
 from core.models.champions import CapturedDocument
 from db.catalog import CatalogStore
@@ -32,7 +31,7 @@ def main():
     args = parser.parse_args()
     store = CatalogStore(
         table=get_dynamodb_table(),
-        s3_client=boto3.client("s3"),
+        s3_client=aws_client("s3"),
         bucket=os.environ["S3_RAW_BUCKET_NAME"],
     )
     if args.action == "submit":

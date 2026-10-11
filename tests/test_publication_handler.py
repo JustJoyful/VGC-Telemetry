@@ -44,7 +44,7 @@ def test_mixed_batch_preserves_valid_quarantine_and_raises_retry_failure(
         return original(**kwargs)
 
     monkeypatch.setattr(s3, "get_object", fail)
-    monkeypatch.setattr(handler.boto3, "client", lambda _: s3)
+    monkeypatch.setattr(handler, "aws_client", lambda _: s3)
     waits = []
     with pytest.raises(RuntimeError) as caught:
         handler.handle_s3_event(

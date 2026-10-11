@@ -5,10 +5,10 @@ import time
 import urllib.parse
 from typing import Any
 
-import boto3
 from botocore.exceptions import BotoCoreError, ClientError
 from pydantic import ValidationError
 
+from core.aws import aws_client
 from core.telemetry import RunTelemetry
 from db.client import get_dynamodb_table
 from ingestion.parser import parse_tournament_export
@@ -41,7 +41,7 @@ def handle_s3_event(
 
 
 def _handle_s3_event(event, *, sleep, random, telemetry):
-    s3_client = boto3.client("s3")
+    s3_client = aws_client("s3")
     table = None
 
     records = event.get("Records", [])

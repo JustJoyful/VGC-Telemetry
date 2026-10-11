@@ -2,9 +2,9 @@
 
 import os
 
-import boto3
 from pydantic import ValidationError
 
+from core.aws import aws_client
 from core.build_evidence import normalize_public_build
 from core.models.builds import BuildCrossReference, BuildSource
 from core.models.champions import CapturedDocument
@@ -47,7 +47,7 @@ def _handle_build_event(event, *, table, s3_client, bucket):
     if not isinstance(refs, list) or not 1 <= len(refs) <= 10:
         raise ValueError("Build linking requires 1–10 exact native input references")
     table = table if table is not None else get_dynamodb_table()
-    s3_client = s3_client if s3_client is not None else boto3.client("s3")
+    s3_client = s3_client if s3_client is not None else aws_client("s3")
     bucket = bucket or os.environ["S3_RAW_BUCKET_NAME"]
     supplied = event["build"]
     try:

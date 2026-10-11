@@ -3,9 +3,9 @@ import random as randomness
 import time
 from typing import Any
 
-import boto3
 from botocore.config import Config
 
+from core.aws import DEMO_NAME, aws_resource, local_mode, validate_local
 from ingestion.retry import WriteExhausted, retry
 
 
@@ -15,12 +15,16 @@ def get_dynamodb_resource() -> Any:
     config = Config(
         retries={"max_attempts": 5, "mode": "standard"},
     )
-    return boto3.resource("dynamodb", region_name=region, config=config)
+    return aws_resource("dynamodb", region_name=region, config=config)
 
 
 def get_dynamodb_table(table_name: str | None = None) -> Any:
     """Return the single-table DynamoDB Table resource."""
     target_name = table_name or os.environ.get("DYNAMODB_TABLE_NAME", "vgc-telemetry-dev")
+    if local_mode():
+        validate_local()
+        if target_name != DEMO_NAME:
+            raise ValueError("Local demo forbids non-demo tables")
     dynamodb = get_dynamodb_resource()
     return dynamodb.Table(target_name)
 
