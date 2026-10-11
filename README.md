@@ -4,7 +4,13 @@ A REST API project for **Pokémon Champions tournament analysis**: registered te
 
 ## Project status
 
-Phase 3 adds offline-tested collection, versioned catalog candidates, exact public-build links, and worker telemetry/alarms to the bounded `/v2` API. Limitless admission and schedules remain disabled; source continuity, AWS delivery, subscription confirmation, and production readiness require Phase 4. Existing `/v1` routes and stored legacy EV units remain unchanged.
+Phase 5 adds bounded multi-member team search, scoped move usage, core exploration,
+exact reference lookup and a safe fixture seed for the self-hosted Compose install.
+Historical Phase 4A is self-hosted and verified for its dated local checks. Fresh Phase 5
+validation and remaining gates are recorded in [the evidence report](docs/phase5/evidence.md).
+Source admission, live collection and the tunnel remain disabled by default. AWS
+operations are the deferred Phase 4B alternate path. Phase 6 begins with a design
+discussion; Phase 7 is optional. Existing `/v1` routes retain legacy EV units.
 
 The target `/v2` API reliably serves verified Limitless Pokémon Champions VGC top-cut tournament data, preserves historical regulations, and reports provenance, sample coverage, and freshness. Limitless is the only initial tournament source. Ranked ladder feeds and brittle or mismatched sources are out of scope. RK9 is excluded because its published Terms prohibit automated screen scraping.
 
@@ -74,7 +80,41 @@ The repository's context documents are currently gitignored but remain part of t
 - [MEMORY.md](MEMORY.md): verified baseline, open bugs, decisions.
 - [SOURCE_UPDATE.md](SOURCE_UPDATE.md): source and release evidence checklist.
 
-The old `phase-2-plan.md` is superseded. Phase 0's admitted Limitless input-to-preview gate is complete: 120 offline tests pass with 92% coverage and clean Ruff checks. The [Phase 1 publication plan](docs/superpowers/plans/2026-10-05-phase-1-publication.md) implements the separate native publication foundation. Phase 1 is complete offline: 184 tests pass, with 93% measured coverage and clean Ruff checks. See MEMORY.md for evidence; public `/v2` and automated updates remain later gates.
+The original Phase 0–4A reports are historical; they do not establish acceptance for
+later revisions. See the roadmap and current evidence report for executed gates.
+
+## Self-hosted install and fixture demo
+
+Docker and Docker Compose are required. Seeding runs in the application container.
+The host needs no Python installation for this flow:
+
+```bash
+cp local/compose.env.example .env.local
+docker compose up -d --build --wait
+docker compose stop worker scheduler
+docker compose exec -T api python -m scripts.local.cli seed-demo
+docker compose start worker scheduler
+curl -fsS http://127.0.0.1:8080/health
+```
+
+`seed-demo` accepts an empty installation only; existing tournament rows, S3 objects,
+versions and delete markers cause refusal. Empty recovery cursors and request counters
+are operational state. A busy worker lease causes refusal; wait for its expiry after
+an interrupted worker. Seeding uses retained public captures, labels its report
+`retained-fixtures`, and never enables live sources. An interrupted seed preserves its
+writes and requires explicit recovery rather than an implicit overwrite.
+
+Normal `docker compose down` retains both storage volumes. The separate destructive
+`demo --confirm-reset` and `reset-demo --confirm-reset` commands rebuild only the local
+demo table, retaining all S3 versions. See [local operations](docs/runbooks/self-hosted-phase-4a.md)
+for backup/restore, and [Phase 5 queries](docs/runbooks/phase-5-queries.md) for executable
+examples and denominator semantics. Default interfaces are loopback API only; admin
+and Cloudflare profiles are opt-in. Public tunnel/source and AWS checks are pending.
+
+Optional host helper: `python3 scripts/local/stack.py up`, `seed-demo`, `backup`, and
+`down`. Phase 5 verification uses separate `vgc-phase5`/`vgc-phase5-restore` projects,
+`VGC_LOCAL_IMAGE=vgc-phase5:local`, and `VGC_API_PORT=18085`/`18086`; existing installations
+are preserved.
 
 ## Hosting
 
@@ -133,8 +173,8 @@ Offline Moto checks establish logic, not AWS throughput, permissions, or deploym
 
 Offline verification on 2026-10-10: `uv run --frozen pytest -q` passed 394 tests
 with one existing Starlette/httpx deprecation warning; Ruff lint, formatting,
-and diff checks passed. Terraform CLI was unavailable and Docker daemon access
-was denied, so Terraform formatting/plans and container builds remain unverified.
+and diff checks passed. Those historical tool-availability statements were superseded by Phase 4A local
+checks; AWS infrastructure plans and deployments remain unverified.
 
 Admitted Limitless discovery/recent checks are configured for every six hours,
 reference checks daily, reconciliation weekly, and native recovery every 30
@@ -172,7 +212,7 @@ the first run; they will show the disabled-worker state until live admission.
 
 ## Phase 2 public API and manual replay
 
-`/v2` reads only a complete immutable public snapshot. Pin the returned snapshot ID
+`/v2` reads only a complete immutable public snapshot. Pin the returned signed snapshot token
 for detail requests and send it with every later page; keep endpoint filters and
 `limit` unchanged for the continuation cursor. Cursors are signed, query/snapshot
 scoped, and expire at a fixed 24 hours. Listing defaults to 25 rows (maximum 100);
@@ -192,12 +232,12 @@ GET /v2/teams/limitless:<team-id>
 GET /v2/players/limitless:axtheb
 GET /v2/regulations?limit=25
 GET /v2/pokemon?catalog_revision=champions-mb-3661ce4&limit=25
-GET /v2/meta?metric=species&from=2026-09-01&to=2026-10-01&placement_max=8
+GET /v2/meta?metric=species&date_from=2026-09-01&date_to=2026-10-01&placement_max=8
 GET /v2/meta?metric=nature&population_id=<exact-population-id>
-GET /v2/cores?size=3&from=2026-09-01&to=2026-10-01
+GET /v2/cores?size=3&date_from=2026-09-01&date_to=2026-10-01
 ```
 
-Use each response's `snapshot.id` on following pages and details. Team detail may
+Use each response's `snapshot` token on following pages and details. Team detail may
 show a partial or absent roster. Native Stat Points are six integers (0–32, total
 at most 66) only when observed; supported metrics are species/form, moves, abilities,
 items, natures, native Stat Points, and registered Mega. Legacy EV data is never converted. A registered

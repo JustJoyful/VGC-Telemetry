@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import os
 import time
 from pathlib import Path
 from uuid import uuid4
@@ -95,6 +96,7 @@ def main(argv=None):
             "replay",
             "rollback",
             "demo",
+            "seed-demo",
             "api-proof",
             "worker",
             "scheduler",
@@ -142,7 +144,16 @@ def main(argv=None):
             table=table, key=WORKER_LEASE, owner=uuid4().hex, now=int(time.time()), ttl=900
         )
         try:
-            if args.command == "demo":
+            if args.command == "seed-demo":
+                if os.environ.get("LOCAL_SCHEDULES_ENABLED", "false") != "false":
+                    raise ValueError("seed-demo requires disabled live schedules")
+                report = demo.seed(
+                    table,
+                    s3,
+                    DEMO_NAME,
+                    api_check=lambda expected: api_proof(args.api_url, expected),
+                )
+            elif args.command == "demo":
                 # Reset needs quiescent roles; run the documented command with worker stopped.
                 report = demo.demonstrate(
                     table,

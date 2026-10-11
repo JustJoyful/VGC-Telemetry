@@ -53,3 +53,43 @@ def test_readme_reports_verified_local_acceptance():
     from scripts.local.stack import ROOT
 
     assert "self-hosted and verified" in (ROOT / "README.md").read_text()
+
+
+def test_safe_seed_runs_in_container_without_reset(tmp_path, monkeypatch, capsys):
+    from scripts.local import stack
+
+    calls = []
+
+    def command(*args, **kwargs):
+        calls.append(args)
+        return '{"dataset":"retained-fixtures","seeded":true}' if kwargs.get("capture") else None
+
+    monkeypatch.setattr(stack, "command", command)
+    output = tmp_path / "seed.json"
+    stack.main(["--project", "vgc-phase5", "seed-demo", "--output", str(output)])
+    assert json.loads(output.read_text())["seeded"] is True
+    assert any("exec" in c and "scripts.local.cli" in c and "seed-demo" in c for c in calls)
+    assert not any("--confirm-reset" in c or "reset-demo" in c for c in calls)
+    assert calls[-1][-3:] == ("start", "worker", "scheduler")
+
+
+def test_compose_profiles_isolate_public_routes_and_leave_admission_disabled():
+    import yaml
+
+    from scripts.local.stack import ROOT
+
+    config = yaml.safe_load((ROOT / "compose.yaml").read_text())
+    services = config["services"]
+    for name in ["dynamodb", "storage", "worker", "scheduler", "bootstrap"]:
+        assert not services[name].get("ports")
+    assert services["tunnel"]["profiles"] == ["tunnel"]
+    assert services["admin"]["profiles"] == ["admin"]
+    assert services["api"]["ports"][0].startswith("127.0.0.1:")
+    assert config["networks"]["private"]["internal"] is True
+    ingress = yaml.safe_load((ROOT / "local/tunnel.yml.example").read_text())["ingress"]
+    assert [route["service"] for route in ingress] == ["http://api:8080", "http_status:404"]
+    admissions = json.loads((ROOT / "core/sources/admission.json").read_text())
+    assert not any(a["enabled"] for a in admissions["sources"])
+    override = yaml.safe_load((ROOT / "local/compose.sources.yaml.example").read_text())
+    assert override["services"]["scheduler"]["networks"] == ["private", "egress"]
+    assert "SOURCE_ADMISSION_PATH" in override["services"]["scheduler"]["environment"]

@@ -1,6 +1,6 @@
 name: vgc-phase4a
 x-app: &app
-  image: vgc-phase4a:local
+  image: ${VGC_LOCAL_IMAGE:-vgc-phase4a:local}
   build:
     context: .
     dockerfile: Dockerfile.local
@@ -59,7 +59,7 @@ services:
   api:
     <<: *app
     networks: [private, edge]
-    ports: ["127.0.0.1:8080:8080"]
+    ports: ["127.0.0.1:${VGC_API_PORT:-8080}:8080"]
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=3)"]

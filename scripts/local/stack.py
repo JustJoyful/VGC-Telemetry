@@ -10,7 +10,7 @@ import tarfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-PROJECTS = ("vgc-phase4a", "vgc-phase4a-restore")
+PROJECTS = ("vgc-phase4a", "vgc-phase4a-restore", "vgc-phase5", "vgc-phase5-restore")
 VOLUMES = ("dynamodb-data", "s3-data")
 
 
@@ -31,7 +31,8 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--project", choices=PROJECTS, default=PROJECTS[0])
     parser.add_argument(
-        "action", choices=["up", "down", "status", "demo", "backup", "restore", "reset-demo"]
+        "action",
+        choices=["up", "down", "status", "seed-demo", "demo", "backup", "restore", "reset-demo"],
     )
     parser.add_argument("--output", type=Path)
     parser.add_argument("--input", type=Path)
@@ -46,8 +47,8 @@ def main(argv=None):
         command(*compose, "down")  # Named volumes retained; never pass -v.
     elif args.action == "status":
         command(*compose, "ps", "--all")
-    elif args.action in {"demo", "reset-demo"}:
-        if not args.confirm_reset:
+    elif args.action in {"seed-demo", "demo", "reset-demo"}:
+        if args.action != "seed-demo" and not args.confirm_reset:
             parser.error("requires --confirm-reset (exact demo table/bucket only)")
         if args.output and args.output.exists():
             parser.error("output exists; choose a fresh evidence path")
@@ -62,7 +63,7 @@ def main(argv=None):
                 "-m",
                 "scripts.local.cli",
                 args.action,
-                "--confirm-reset",
+                *(["--confirm-reset"] if args.action != "seed-demo" else []),
                 capture=True,
             )
             report = json.loads(raw.splitlines()[-1])

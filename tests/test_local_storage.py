@@ -58,3 +58,28 @@ def test_reset_preserves_all_retained_object_versions(local_env, monkeypatch):  
             assert (
                 s3.get_object(Bucket=DEMO_NAME, Key=key, VersionId=version)["Body"].read() == body
             )
+
+
+def test_bootstrap_is_idempotent_and_preserves_existing_data(local_env, monkeypatch):  # noqa: F811
+    import boto3
+    from moto import mock_aws
+
+    from core.aws import DEMO_NAME
+    from scripts.local import storage
+
+    with mock_aws():
+        monkeypatch.setenv("AWS_ACCESS_KEY_ID", "localdemo")
+        monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "local-demo-secret")
+        db, s3 = boto3.client("dynamodb"), boto3.client("s3")
+        monkeypatch.setattr(storage, "aws_client", lambda name: {"dynamodb": db, "s3": s3}[name])
+        storage.initialize()
+        db.put_item(TableName=DEMO_NAME, Item={"PK": {"S": "existing"}, "SK": {"S": "row"}})
+        version = s3.put_object(Bucket=DEMO_NAME, Key="existing", Body=b"retained")["VersionId"]
+        storage.initialize()
+        assert db.get_item(TableName=DEMO_NAME, Key={"PK": {"S": "existing"}, "SK": {"S": "row"}})[
+            "Item"
+        ]
+        assert (
+            s3.get_object(Bucket=DEMO_NAME, Key="existing", VersionId=version)["Body"].read()
+            == b"retained"
+        )

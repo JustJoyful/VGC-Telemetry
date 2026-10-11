@@ -243,3 +243,29 @@ def demonstrate(table, s3, bucket, *, api_check=None):
         "replayed": summary(table),
         "generations": {"baseline": first, "corrected": second, "replayed": pointer(table)},
     }
+
+
+def seed(table, s3, bucket, *, api_check=None):
+    from scripts.local.storage import require_empty
+
+    require_empty(table, s3, bucket)
+    catalogs = load_catalogs(table, s3, bucket)
+    refs, fixtures = [], []
+    for second in (False, True):
+        ref, evidence = collect(s3, bucket, second=second)
+        refs.append(ref)
+        fixtures.append(evidence)
+    ingest(table, s3, refs)
+    recover(table, s3)
+    baseline = summary(table)
+    assert baseline == {"rosters": 37, "eligible_rosters": 10, "unknown_stat_points": 60}
+    return {
+        "dataset": "retained-fixtures",
+        "seeded": True,
+        "live_collection": False,
+        "fixtures": fixtures,
+        "catalogs": catalogs,
+        "baseline": baseline,
+        "snapshot_id": pointer(table),
+        "api": api_check(baseline) if api_check else [],
+    }
