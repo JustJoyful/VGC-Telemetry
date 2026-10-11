@@ -1,0 +1,7 @@
+# Copy to local/tunnel.yml, supply owner tunnel UUID and hostname, review API abuse.
+tunnel: OWNER-TUNNEL-UUID
+credentials-file: /run/secrets/tunnel.json
+ingress:
+  - hostname: api.example.invalid
+    service: http://api:8080
+  - service: http_status:404

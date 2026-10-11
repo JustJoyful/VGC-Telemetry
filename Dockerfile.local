@@ -1,0 +1,19 @@
+FROM ghcr.io/astral-sh/uv:0.11.11 AS uv
+FROM python:3.12-slim
+COPY --from=uv /uv /usr/local/bin/uv
+WORKDIR /work
+COPY pyproject.toml uv.lock ./
+COPY Dockerfile.local Dockerfile.local.dockerignore .dockerignore compose.yaml ./
+RUN uv sync --frozen --no-dev --no-install-project
+ENV PATH="/work/.venv/bin:$PATH" PYTHONPATH=/work PYTHONUNBUFFERED=1
+COPY app/ app/
+COPY core/ core/
+COPY db/ db/
+COPY ingestion/ ingestion/
+COPY scraper/ scraper/
+COPY scripts/ scripts/
+COPY local/ local/
+# Offline captured evidence is copied separately by the Compose build context.
+COPY tests/fixtures/ tests/fixtures/
+USER 10001:10001
+CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080", "--no-proxy-headers"]
