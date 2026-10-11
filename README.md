@@ -1,233 +1,82 @@
 # VGC Telemetry
 
-A REST API project for **Pokémon Champions tournament analysis**: registered teams, published builds, Pokémon/form usage, moves, abilities, items, natures, Stat Points, Mega capability, and team cores.
+**Pokémon Champions tournament data tooling, under active development.**
 
-## Project status
+VGC Telemetry is being built around a Champions-specific API for tournament teams, regulations, Pokémon usage, moves, and team cores. The initial data source is public Limitless tournament data. The project favors verifiable source evidence, explicit unknowns, and reproducible results over broad but weakly supported coverage.
 
-Phase 3 adds offline-tested collection, versioned catalog candidates, exact public-build links, and worker telemetry/alarms to the bounded `/v2` API. Limitless admission and schedules remain disabled; source continuity, AWS delivery, subscription confirmation, and production readiness require Phase 4. Existing `/v1` routes and stored legacy EV units remain unchanged.
+> **Status:** The current `main` branch contains the offline API, ingestion, publication, and automation work through Phase 3. Self-hosted operations and Phase 5 query improvements have been implemented and verified in the local `phase5-query-usability` branch, but those changes have not been merged into `main`. AWS deployment and live data collection are still unverified. This is development software, not a finished or production-ready service.
 
-The target `/v2` API reliably serves verified Limitless Pokémon Champions VGC top-cut tournament data, preserves historical regulations, and reports provenance, sample coverage, and freshness. Limitless is the only initial tournament source. Ranked ladder feeds and brittle or mismatched sources are out of scope. RK9 is excluded because its published Terms prohibit automated screen scraping.
+## Current work
 
-Limitless already provides an [upstream API](https://docs.limitlesstcg.com/developer/tournaments). This project's value is Champions-specific legality, reproducible analysis, coverage, and freshness beyond a direct API copy. Additional sources require a separate access review.
+The local Phase 5 branch adds bounded team-member searches, scoped move analytics, core-to-team exploration, reference lookups, and safer fixture seeding for the self-hosted stack. Its full test suite passed 458 tests, with one existing deprecation warning. Local persistence, backup/restore, and recovery checks also passed.
 
-## Domain
+The Phase 5 implementation and its evidence are in the `phase5-query-usability` branch and worktree. See the [query usability acceptance record](docs/evidence/query-usability/evidence.md) for revisions, exact commands, results, and remaining limits. The [delivery roadmap](PHASES.md) tracks the larger project sequence. Phase 6 frontend work has not started; it begins with a design discussion.
 
-Champions exclusively; generic VGC metadata does not establish the game. Native builds use **Stat Points** and nature/stat alignment. IV distributions are not a Champions tournament metric. Missing private fields remain unknown, and registered Mega capability does not prove battle activation. Legal pools are versioned by regulation; future updates may add or remove entries. Current mechanics do not include Terastallization.
+## Project boundaries
 
-## Stack and layout
+- Pokémon Champions is the target game. Generic VGC data does not establish Champions format or legality.
+- Native builds use **Stat Points**. Existing `/v1` EV values retain their meaning; no conversion is performed.
+- Partial public teams are useful evidence. Missing data stays unknown. A registered Mega indicates roster capability, not battle activation.
+- Tournament analytics require evidence for event structure and cut membership. A standings rank threshold alone does not establish an official cut.
+- Limitless is the only admitted tournament source. Automated RK9 screen scraping is excluded under its published Terms.
+- Collection schedules and the optional public tunnel remain disabled by default.
 
-Python 3.12+, FastAPI, Pydantic, boto3/httpx, DynamoDB, S3, AWS Lambda, Docker, and Terraform; uv, pytest/Moto, and Ruff for development.
+## Development setup
 
-- `app/`: routes, presentation, queries, distributed rate limiting.
-- `core/`: shared contracts and current prototype regulation configuration.
-- `db/`: DynamoDB client and key helpers.
-- `scraper/`, `ingestion/`: source clients, normalization, writing, quarantine.
-- `tests/`: offline unit and integration tests.
-- `infra/`, `.github/workflows/`: infrastructure definitions and CI/deploy workflows.
-
-## Local development
+Requires Python 3.12+ and [uv](https://docs.astral.sh/uv/).
 
 ```bash
 uv sync
 uv run ruff check .
 uv run ruff format --check .
-uv run pytest -v
+uv run pytest -q
+```
+
+The full test suite is slow; the recorded Phase 5 run took about 48 minutes. Tests use fixtures and mocked AWS services. They do not establish live source behavior, AWS capacity, deployment, or operating cost.
+
+To run the API, configure the required AWS and application settings for your environment, then start:
+
+```bash
 uv run uvicorn app.main:app --reload
 ```
 
-Visit `/docs` for the OpenAPI interface. Data endpoints require configured DynamoDB access; tests use mocked AWS resources. Native operation uses `AWS_DEFAULT_REGION`, `DYNAMODB_TABLE_NAME`, `S3_RAW_BUCKET_NAME`, `V2_CURSOR_SECRET` (at least 32 random bytes), and `V2_DEFAULT_CATALOG_REVISION` (bundled default: `champions-mc-3661ce4`). Do not commit credentials. `/v1` units are not migrated by `/v2`.
+The interactive OpenAPI page is at `/docs`. Data routes require access to the configured data store. Keep credentials and environment files out of Git.
 
-```bash
-uv run pytest -v --cov=core --cov=db --cov=app --cov=ingestion --cov=scraper
-docker build --target api -t vgc-telemetry:api .
-terraform fmt -check -recursive infra/
-```
+## API shape
 
-Other Docker targets are `ingestion` and `scraper`. CI reports coverage without enforcing a numerical threshold. Offline tests do not verify real upstream responses, AWS capacity, or deployment.
-
-## Phase 0 preview
-
-Preview captured public data locally without AWS credentials:
-
-```bash
-uv run python -m ingestion.preview \
-  --capture tests/fixtures/sources/limitless/accepted-capture.json \
-  --admission core/sources/admission.json \
-  --catalog-index core/regulations/v2/index.json \
-  --output /tmp/champions-phase-0-preview.json
-```
-
-Preview JSON reports observed rosters, unknown fields, and diagnostics; it is a local verification artifact. The captured Limitless teams contain no published Stat Points, so their allocations remain unknown.
-
-The Limitless source in `core/sources/admission.json` ships disabled. The collector writes immutable `staging/v2/captures/` and `staging/v2/normalized/` objects. The legacy writer skips these prefixes and schema-2 payloads. Configure `SOURCE_ADMISSION_PATH` and `CATALOG_INDEX_PATH` to supply an independently reviewed source configuration. Access refusals fail visibly.
-
-Catalogs use official regulation/eligible-pool evidence and pinned MIT-licensed community mechanics. See [catalog provenance](core/regulations/v2/README.md) for inventory and reproduction. M-A and intermediate historical patches remain unverified.
-
-## Development documents
-
-The repository's context documents are currently gitignored but remain part of the local workspace. Read them when present; do not assume they are unavailable because of ignore rules.
-
-- [PRD.md](PRD.md): product scope, sources, API target, release acceptance.
-- [ARCHITECTURE.md](ARCHITECTURE.md): current prototype and proposed revision-safe design.
-- [PHASES.md](PHASES.md): delivery sequence and implementation gates.
-- [RULES.md](RULES.md): domain, data, reliability, and operational constraints.
-- [MEMORY.md](MEMORY.md): verified baseline, open bugs, decisions.
-- [SOURCE_UPDATE.md](SOURCE_UPDATE.md): source and release evidence checklist.
-
-The old `phase-2-plan.md` is superseded. Phase 0's admitted Limitless input-to-preview gate is complete: 120 offline tests pass with 92% coverage and clean Ruff checks. The [Phase 1 publication plan](docs/superpowers/plans/2026-10-05-phase-1-publication.md) implements the separate native publication foundation. Phase 1 is complete offline: 184 tests pass, with 93% measured coverage and clean Ruff checks. See MEMORY.md for evidence; public `/v2` and automated updates remain later gates.
-
-## Hosting
-
-Terraform defines dev/prod provisioned DynamoDB and Lambda Function URL hosting. Deployment requires verified AWS prerequisites and same-revision CI gates. Reserved concurrency limits simultaneous execution; budget alerts notify. Neither guarantees a zero bill, and both environments share account-level cost considerations.
-
-## Native publication and replay
-
-The explicit `ingestion.native_handler.handle_native_event` accepts staged references:
-
-```python
-from ingestion.native_handler import handle_native_event
-
-handle_native_event(
-    {
-        "normalized": [
-            {
-                "bucket": "your-staging-bucket",
-                "key": "staging/v2/normalized/<sha256>.json",
-                "version_id": "exact-s3-version",  # omit only for a verified hash-addressed object
-            }
-        ]
-    }
-)
-# Recovery without a new delivery: repeat until the outcome is published.
-handle_native_event({"recover": True})
-```
-
-This is an explicit operator invocation, with DynamoDB/S3 access, not a configured
-production trigger or automatic schedule. `max_steps` bounds each population's build
-work per call (default 100); `pending` means retry/resume, not completion. Recovery
-continues past busy populations and pages both intent and dirty-generation jobs. Build cursors
-persist in DynamoDB; intent recovery advances a durable bounded cursor. Operational
-batch failures raise with per-record `results` after independent successes.
-
-Native rows use `V2#` namespaces. Content identity excludes volatile evidence timestamps;
-capture fetch time supplies ordering until upstream sequence evidence is available.
-Equal-order conflicting content remains pending. Contributions cover observed entries,
-with top-cut eligibility unknown; they are not public top-cut analytics. Legacy `/v1`
-keys and EV units retain their existing meaning and legacy aggregation limitations.
-
-Reproduce offline replay, crashes, corrections, reassignment, and clean-rebuild checks:
-
-```bash
-uv run --frozen pytest tests/test_revision_inputs.py tests/test_revision_contributions.py -q
-uv run --frozen pytest tests/test_publication_promotion.py tests/test_publication_recovery.py -q
-uv run --frozen pytest tests/test_publication_generations.py tests/test_publication_handler.py tests/test_publication_pipeline.py -q
-```
-
-Captures, revisions, manifests, complete and incomplete generations are retained
-indefinitely; no cleanup or TTL is enabled. Readers pin a complete generation ID;
-previous complete generations stay readable. Automated expiration requires a reviewed
-retention policy that protects publication pointers, active builds, and reader windows.
-Offline Moto checks establish logic, not AWS throughput, permissions, or deployment.
-
-## Phase 3 automation operations
-
-Offline verification on 2026-10-10: `uv run --frozen pytest -q` passed 394 tests
-with one existing Starlette/httpx deprecation warning; Ruff lint, formatting,
-and diff checks passed. Terraform CLI was unavailable and Docker daemon access
-was denied, so Terraform formatting/plans and container builds remain unverified.
-
-Admitted Limitless discovery/recent checks are configured for every six hours,
-reference checks daily, reconciliation weekly, and native recovery every 30
-minutes. All EventBridge rules are disabled until `source_admission_verified`
-and the independently reviewed `core/sources/admission.json` source admission
-are enabled during Phase 4. Discovery stores event work before advancing its
-page. A full work page enqueues a bounded continuation to the scraper Lambda;
-failures replay from the last committed page. Unknown completion dates remain
-eligible for recent checks; the upstream API does not currently provide a
-verified completion timestamp to prove live 7/90-day windows.
-
-For an operator-approved older replay, invoke the scraper Lambda with an
-explicit bounded payload and increase `backfill_order` for a new replay:
-
-```json
-{"mode":"backfill","event_ids":["<Limitless event ID>"],"backfill_order":1}
-```
-
-Use at most 100 event IDs. For a retained, reviewed catalog bundle, run
-`uv run --frozen python scripts/catalog_operator.py submit <bundle.json>`, then
-`queue <candidate-id> --expected-epoch <epoch>` for scheduled activation.
-`activate` and `rollback` require the exact expected epoch; rollback also
-requires `--operator` and `--reason`. New upstream mechanics exports still
-need operator resolution and official evidence review. Public build acquisition
-remains disabled until a source passes access review.
-
-CloudWatch custom metrics use `VGCTelemetry/Automation` with only environment,
-source, and worker dimensions. The dev/prod Terraform module routes quarantine,
-retry exhaustion, repeated worker error, unresolved catalog, tournament/reference
-check age, and publication lag alarms to one SNS topic per environment. The
-configured `notification_email` recipient must confirm the SNS subscription
-after apply. See [the alarm runbook](SOURCE_UPDATE.md#phase-3-alarms). Freshness
-and publication-lag alarms treat missing data as breaching, including before
-the first run; they will show the disabled-worker state until live admission.
-
-## Phase 2 public API and manual replay
-
-`/v2` reads only a complete immutable public snapshot. Pin the returned snapshot ID
-for detail requests and send it with every later page; keep endpoint filters and
-`limit` unchanged for the continuation cursor. Cursors are signed, query/snapshot
-scoped, and expire at a fixed 24 hours. Listing defaults to 25 rows (maximum 100);
-a request can inspect at most 20 queries/2,000 candidates, analytics at most 50
-queries/5,000 contributions over an inclusive UTC window of at most 90 days.
-Responses are capped at 350,000 bytes and may return an advancing cursor before the
-requested page is full. Unknown values and private allocations remain unknown;
-known-empty is distinct. Dates and source captures are separate, and undated events
-are not assigned a capture date. Ordering is deterministic: dated events newest first
-(unknown last), standings rank with unknown last, then stable identity.
+The `/v2` API reads complete published snapshots and supports bounded, cursor-based queries. Preserve the returned snapshot and cursor when continuing a listing.
 
 ```text
-GET /v2/tournaments?limit=25
-GET /v2/tournaments/limitless:6ab9204c880ed327106dddf4/standings?limit=25
-GET /v2/teams?eligibility=all&tournament_id=limitless:6ab9204c880ed327106dddf4
-GET /v2/teams/limitless:<team-id>
-GET /v2/players/limitless:axtheb
-GET /v2/regulations?limit=25
-GET /v2/pokemon?catalog_revision=champions-mb-3661ce4&limit=25
-GET /v2/meta?metric=species&from=2026-09-01&to=2026-10-01&placement_max=8
-GET /v2/meta?metric=nature&population_id=<exact-population-id>
-GET /v2/cores?size=3&from=2026-09-01&to=2026-10-01
+GET /v2/tournaments
+GET /v2/teams?members=species:incineroar&members=species:rillaboom
+GET /v2/meta?metric=move&move_id=protect
+GET /v2/cores?size=2&members=incineroar&members=rillaboom
+GET /v2/pokemon?name=Floette
+GET /v2/moves?name=Protect
 ```
 
-Use each response's `snapshot.id` on following pages and details. Team detail may
-show a partial or absent roster. Native Stat Points are six integers (0–32, total
-at most 66) only when observed; supported metrics are species/form, moves, abilities,
-items, natures, native Stat Points, and registered Mega. Legacy EV data is never converted. A registered
-Mega is capability evidence, not battle activation. Core sizes are 2 or 3. Analytics
-require an unambiguous population; select an exact returned population when multiple
-divisions/catalogs/rulesets match. Match rates use linked verified cut matches; ties
-count half a win and half a loss, mirrors remove both sides, and byes/double
-losses/automatic or pending results are excluded. Zero eligible matches yield null.
+The query examples above describe the Phase 5 implementation branch until it is integrated. See the [Phase 5 query guide](docs/runbooks/phase-5-queries.md) for pagination, filters, coverage, and ambiguity behavior.
 
-Manual replay requires configured AWS access and operator-reviewed event IDs. It
-writes durable checkpoints and does not delete retained inputs or snapshots:
+## Local self-hosted stack
 
-```bash
-uv run --frozen python -m ingestion.public_replay inventory --events-file /tmp/vgc-phase2-event-ids.json
-uv run --frozen python -m ingestion.public_replay seed --events-file /tmp/vgc-phase2-event-ids.json --max-steps 100
-uv run --frozen python -m ingestion.public_replay build --max-steps 100
-uv run --frozen python -m ingestion.public_replay recover --max-steps 100
-uv run --frozen python -m ingestion.public_replay invalidate --policy-version limitless-single-bracket-v1
-uv run --frozen python -m ingestion.public_replay rollback --snapshot-id <retained-complete-id> --expected-snapshot-id <current-id>
-```
+The Phase 4A/5 Compose stack is available in the `phase5-query-usability` branch. It runs the API, DynamoDB Local, versioned object storage, and bounded worker/scheduler processes. The API binds to loopback; source admission and tunnel access are off by default. The fixture demo requires no AWS account or credentials.
 
-`pending` means repeat/resume with `recover` or `build`, not publication success.
-Inventory is read-only. Invalidation and rollback are explicit operations; Phase 3
-defines a disabled recovery schedule. Rollback changes the current reader pointer
-while preserving newer input membership and dirty work. Historical M-A/patch
-coverage and build-source admission remain open. Phase 4 owns same-revision deployment, IAM/client-IP
-and runtime smoke checks, AWS capacity/cost/latency measurements, and restore proof.
+Follow the [self-hosted operations guide](docs/runbooks/self-hosted-phase-4a.md) for setup, worker operations, replay, backup, and restore. Do not use that runbook with `main` until the branch containing the Compose files is checked out.
 
-Phase 2 offline verification: `uv run --frozen pytest -q` passed 320 tests with one
-existing Starlette/httpx deprecation warning. Coverage and final command evidence are
-recorded in the plan ledger. Moto timings and derived-row sizes are not live AWS
-capacity or cost evidence; see SOURCE_UPDATE.md and MEMORY.md for source hashes and
-unchecked live gates.
+## What remains open
+
+- Merge and integrate the self-hosted and Phase 5 work.
+- Verify AWS permissions, deployment, capacity, cost, billing, and operational recovery.
+- Establish live source continuity and separately review any activation of collection or a tunnel.
+- Design the Meta Explorer before starting frontend implementation.
+
+## Project references
+
+- [Delivery phases](PHASES.md)
+- [Product scope](PRD.md)
+- [Architecture](ARCHITECTURE.md)
+- [Domain and reliability rules](RULES.md)
+- [Source and release checklist](SOURCE_UPDATE.md)
+- [Catalog provenance](core/regulations/v2/README.md)
+
+This README is a working project note. Update it as development moves; a polished project introduction can wait until the project is closer to done.
