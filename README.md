@@ -1,8 +1,8 @@
 # VGC Telemetry
 
-A REST API project for **Pokémon Champions tournament analysis**: registered teams, published builds, Pokémon/form usage, moves, abilities, items, natures, Stat Points, Mega capability, and team cores.
+**Pokémon Champions tournament data tooling, under active development.**
 
-## Project status
+VGC Telemetry is being built around a Champions-specific API for tournament teams, regulations, Pokémon usage, moves, and team cores. The initial data source is public Limitless tournament data. The project favors verifiable source evidence, explicit unknowns, and reproducible results over broad but weakly supported coverage.
 
 Phase 5 adds bounded multi-member team search, scoped move usage, core exploration,
 exact reference lookup and a safe fixture seed for the self-hosted Compose install.
@@ -12,10 +12,11 @@ Source admission, live collection and the tunnel remain disabled by default. AWS
 operations are the deferred Phase 4B alternate path. Phase 6 adds the Meta Explorer
 at `/explorer`; its design, application, packaging and verification acceptance gates passed, recorded in
 [Phase 6 evidence](docs/phase6/evidence.md). Phase 7 is optional. Existing `/v1` routes retain legacy EV units.
+> **Status:** The current `main` branch contains the offline API, ingestion, publication, and automation work through Phase 3. Self-hosted operations and Phase 5 query improvements have been implemented and verified in the local `phase5-query-usability` branch, but those changes have not been merged into `main`. AWS deployment and live data collection are still unverified. This is development software, not a finished or production-ready service.
 
-The target `/v2` API reliably serves verified Limitless Pokémon Champions VGC top-cut tournament data, preserves historical regulations, and reports provenance, sample coverage, and freshness. Limitless is the only initial tournament source. Ranked ladder feeds and brittle or mismatched sources are out of scope. RK9 is excluded because its published Terms prohibit automated screen scraping.
+## Current work
 
-Limitless already provides an [upstream API](https://docs.limitlesstcg.com/developer/tournaments). This project's value is Champions-specific legality, reproducible analysis, coverage, and freshness beyond a direct API copy. Additional sources require a separate access review.
+The local Phase 5 branch adds bounded team-member searches, scoped move analytics, core-to-team exploration, reference lookups, and safer fixture seeding for the self-hosted stack. Its full test suite passed 458 tests, with one existing deprecation warning. Local persistence, backup/restore, and recovery checks also passed.
 
 ## Meta Explorer
 
@@ -78,50 +79,34 @@ remote hosting do not establish image permission. GitHub availability and rights
 clearance remain risks. Interface fonts are bundled under the SIL Open Font License.
 
 ## Domain
+The Phase 5 implementation and its evidence are in the `phase5-query-usability` branch and worktree. See the [query usability acceptance record](docs/evidence/query-usability/evidence.md) for revisions, exact commands, results, and remaining limits. The [delivery roadmap](PHASES.md) tracks the larger project sequence. Phase 6 frontend work has not started; it begins with a design discussion.
 
-Champions exclusively; generic VGC metadata does not establish the game. Native builds use **Stat Points** and nature/stat alignment. IV distributions are not a Champions tournament metric. Missing private fields remain unknown, and registered Mega capability does not prove battle activation. Legal pools are versioned by regulation; future updates may add or remove entries. Current mechanics do not include Terastallization.
+## Project boundaries
 
-## Stack and layout
+- Pokémon Champions is the target game. Generic VGC data does not establish Champions format or legality.
+- Native builds use **Stat Points**. Existing `/v1` EV values retain their meaning; no conversion is performed.
+- Partial public teams are useful evidence. Missing data stays unknown. A registered Mega indicates roster capability, not battle activation.
+- Tournament analytics require evidence for event structure and cut membership. A standings rank threshold alone does not establish an official cut.
+- Limitless is the only admitted tournament source. Automated RK9 screen scraping is excluded under its published Terms.
+- Collection schedules and the optional public tunnel remain disabled by default.
 
-Python 3.12+, FastAPI, Pydantic, boto3/httpx, DynamoDB, S3, AWS Lambda, Docker, and Terraform; uv, pytest/Moto, and Ruff for development.
+## Development setup
 
-- `app/`: routes, presentation, queries, distributed rate limiting.
-- `core/`: shared contracts and current prototype regulation configuration.
-- `db/`: DynamoDB client and key helpers.
-- `scraper/`, `ingestion/`: source clients, normalization, writing, quarantine.
-- `tests/`: offline unit and integration tests.
-- `infra/`, `.github/workflows/`: infrastructure definitions and CI/deploy workflows.
-
-## Local development
+Requires Python 3.12+ and [uv](https://docs.astral.sh/uv/).
 
 ```bash
 uv sync
 uv run ruff check .
 uv run ruff format --check .
-uv run pytest -v
+uv run pytest -q
+```
+
+The full test suite is slow; the recorded Phase 5 run took about 48 minutes. Tests use fixtures and mocked AWS services. They do not establish live source behavior, AWS capacity, deployment, or operating cost.
+
+To run the API, configure the required AWS and application settings for your environment, then start:
+
+```bash
 uv run uvicorn app.main:app --reload
-```
-
-Visit `/docs` for the OpenAPI interface. Data endpoints require configured DynamoDB access; tests use mocked AWS resources. Native operation uses `AWS_DEFAULT_REGION`, `DYNAMODB_TABLE_NAME`, `S3_RAW_BUCKET_NAME`, `V2_CURSOR_SECRET` (at least 32 random bytes), and `V2_DEFAULT_CATALOG_REVISION` (bundled default: `champions-mc-3661ce4`). Do not commit credentials. `/v1` units are not migrated by `/v2`.
-
-```bash
-uv run pytest -v --cov=core --cov=db --cov=app --cov=ingestion --cov=scraper
-docker build --target api -t vgc-telemetry:api .
-terraform fmt -check -recursive infra/
-```
-
-Other Docker targets are `ingestion` and `scraper`. CI reports coverage without enforcing a numerical threshold. Offline tests do not verify real upstream responses, AWS capacity, or deployment.
-
-## Phase 0 preview
-
-Preview captured public data locally without AWS credentials:
-
-```bash
-uv run python -m ingestion.preview \
-  --capture tests/fixtures/sources/limitless/accepted-capture.json \
-  --admission core/sources/admission.json \
-  --catalog-index core/regulations/v2/index.json \
-  --output /tmp/champions-phase-0-preview.json
 ```
 
 Preview JSON reports observed rosters, unknown fields, and diagnostics; it is a local verification artifact. The captured Limitless teams contain no published Stat Points, so their allocations remain unknown.
@@ -176,53 +161,28 @@ Optional host helper: `python3 scripts/local/stack.py up`, `seed-demo`, `backup`
 `down`. Phase 5 verification uses separate `vgc-phase5`/`vgc-phase5-restore` projects,
 `VGC_LOCAL_IMAGE=vgc-phase5:local`, and `VGC_API_PORT=18085`/`18086`; existing installations
 are preserved.
+The interactive OpenAPI page is at `/docs`. Data routes require access to the configured data store. Keep credentials and environment files out of Git.
 
-## Hosting
+## API shape
 
-Terraform defines dev/prod provisioned DynamoDB and Lambda Function URL hosting. Deployment requires verified AWS prerequisites and same-revision CI gates. Reserved concurrency limits simultaneous execution; budget alerts notify. Neither guarantees a zero bill, and both environments share account-level cost considerations.
+The `/v2` API reads complete published snapshots and supports bounded, cursor-based queries. Preserve the returned snapshot and cursor when continuing a listing.
 
-## Native publication and replay
-
-The explicit `ingestion.native_handler.handle_native_event` accepts staged references:
-
-```python
-from ingestion.native_handler import handle_native_event
-
-handle_native_event(
-    {
-        "normalized": [
-            {
-                "bucket": "your-staging-bucket",
-                "key": "staging/v2/normalized/<sha256>.json",
-                "version_id": "exact-s3-version",  # omit only for a verified hash-addressed object
-            }
-        ]
-    }
-)
-# Recovery without a new delivery: repeat until the outcome is published.
-handle_native_event({"recover": True})
+```text
+GET /v2/tournaments
+GET /v2/teams?members=species:incineroar&members=species:rillaboom
+GET /v2/meta?metric=move&move_id=protect
+GET /v2/cores?size=2&members=incineroar&members=rillaboom
+GET /v2/pokemon?name=Floette
+GET /v2/moves?name=Protect
 ```
 
-This is an explicit operator invocation, with DynamoDB/S3 access, not a configured
-production trigger or automatic schedule. `max_steps` bounds each population's build
-work per call (default 100); `pending` means retry/resume, not completion. Recovery
-continues past busy populations and pages both intent and dirty-generation jobs. Build cursors
-persist in DynamoDB; intent recovery advances a durable bounded cursor. Operational
-batch failures raise with per-record `results` after independent successes.
+The query examples above describe the Phase 5 implementation branch until it is integrated. See the [Phase 5 query guide](docs/runbooks/phase-5-queries.md) for pagination, filters, coverage, and ambiguity behavior.
 
-Native rows use `V2#` namespaces. Content identity excludes volatile evidence timestamps;
-capture fetch time supplies ordering until upstream sequence evidence is available.
-Equal-order conflicting content remains pending. Contributions cover observed entries,
-with top-cut eligibility unknown; they are not public top-cut analytics. Legacy `/v1`
-keys and EV units retain their existing meaning and legacy aggregation limitations.
+## Local self-hosted stack
 
-Reproduce offline replay, crashes, corrections, reassignment, and clean-rebuild checks:
+The Phase 4A/5 Compose stack is available in the `phase5-query-usability` branch. It runs the API, DynamoDB Local, versioned object storage, and bounded worker/scheduler processes. The API binds to loopback; source admission and tunnel access are off by default. The fixture demo requires no AWS account or credentials.
 
-```bash
-uv run --frozen pytest tests/test_revision_inputs.py tests/test_revision_contributions.py -q
-uv run --frozen pytest tests/test_publication_promotion.py tests/test_publication_recovery.py -q
-uv run --frozen pytest tests/test_publication_generations.py tests/test_publication_handler.py tests/test_publication_pipeline.py -q
-```
+Follow the [self-hosted operations guide](docs/runbooks/self-hosted-phase-4a.md) for setup, worker operations, replay, backup, and restore. Do not use that runbook with `main` until the branch containing the Compose files is checked out.
 
 Captures, revisions, manifests, complete and incomplete generations are retained
 indefinitely; no cleanup or TTL is enabled. Readers pin a complete generation ID;
@@ -307,28 +267,20 @@ require an unambiguous population; select an exact returned population when mult
 divisions/catalogs/rulesets match. Match rates use linked verified cut matches; ties
 count half a win and half a loss, mirrors remove both sides, and byes/double
 losses/automatic or pending results are excluded. Zero eligible matches yield null.
+## What remains open
 
-Manual replay requires configured AWS access and operator-reviewed event IDs. It
-writes durable checkpoints and does not delete retained inputs or snapshots:
+- Merge and integrate the self-hosted and Phase 5 work.
+- Verify AWS permissions, deployment, capacity, cost, billing, and operational recovery.
+- Establish live source continuity and separately review any activation of collection or a tunnel.
+- Design the Meta Explorer before starting frontend implementation.
 
-```bash
-uv run --frozen python -m ingestion.public_replay inventory --events-file /tmp/vgc-phase2-event-ids.json
-uv run --frozen python -m ingestion.public_replay seed --events-file /tmp/vgc-phase2-event-ids.json --max-steps 100
-uv run --frozen python -m ingestion.public_replay build --max-steps 100
-uv run --frozen python -m ingestion.public_replay recover --max-steps 100
-uv run --frozen python -m ingestion.public_replay invalidate --policy-version limitless-single-bracket-v1
-uv run --frozen python -m ingestion.public_replay rollback --snapshot-id <retained-complete-id> --expected-snapshot-id <current-id>
-```
+## Project references
 
-`pending` means repeat/resume with `recover` or `build`, not publication success.
-Inventory is read-only. Invalidation and rollback are explicit operations; Phase 3
-defines a disabled recovery schedule. Rollback changes the current reader pointer
-while preserving newer input membership and dirty work. Historical M-A/patch
-coverage and build-source admission remain open. Phase 4 owns same-revision deployment, IAM/client-IP
-and runtime smoke checks, AWS capacity/cost/latency measurements, and restore proof.
+- [Delivery phases](PHASES.md)
+- [Product scope](PRD.md)
+- [Architecture](ARCHITECTURE.md)
+- [Domain and reliability rules](RULES.md)
+- [Source and release checklist](SOURCE_UPDATE.md)
+- [Catalog provenance](core/regulations/v2/README.md)
 
-Phase 2 offline verification: `uv run --frozen pytest -q` passed 320 tests with one
-existing Starlette/httpx deprecation warning. Coverage and final command evidence are
-recorded in the plan ledger. Moto timings and derived-row sizes are not live AWS
-capacity or cost evidence; see SOURCE_UPDATE.md and MEMORY.md for source hashes and
-unchecked live gates.
+This README is a working project note. Update it as development moves; a polished project introduction can wait until the project is closer to done.

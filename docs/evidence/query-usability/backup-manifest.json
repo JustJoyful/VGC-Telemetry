@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "project": "vgc-phase5",
+  "sha256": {
+    "dynamodb-data": "4b81e4e4e7c6b2291bcf597c1138a404f4b10576999a92bd4110b60369cde5c8",
+    "s3-data": "d41beea0c37606479443f5d385baf8426d523b9c356def516d70a95c565d8fd7"
+  },
+  "method": "all Compose services stopped; physical volume archives"
+}
