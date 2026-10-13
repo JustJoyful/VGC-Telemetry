@@ -1,0 +1,6 @@
+<section id="{{ 'team-results' if feed_embedded else 'results' }}" class="team-results" aria-label="Tournament teams" tabindex="-1">
+{% with team_filter_chips=true %}{% include 'partials/filter_chips.html' %}{% endwith %}
+{% include 'partials/team_filters.html' %}
+<p class="small muted feed-ordering">{{ ctx.data.ordering_note }}</p>
+<ul class="team-feed" id="team-feed">{% include 'partials/team_feed_items.html' %}</ul>
+</section>
