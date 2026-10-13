@@ -9,12 +9,73 @@ exact reference lookup and a safe fixture seed for the self-hosted Compose insta
 Historical Phase 4A is self-hosted and verified for its dated local checks. Fresh Phase 5
 validation and remaining gates are recorded in [the evidence report](docs/phase5/evidence.md).
 Source admission, live collection and the tunnel remain disabled by default. AWS
-operations are the deferred Phase 4B alternate path. Phase 6 begins with a design
-discussion; Phase 7 is optional. Existing `/v1` routes retain legacy EV units.
+operations are the deferred Phase 4B alternate path. Phase 6 adds the Meta Explorer
+at `/explorer`; its design, application, packaging and verification acceptance gates passed, recorded in
+[Phase 6 evidence](docs/phase6/evidence.md). Phase 7 is optional. Existing `/v1` routes retain legacy EV units.
 
 The target `/v2` API reliably serves verified Limitless Pokémon Champions VGC top-cut tournament data, preserves historical regulations, and reports provenance, sample coverage, and freshness. Limitless is the only initial tournament source. Ranked ladder feeds and brittle or mismatched sources are out of scope. RK9 is excluded because its published Terms prohibit automated screen scraping.
 
 Limitless already provides an [upstream API](https://docs.limitlesstcg.com/developer/tournaments). This project's value is Champions-specific legality, reproducible analysis, coverage, and freshness beyond a direct API copy. Additional sources require a separate access review.
+
+## Meta Explorer
+
+Open `/explorer` on the existing FastAPI service. The Retro-Modern Competitive
+Pokédex uses readable IBM Plex typography, restrained pixel sprite windows and
+margin geometry, with system light/dark preference and a saved theme choice.
+Pause motion or use reduced-motion preferences; with JavaScript disabled the
+interface stays static and native navigation/filter GET forms remain usable.
+
+- `/explorer`: a bounded three-entry exact-form overview and observed cores.
+  Continue with the returned cursor; the index uses canonical API order and makes
+  no global ranking or strength claim.
+- `/explorer/teams`: repeated `members` selectors for up to three species/forms/
+  registered Mega capabilities; each result retains its catalog and population.
+- `/explorer/pokemon/incineroar`: reference facts alongside observed usage, known
+  slots, unknown fields, partners and provenance.
+- `/explorer/teams/{team_id}`: the observed roster and published build evidence;
+  absent/partial rosters never acquire invented members.
+- `/explorer/api`: six fixed, bounded GET examples with escaped response previews.
+  `/docs` remains the complete OpenAPI interface.
+- `/explorer/about`: source scope, cut evidence, denominators, freshness, catalog
+  authority, Stat Points and artwork terms. Public methodology copies are local
+  assets and must be refreshed when their source documents change.
+
+`Snapshot` means published data, `Stale` reflects the API's capture-age flag, and
+`Unavailable` means usable current data is missing. Selected signed snapshots and
+cursors are separate from current storage status. Collection remains disabled;
+missing freshness, counts and build fields stay Unknown. Known zero requires a
+positive known denominator. Registered Mega capability does not prove activation.
+Filters and drilldowns preserve exact forms, population/catalog selection, UTC
+bounds and snapshot identity. Analytics accepts at most 90 inclusive UTC days;
+existing native query/row/response limits remain authoritative.
+
+Run the local stack with the existing instructions below; then open
+`http://127.0.0.1:8080/explorer` (or your chosen `VGC_API_PORT`). Empty installations
+show an unavailable state until a public snapshot is published. The opt-in
+`seed-demo` command uses retained offline captures and refuses existing storage.
+Neither opening the UI nor seeding fixtures enables collection or a tunnel.
+
+For a source checkout, use Node 22+ to build the pinned frontend dependencies:
+
+```bash
+npm ci --ignore-scripts
+npm run build
+uv sync --frozen
+uv run uvicorn app.main:app --reload
+```
+
+Both Dockerfiles build CSS/HTMX/JavaScript in a separate Node stage. Their Python
+runtime images contain templates, generated assets, fonts and licenses; Node,
+node_modules and frontend build sources are excluded. No JavaScript or font CDN
+is required. npm 12 may require `--allow-remote=all` for Tailwind's declared WASM
+archive during installation; keep `--ignore-scripts`.
+
+Entity sprites use exact verified paths at PokéAPI/sprites revision
+`2ecb4eeacd5a1718621fc30f12772e3f60d830b9`, fetched directly from GitHub by the browser.
+Unresolved or failed images retain names and neutral placeholders. Sprite binaries
+are not packaged. Image copyrights are reserved to The Pokémon Company; CC0 and
+remote hosting do not establish image permission. GitHub availability and rights
+clearance remain risks. Interface fonts are bundled under the SIL Open Font License.
 
 ## Domain
 
