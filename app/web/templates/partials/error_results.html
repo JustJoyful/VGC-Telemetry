@@ -1,0 +1,9 @@
+<section id="results" aria-live="polite" tabindex="-1"><div class="page-top state" role="alert"><h1>{{ message }}</h1><p>{{ explanation|default('Check your filters or try again.') }}</p>
+<a class="button" href="{{ recovery_url }}">Recover query</a><a class="button" href="{{ current_url }}">Use current snapshot</a><a class="button" href="/explorer">Clear filters</a></div>
+{% for choice in choices|default([]) %}<p><a class="button" href="{{ choice.url }}">{{ choice.rules_id }} · {{ choice.division_id or 'Unspecified division' }} · {{ choice.population_id }}</a></p>{% endfor %}
+{% if recovery_fields %}<details class="filters" open><summary class="button">Edit filters</summary><form class="filter-form" method="get" action="{{ form_path }}"{% if enhanced_form %} hx-get="{{ form_path }}" hx-target="#results" hx-swap="outerHTML" hx-push-url="true" hx-sync="this:replace"{% endif %} aria-label="Recovery filters">
+{% for field in recovery_fields %}<label for="recovery-{{ loop.index }}">{{ field.label }}<input class="input" id="recovery-{{ loop.index }}" name="{{ field.name }}" type="{{ field.type }}" value="{{ field.value }}"{% if field.name == 'limit' %} min="1" max="100"{% endif %}></label>{% endfor %}
+{% if recovery_snapshot %}<input type="hidden" name="snapshot" value="{{ recovery_snapshot }}">{% endif %}
+<button class="button primary btn" type="submit">Apply corrected filters</button><p class="small muted">Edit or blank a filter to narrow the query. Applying filters restarts paging on the selected snapshot. Analytics windows are at most 90 inclusive UTC days; teams accept up to three members.</p></form></details>{% endif %}
+<a href="/docs">API docs</a>
+</section>

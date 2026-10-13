@@ -1,0 +1,2 @@
+<li class="state feed-error" role="alert"><h3>{{ message }}</h3><p>{{ explanation|default('Check your filters or try again.') }}</p><a class="button" href="{{ recovery_url }}">Recover query</a><a class="button" href="{{ current_url }}">Use current snapshot</a><a class="text-link" href="/explorer/teams">Clear filters</a>
+{% for choice in choices|default([]) %}<a class="text-link" href="{{ choice.url }}">{{ choice.rules_id }} {{ choice.division_id or 'Unspecified division' }}</a>{% endfor %}</li>
