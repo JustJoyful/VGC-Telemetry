@@ -1,0 +1,20 @@
+<section class="usage-section" aria-labelledby="usage-title">
+<h2 id="usage-title">Most used Pokémon</h2>
+{% if ctx.data.selected %}
+<div class="usage-carousel" tabindex="0" role="region" aria-label="Pokémon ranked within this sample; scroll sideways">
+{% for entry in ctx.data.selected %}
+<article class="dex-card usage-card">
+<span class="usage-rank">#{{ entry.rank }}</span>
+<a class="usage-identity" href="{{ entry.url }}">
+<span class="sprite-slot usage-sprite"{% if not entry.sprite %} data-unavailable="true"{% endif %}><span class="placeholder" aria-hidden="true"></span>{% if entry.sprite %}<img src="{{ entry.sprite }}" alt="{{ entry.name }}" width="96" height="96" loading="{{ 'eager' if loop.index <= 5 else 'lazy' }}" decoding="async" referrerpolicy="no-referrer">{% endif %}</span>
+<h3>{{ entry.name }}</h3></a>
+<p class="usage-percent">{{ (entry.row.percentage|string ~ '%') if entry.row.percentage is not none else 'Unknown' }}</p>
+{% if entry.row.percentage is not none %}<div class="usage-bar" role="img" aria-label="{{ entry.row.percentage }} percent usage"><i style="width:{{ entry.row.percentage }}%"></i></div>{% endif %}
+<p class="usage-count">{{ entry.row.count }} of {{ entry.row.denominator }} rosters</p>
+</article>
+{% endfor %}
+</div>
+<p class="small usage-scope">Ranked within {{ ctx.data.selected|length }} entries in this sample.</p>
+{% if ctx.data.next_url %}<a class="text-link" href="{{ ctx.data.next_url }}">Show more Pokémon</a>{% endif %}
+{% else %}<div class="state"><h3>{{ 'No matching observations' if ctx.data.usage else 'No published snapshot' }}</h3><p>{{ 'Change the date window or select another population.' if ctx.data.usage else 'Observed counts and coverage are Unknown until a complete public snapshot is published.' }}</p><a class="button" href="/explorer">Clear filters</a><a href="/explorer/api">Explore the API</a></div>{% endif %}
+</section>

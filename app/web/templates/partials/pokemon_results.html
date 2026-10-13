@@ -1,0 +1,14 @@
+{% from "partials/sprite.html" import sprite %}
+<section id="results" aria-label="Pokémon query results" tabindex="-1">
+{% include 'partials/snapshot_cards.html' %}
+<div class="actions">{% if ctx.data.team_scope_unavailable %}<span class="small muted">No matching population for teams</span>{% else %}<a class="button primary" href="{{ ctx.data.teams_url or '/explorer/teams' }}">Browse teams</a>{% endif %}{% include "partials/filters.html" %}</div>
+{% include "partials/filter_chips.html" %}
+
+{% include 'partials/usage_carousel.html' %}
+<section class="cores-section" aria-labelledby="cores-title"><h2 id="cores-title">Common cores</h2>
+<div class="dex-card core-list" id="core-list">{% include 'partials/core_list.html' %}</div>
+</section>
+
+<section class="tournament-teams-section" aria-labelledby="teams-title"><h2 id="teams-title">Tournament teams</h2>
+{% if ctx.data.team_feed %}{% with ctx=ctx.data.team_feed,feed_embedded=true %}{% include 'partials/team_results.html' %}{% endwith %}{% else %}<p>No published team population matches this sample.</p>{% endif %}</section>
+</section>
