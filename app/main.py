@@ -1,11 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.middleware.rate_limit import DynamoDBRateLimitMiddleware
 from app.models.responses import HealthResponse
 from app.routers import meta_router, players_router, teams_router
 from app.routers.v2 import analytics, players, reference, status, teams, tournaments
 from app.v2.errors import install_errors
+from app.web.routes import WEB_ROOT
+from app.web.routes import router as web_router
 from core.config import get_active_regulation
 
 app = FastAPI(
@@ -36,6 +39,8 @@ app.include_router(players.router)
 app.include_router(analytics.router)
 app.include_router(reference.router)
 app.include_router(status.router)
+app.include_router(web_router)
+app.mount("/explorer/static", StaticFiles(directory=WEB_ROOT / "static"), name="explorer-static")
 
 
 @app.get("/health", response_model=HealthResponse, tags=["System"])
