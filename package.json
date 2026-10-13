@@ -1,0 +1,15 @@
+{
+  "name": "vgc-telemetry-web",
+  "private": true,
+  "version": "0.1.0",
+  "engines": {"node": ">=22"},
+  "scripts": {
+    "build": "tailwindcss -i app/web/static/src/app.css -o app/web/static/app.css --minify && node scripts/build-web-assets.mjs"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "4.3.0",
+    "tailwindcss": "4.3.0",
+    "daisyui": "5.7.47",
+    "htmx.org": "2.0.11"
+  }
+}
