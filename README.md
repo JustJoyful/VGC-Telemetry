@@ -1,286 +1,335 @@
 # VGC Telemetry
 
-**Pokémon Champions tournament data tooling, under active development.**
+VGC Telemetry is a Python API and web explorer for Pokémon Champions tournament data. It collects and publishes source-backed tournament records, serves bounded read-only analytics and reference data, and makes the evidence and unknowns behind those results visible. The project is under active development; live source collection and production AWS operation are not currently enabled by default.
 
-VGC Telemetry is being built around a Champions-specific API for tournament teams, regulations, Pokémon usage, moves, and team cores. The initial data source is public Limitless tournament data. The project favors verifiable source evidence, explicit unknowns, and reproducible results over broad but weakly supported coverage.
+## Contents
 
-Phase 5 adds bounded multi-member team search, scoped move usage, core exploration,
-exact reference lookup and a safe fixture seed for the self-hosted Compose install.
-Historical Phase 4A is self-hosted and verified for its dated local checks. Fresh Phase 5
-validation and remaining gates are recorded in [the evidence report](docs/phase5/evidence.md).
-Source admission, live collection and the tunnel remain disabled by default. AWS
-operations are the deferred Phase 4B alternate path. Phase 6 adds the Meta Explorer
-at `/explorer`; its design, application, packaging and verification acceptance gates passed, recorded in
-[Phase 6 evidence](docs/phase6/evidence.md). Phase 7 is optional. Existing `/v1` routes retain legacy EV units.
-> **Status:** The current `main` branch contains the offline API, ingestion, publication, and automation work through Phase 3. Self-hosted operations and Phase 5 query improvements have been implemented and verified in the local `phase5-query-usability` branch, but those changes have not been merged into `main`. AWS deployment and live data collection are still unverified. This is development software, not a finished or production-ready service.
+- [What it does](#what-it-does)
+- [Project status and data limits](#project-status-and-data-limits)
+- [Technology](#technology)
+- [Run locally with Docker Compose](#run-locally-with-docker-compose)
+- [Run from a source checkout](#run-from-a-source-checkout)
+- [HTTP API](#http-api)
+- [Meta Explorer](#meta-explorer)
+- [How the system works](#how-the-system-works)
+- [Configuration](#configuration)
+- [Tests and code quality](#tests-and-code-quality)
+- [Docker images and AWS infrastructure](#docker-images-and-aws-infrastructure)
+- [Repository layout](#repository-layout)
+- [Troubleshooting](#troubleshooting)
+- [Contributing and licensing](#contributing-and-licensing)
 
-## Current work
+## What it does
 
-The local Phase 5 branch adds bounded team-member searches, scoped move analytics, core-to-team exploration, reference lookups, and safer fixture seeding for the self-hosted stack. Its full test suite passed 458 tests, with one existing deprecation warning. Local persistence, backup/restore, and recovery checks also passed.
+- Exposes legacy `/v1` endpoints and a snapshot-based `/v2` API for tournament teams, events, player history, usage, cores, and Pokémon and move reference data.
+- Publishes complete immutable data snapshots so a paginated query can continue against one consistent view while new data is ingested.
+- Tracks source evidence and preserves incomplete or unavailable fields as unknown instead of filling them with guesses.
+- Provides a server-rendered Meta Explorer for browsing Pokémon usage, cores, teams, reference details, API examples, and methodology.
+- Includes a local Docker Compose stack with DynamoDB Local, S3-compatible object storage, an API, a worker, and a scheduler. A retained-fixture demo can populate an empty local stack without contacting an upstream source.
+- Includes ingestion, bounded collection scheduling, recovery tooling, and Terraform definitions for a possible AWS deployment.
 
-## Meta Explorer
+## Project status and data limits
 
-Open `/explorer` on the existing FastAPI service. The Retro-Modern Competitive
-Pokédex uses readable IBM Plex typography, restrained pixel sprite windows and
-margin geometry, with system light/dark preference and a saved theme choice.
-Pause motion or use reduced-motion preferences; with JavaScript disabled the
-interface stays static and native navigation/filter GET forms remain usable.
+The repository contains the API, web explorer, ingestion and publication pipeline, local operations, and AWS infrastructure code. CI runs lint, formatting, and Python tests. The existence of deployment automation and Terraform does not mean that a production deployment, AWS permissions, costs, live collection, or source continuity have been verified. See [Phase 5 evidence](docs/phase5/evidence.md), [local operations](docs/runbooks/self-hosted-phase-4a.md), and [Phase 5 query examples](docs/runbooks/phase-5-queries.md) for the scope and limits of recorded checks.
 
-- `/explorer`: a bounded three-entry exact-form overview and observed cores.
-  Continue with the returned cursor; the index uses canonical API order and makes
-  no global ranking or strength claim.
-- `/explorer/teams`: repeated `members` selectors for up to three species/forms/
-  registered Mega capabilities; each result retains its catalog and population.
-- `/explorer/pokemon/incineroar`: reference facts alongside observed usage, known
-  slots, unknown fields, partners and provenance.
-- `/explorer/teams/{team_id}`: the observed roster and published build evidence;
-  absent/partial rosters never acquire invented members.
-- `/explorer/api`: six fixed, bounded GET examples with escaped response previews.
-  `/docs` remains the complete OpenAPI interface.
-- `/explorer/about`: source scope, cut evidence, denominators, freshness, catalog
-  authority, Stat Points and artwork terms. Public methodology copies are local
-  assets and must be refreshed when their source documents change.
+The bundled Limitless source admission is disabled. The local demo uses retained public captures; it does not enable collection. Source continuity, collection authorization, and upstream behavior require separate review before live collection is enabled. Automated RK9 screen scraping is excluded under RK9's published terms.
 
-`Snapshot` means published data, `Stale` reflects the API's capture-age flag, and
-`Unavailable` means usable current data is missing. Selected signed snapshots and
-cursors are separate from current storage status. Collection remains disabled;
-missing freshness, counts and build fields stay Unknown. Known zero requires a
-positive known denominator. Registered Mega capability does not prove activation.
-Filters and drilldowns preserve exact forms, population/catalog selection, UTC
-bounds and snapshot identity. Analytics accepts at most 90 inclusive UTC days;
-existing native query/row/response limits remain authoritative.
+Pokémon Champions builds use native **Stat Points**. The legacy `/v1` surface retains its original EV terminology and values; the project does not convert between them. Missing build fields and incomplete rosters remain unknown. A registered Mega capability indicates roster capability, not proof that a Mega transformation occurred in a match. See [catalog provenance and known limits](core/regulations/v2/README.md).
 
-Run the local stack with the existing instructions below; then open
-`http://127.0.0.1:8080/explorer` (or your chosen `VGC_API_PORT`). Empty installations
-show an unavailable state until a public snapshot is published. The opt-in
-`seed-demo` command uses retained offline captures and refuses existing storage.
-Neither opening the UI nor seeding fixtures enables collection or a tunnel.
+The current fixture data is evidence for local development, not a live meta feed. Catalog snapshots identify their own sources and revisions. Historical regulation coverage such as M-A and intermediate game-data patches remains unverified.
 
-For a source checkout, use Node 22+ to build the pinned frontend dependencies:
+## Technology
 
-```bash
-npm ci --ignore-scripts
-npm run build
-uv sync --frozen
-uv run uvicorn app.main:app --reload
-```
+- **Runtime:** Python 3.12+, FastAPI, Pydantic, Uvicorn, boto3, and Jinja2.
+- **Storage:** DynamoDB single-table records and versioned S3 objects. Local development uses DynamoDB Local and RustFS as an S3-compatible service.
+- **Web UI:** Jinja2 templates, HTMX, DaisyUI 5, and Tailwind CSS 4. No client-side application framework is used.
+- **Web asset build:** Node.js 22 or later, npm, and the exact frontend packages pinned in `package-lock.json`.
+- **Infrastructure:** Terraform for AWS resources; Docker multi-stage images for the API, ingestion Lambda, and scraper Lambda.
+- **Quality tools:** pytest, Moto, pytest-cov, and Ruff.
 
-Both Dockerfiles build CSS/HTMX/JavaScript in a separate Node stage. Their Python
-runtime images contain templates, generated assets, fonts and licenses; Node,
-node_modules and frontend build sources are excluded. No JavaScript or font CDN
-is required. npm 12 may require `--allow-remote=all` for Tailwind's declared WASM
-archive during installation; keep `--ignore-scripts`.
+## Run locally with Docker Compose
 
-Entity sprites use exact verified paths at PokéAPI/sprites revision
-`2ecb4eeacd5a1718621fc30f12772e3f60d830b9`, fetched directly from GitHub by the browser.
-Unresolved or failed images retain names and neutral placeholders. Sprite binaries
-are not packaged. Image copyrights are reserved to The Pokémon Company; CC0 and
-remote hosting do not establish image permission. GitHub availability and rights
-clearance remain risks. Interface fonts are bundled under the SIL Open Font License.
+This is the recommended way to try the API and Explorer. It needs Docker Engine with the Compose plugin. The first run downloads pinned images and builds the local application image. You do not need an AWS account, AWS credentials, Node.js, or upstream source access for the fixture demo.
 
-## Domain
-The Phase 5 implementation and its evidence are in the `phase5-query-usability` branch and worktree. See the [query usability acceptance record](docs/evidence/query-usability/evidence.md) for revisions, exact commands, results, and remaining limits. The [delivery roadmap](PHASES.md) tracks the larger project sequence. Phase 6 frontend work has not started; it begins with a design discussion.
-
-## Project boundaries
-
-- Pokémon Champions is the target game. Generic VGC data does not establish Champions format or legality.
-- Native builds use **Stat Points**. Existing `/v1` EV values retain their meaning; no conversion is performed.
-- Partial public teams are useful evidence. Missing data stays unknown. A registered Mega indicates roster capability, not battle activation.
-- Tournament analytics require evidence for event structure and cut membership. A standings rank threshold alone does not establish an official cut.
-- Limitless is the only admitted tournament source. Automated RK9 screen scraping is excluded under its published Terms.
-- Collection schedules and the optional public tunnel remain disabled by default.
-
-## Development setup
-
-Requires Python 3.12+ and [uv](https://docs.astral.sh/uv/).
-
-```bash
-uv sync
-uv run ruff check .
-uv run ruff format --check .
-uv run pytest -q
-```
-
-The full test suite is slow; the recorded Phase 5 run took about 48 minutes. Tests use fixtures and mocked AWS services. They do not establish live source behavior, AWS capacity, deployment, or operating cost.
-
-To run the API, configure the required AWS and application settings for your environment, then start:
-
-```bash
-uv run uvicorn app.main:app --reload
-```
-
-Preview JSON reports observed rosters, unknown fields, and diagnostics; it is a local verification artifact. The captured Limitless teams contain no published Stat Points, so their allocations remain unknown.
-
-The Limitless source in `core/sources/admission.json` ships disabled. The collector writes immutable `staging/v2/captures/` and `staging/v2/normalized/` objects. The legacy writer skips these prefixes and schema-2 payloads. Configure `SOURCE_ADMISSION_PATH` and `CATALOG_INDEX_PATH` to supply an independently reviewed source configuration. Access refusals fail visibly.
-
-Catalogs use official regulation/eligible-pool evidence and pinned MIT-licensed community mechanics. See [catalog provenance](core/regulations/v2/README.md) for inventory and reproduction. M-A and intermediate historical patches remain unverified.
-
-## Development documents
-
-The repository's context documents are currently gitignored but remain part of the local workspace. Read them when present; do not assume they are unavailable because of ignore rules.
-
-- [PRD.md](PRD.md): product scope, sources, API target, release acceptance.
-- [ARCHITECTURE.md](ARCHITECTURE.md): current prototype and proposed revision-safe design.
-- [PHASES.md](PHASES.md): delivery sequence and implementation gates.
-- [RULES.md](RULES.md): domain, data, reliability, and operational constraints.
-- [MEMORY.md](MEMORY.md): verified baseline, open bugs, decisions.
-- [SOURCE_UPDATE.md](SOURCE_UPDATE.md): source and release evidence checklist.
-
-The original Phase 0–4A reports are historical; they do not establish acceptance for
-later revisions. See the roadmap and current evidence report for executed gates.
-
-## Self-hosted install and fixture demo
-
-Docker and Docker Compose are required. Seeding runs in the application container.
-The host needs no Python installation for this flow:
+From the repository root:
 
 ```bash
 cp local/compose.env.example .env.local
 docker compose up -d --build --wait
+```
+
+To load the retained-fixture demo into a new, empty local installation, pause the background worker and scheduler while seeding:
+
+```bash
 docker compose stop worker scheduler
 docker compose exec -T api python -m scripts.local.cli seed-demo
 docker compose start worker scheduler
+```
+
+Check the API and open the Explorer:
+
+```bash
 curl -fsS http://127.0.0.1:8080/health
 ```
 
-`seed-demo` accepts an empty installation only; existing tournament rows, S3 objects,
-versions and delete markers cause refusal. Empty recovery cursors and request counters
-are operational state. A busy worker lease causes refusal; wait for its expiry after
-an interrupted worker. Seeding uses retained public captures, labels its report
-`retained-fixtures`, and never enables live sources. An interrupted seed preserves its
-writes and requires explicit recovery rather than an implicit overwrite.
+- Explorer: <http://127.0.0.1:8080/explorer>
+- API reference: <http://127.0.0.1:8080/docs>
+- ReDoc: <http://127.0.0.1:8080/redoc>
 
-Normal `docker compose down` retains both storage volumes. The separate destructive
-`demo --confirm-reset` and `reset-demo --confirm-reset` commands rebuild only the local
-demo table, retaining all S3 versions. See [local operations](docs/runbooks/self-hosted-phase-4a.md)
-for backup/restore, and [Phase 5 queries](docs/runbooks/phase-5-queries.md) for executable
-examples and denominator semantics. Default interfaces are loopback API only; admin
-and Cloudflare profiles are opt-in. Public tunnel/source and AWS checks are pending.
+The demo seed command refuses to write if it finds existing tournament rows or S3 object versions and delete markers. It does not overwrite existing data. Choose another port by setting `VGC_API_PORT` in `.env.local` before starting Compose.
 
-Optional host helper: `python3 scripts/local/stack.py up`, `seed-demo`, `backup`, and
-`down`. Phase 5 verification uses separate `vgc-phase5`/`vgc-phase5-restore` projects,
-`VGC_LOCAL_IMAGE=vgc-phase5:local`, and `VGC_API_PORT=18085`/`18086`; existing installations
-are preserved.
-The interactive OpenAPI page is at `/docs`. Data routes require access to the configured data store. Keep credentials and environment files out of Git.
+Stop the stack while preserving its named storage volumes:
 
-## API shape
+```bash
+docker compose down
+```
 
-The `/v2` API reads complete published snapshots and supports bounded, cursor-based queries. Preserve the returned snapshot and cursor when continuing a listing.
+Do not use `docker compose down -v` if you need to keep the local database or object data. The optional `admin` and `tunnel` Compose profiles are disabled by default. See the [self-hosted operations guide](docs/runbooks/self-hosted-phase-4a.md) for backups, restore, recovery, and operator workflows.
+
+## Run from a source checkout
+
+The Python API can run on the host when its configured DynamoDB and S3-compatible services are available. For an isolated fixture-backed stack, use Docker Compose above.
+
+### Requirements
+
+- Python 3.12 or later
+- [uv](https://docs.astral.sh/uv/)
+- Node.js 22 or later and npm, only if you need to rebuild the web assets
+- A configured DynamoDB table and S3 bucket for non-demo operation
+
+Install the locked Python dependencies and start the server:
+
+```bash
+uv sync --frozen
+uv run uvicorn app.main:app --reload
+```
+
+The server listens at <http://127.0.0.1:8000>. The health route is available at `/health`; API docs are at `/docs`. Data routes need access to the configured data store and a published public snapshot for `/v2` results. The default configuration does not create AWS resources or publish data.
+
+If you change templates, styles, or browser assets, rebuild the generated assets first:
+
+```bash
+npm ci --ignore-scripts
+npm run build
+```
+
+The Docker build runs this asset build in a Node stage and copies the generated, runtime assets into the API image. It does not need Node in the Python runtime image. Depending on your npm version, Tailwind's declared WASM archive may require npm's `--allow-remote=all` installation option; keep lifecycle scripts disabled for this install.
+
+## HTTP API
+
+FastAPI serves health, interactive OpenAPI documentation, the legacy `/v1` API, and the current `/v2` API.
+
+| Route | Purpose |
+| --- | --- |
+| `GET /health` | Health and active regulation summary. `/` returns the same response. |
+| `GET /v1/meta` | Legacy pre-aggregated usage and metric queries. |
+| `GET /v1/teams` | Legacy tournament team query with cursor pagination. |
+| `GET /v1/players/{player_id}` | Legacy player history. |
+| `GET /v2/tournaments` | Published tournament summaries. |
+| `GET /v2/tournaments/{event_id}` | One tournament summary. |
+| `GET /v2/tournaments/{event_id}/standings` | Tournament standings and team records. |
+| `GET /v2/tournaments/{event_id}/matches` | Published match records. |
+| `GET /v2/teams` | Filtered team listing. |
+| `GET /v2/teams/{team_id}` | One published team. |
+| `GET /v2/teams/{team_id}/evidence` | Evidence associated with a team. |
+| `GET /v2/players/{player_id}` | Published player team history. |
+| `GET /v2/meta` | Usage and build attribute analytics. |
+| `GET /v2/cores` | Observed Pokémon cores. |
+| `GET /v2/regulations` | Regulation reference records. |
+| `GET /v2/pokemon` and `/v2/pokemon/{identifier}` | Pokémon reference lookup. |
+| `GET /v2/pokemon/{identifier}/learnset` | Catalog learnset reference. |
+| `GET /v2/moves` and `/v2/moves/{identifier}` | Move reference lookup. |
+| `GET /v2/status` | Public snapshot and service data status. |
+
+Examples against a running local stack:
+
+```bash
+curl -fsS 'http://127.0.0.1:8080/v2/status'
+curl -fsS 'http://127.0.0.1:8080/v2/tournaments?limit=25'
+curl -fsS 'http://127.0.0.1:8080/v2/teams?members=species:incineroar&members=species:rillaboom&publication_status=complete'
+curl -fsS 'http://127.0.0.1:8080/v2/meta?metric=move&move_id=protect'
+curl -fsS 'http://127.0.0.1:8080/v2/cores?size=2&members=incineroar&members=rillaboom'
+curl -fsS 'http://127.0.0.1:8080/v2/pokemon?name=Floette'
+curl -fsS 'http://127.0.0.1:8080/v2/moves?name=Protect'
+```
+
+### Snapshot and cursor behavior
+
+The `/v2` API reads from a complete published snapshot. A first page returns a signed snapshot token and may return a continuation cursor. Send both values to later pages or detail requests when provided, and keep the original filters and `limit` unchanged. Cursors bind to their endpoint, filters, catalog selection, and snapshot; they expire after 24 hours by default. Start a new query with a fresh snapshot after expiry. Error responses use a structured envelope with a code, public message, and request ID.
+
+Public list requests return at most 100 rows. The configured query budgets are 20 storage queries and 2,000 candidates for listings; analytics permits 50 queries, 5,000 candidates, at most 90 inclusive UTC days, and a 350,000-byte response. Requests beyond a budget fail rather than returning partial analytics. See the [query guide](docs/runbooks/phase-5-queries.md) for selector rules, denominator semantics, errors, and end-to-end examples.
+
+## Meta Explorer
+
+The server-rendered Explorer is available under `/explorer`:
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Meta overview | `/explorer` | Usage entries, filters, and observed tournament data. |
+| Common cores | `/explorer/cores` | Observed pairs and triples with links to matching teams. |
+| Teams | `/explorer/teams` | Bounded tournament team search and results. |
+| Pokémon | `/explorer/pokemon/{pokemon_id}` | Reference details, observed usage, known attributes, and provenance. |
+| Team | `/explorer/teams/{team_id}` | Roster details and available published build evidence. |
+| API examples | `/explorer/api` | Fixed API examples with response previews. |
+| Evidence and methodology | `/explorer/about` | Sources, sample coverage, freshness, references, and artwork notes. |
+
+The Explorer uses Jinja templates and HTMX enhancements while retaining normal GET navigation and filter forms. Its theme and motion preferences are browser-side settings. Sprite images are fetched directly from a pinned PokéAPI GitHub revision; the image binaries are not bundled with the application. Pokémon artwork remains copyrighted by The Pokémon Company. Public hosting does not grant a license to reuse that artwork. Interface font files are distributed under the SIL Open Font License.
+
+## How the system works
+
+### Data flow
 
 ```text
-GET /v2/tournaments
-GET /v2/teams?members=species:incineroar&members=species:rillaboom
-GET /v2/meta?metric=move&move_id=protect
-GET /v2/cores?size=2&members=incineroar&members=rillaboom
-GET /v2/pokemon?name=Floette
-GET /v2/moves?name=Protect
+Public source captures ──> normalization and validation ──> immutable staged objects
+                                                               │
+                                                               v
+                                                        native ingestion
+                                                               │
+                                                               v
+                                                   complete public snapshot
+                                                               │
+                                           DynamoDB pointer + versioned S3 data
+                                                               │
+                                               /v2 API and Meta Explorer
 ```
 
-The query examples above describe the Phase 5 implementation branch until it is integrated. See the [Phase 5 query guide](docs/runbooks/phase-5-queries.md) for pagination, filters, coverage, and ambiguity behavior.
+The collector and ingestion pipeline preserve captured source evidence, normalize records into Champions-specific contracts, and write versioned data. Publication builds a complete generation before moving the public pointer. Readers use the complete generation, so interrupted work does not expose a partially published dataset. The legacy `/v1` routes remain available with their earlier storage contract.
 
-## Local self-hosted stack
+### Main components
 
-The Phase 4A/5 Compose stack is available in the `phase5-query-usability` branch. It runs the API, DynamoDB Local, versioned object storage, and bounded worker/scheduler processes. The API binds to loopback; source admission and tunnel access are off by default. The fixture demo requires no AWS account or credentials.
+- `app/`: FastAPI application, response/query models, database readers, API routers, and web Explorer.
+- `core/`: shared domain contracts, regulation/catalog snapshots, source admission, and common configuration.
+- `db/`: DynamoDB client, single-table key construction, and catalog storage helpers.
+- `ingestion/`: source normalization, validation, capture staging, ingestion, publication, and recovery.
+- `scraper/`: bounded discovery and collection handlers. Live source admission is disabled in the bundled configuration.
+- `scripts/local/`: Compose stack helper, local CLI, fixture demo, and local operations support.
+- `infra/`: Terraform modules and dev/prod environments for AWS resources.
+- `tests/`: unit and integration coverage using fixtures and mocked AWS services.
+- `docs/`: runbooks and dated evidence records for local operations and query behavior.
 
-Follow the [self-hosted operations guide](docs/runbooks/self-hosted-phase-4a.md) for setup, worker operations, replay, backup, and restore. Do not use that runbook with `main` until the branch containing the Compose files is checked out.
+## Configuration
 
-Captures, revisions, manifests, complete and incomplete generations are retained
-indefinitely; no cleanup or TTL is enabled. Readers pin a complete generation ID;
-previous complete generations stay readable. Automated expiration requires a reviewed
-retention policy that protects publication pointers, active builds, and reader windows.
-Offline Moto checks establish logic, not AWS throughput, permissions, or deployment.
+The local Compose example is [local/compose.env.example](local/compose.env.example). Copy it to `.env.local` for Compose; its credentials and cursor key are dummy, local-only values and must not be reused for a deployed service. Direct host/API and Lambda operation use the AWS SDK credential chain and the application variables below.
 
-## Phase 3 automation operations
+| Variable | Purpose | Default / notes |
+| --- | --- | --- |
+| `AWS_DEFAULT_REGION` | AWS SDK region. | `us-east-1` |
+| `DYNAMODB_TABLE_NAME` | DynamoDB single-table name. | `vgc-telemetry-dev`; local demo uses `vgc-telemetry-demo`. |
+| `S3_RAW_BUCKET_NAME` | Bucket for source, catalog, and versioned data objects. | Required by relevant ingestion and runtime-catalog paths. |
+| `DYNAMODB_ENDPOINT_URL` | DynamoDB-compatible endpoint override. | Unset for AWS; Compose sets its private service URL. |
+| `S3_ENDPOINT_URL` | S3-compatible endpoint override. | Unset for AWS; Compose sets its private service URL. |
+| `V2_CURSOR_SECRET` | Signs `/v2` snapshot and cursor tokens. | No generated default; configure a secret of at least 32 bytes. |
+| `V2_DEFAULT_CATALOG_REVISION` | Default reference catalog revision. | `champions-mc-3661ce4` |
+| `ACTIVE_REGULATION` | Regulation reported by health and used by legacy configuration. | `M-C` |
+| `CATALOG_RUNTIME_ENABLED` | Enables loading catalog bundles from object storage. | `false` |
+| `ENVIRONMENT` | Environment tag used by telemetry. | `dev` |
+| `SOURCE_ADMISSION_PATH` | Source-admission JSON file. | `core/sources/admission.json` |
+| `CATALOG_INDEX_PATH` | Catalog index file. | `core/regulations/v2/index.json` |
+| `INGESTION_FUNCTION_NAME` | Ingestion Lambda target used by scraper dispatch. | Required for that AWS dispatch path. |
+| `SCRAPER_FUNCTION_NAME` | Scraper Lambda target used for continuations. | Required for that AWS dispatch path. |
+| `COLLECTION_PAGE_SIZE` / `COLLECTION_MAX_PAGES` | Per-run discovery bounds. | `50` / `10` |
+| `COLLECTION_BATCH_SIZE` | Ingestion dispatch batch size. | `10` |
+| `RECENT_DAYS` / `RECONCILE_DAYS` | Recent and reconciliation windows. | `7` / `90` |
+| `COLLECTION_INTERVAL_HOURS` | Recent collection cadence. | `6` |
+| `VGC_LOCAL_DEMO` / `VGC_LOCAL_CONTAINER` | Enforce local demo safety checks. | Set by the Compose example. |
+| `LOCAL_SCHEDULES_ENABLED` | Opts into local scheduled work. | `false` in the Compose example. |
+| `VGC_API_PORT` | Host port for the Compose API. | `8080` |
 
-Offline verification on 2026-10-10: `uv run --frozen pytest -q` passed 394 tests
-with one existing Starlette/httpx deprecation warning; Ruff lint, formatting,
-and diff checks passed. Those historical tool-availability statements were superseded by Phase 4A local
-checks; AWS infrastructure plans and deployments remain unverified.
+Use AWS IAM roles or the SDK's standard credential providers for AWS access. Do not commit `.env.local`, cloud credentials, tunnel credentials, or Terraform state. Runtime collection remains disabled unless the source-admission and scheduling gates are explicitly configured.
 
-Admitted Limitless discovery/recent checks are configured for every six hours,
-reference checks daily, reconciliation weekly, and native recovery every 30
-minutes. All EventBridge rules are disabled until `source_admission_verified`
-and the independently reviewed `core/sources/admission.json` source admission
-are enabled during Phase 4. Discovery stores event work before advancing its
-page. A full work page enqueues a bounded continuation to the scraper Lambda;
-failures replay from the last committed page. Unknown completion dates remain
-eligible for recent checks; the upstream API does not currently provide a
-verified completion timestamp to prove live 7/90-day windows.
+## Tests and code quality
 
-For an operator-approved older replay, invoke the scraper Lambda with an
-explicit bounded payload and increase `backfill_order` for a new replay:
+Install Python development dependencies with `uv sync`, then run the same checks used in CI:
 
-```json
-{"mode":"backfill","event_ids":["<Limitless event ID>"],"backfill_order":1}
+```bash
+uv run ruff check .
+uv run ruff format --check .
+uv run pytest -v
 ```
 
-Use at most 100 event IDs. For a retained, reviewed catalog bundle, run
-`uv run --frozen python scripts/catalog_operator.py submit <bundle.json>`, then
-`queue <candidate-id> --expected-epoch <epoch>` for scheduled activation.
-`activate` and `rollback` require the exact expected epoch; rollback also
-requires `--operator` and `--reason`. New upstream mechanics exports still
-need operator resolution and official evidence review. Public build acquisition
-remains disabled until a source passes access review.
+For the CI coverage command:
 
-CloudWatch custom metrics use `VGCTelemetry/Automation` with only environment,
-source, and worker dimensions. The dev/prod Terraform module routes quarantine,
-retry exhaustion, repeated worker error, unresolved catalog, tournament/reference
-check age, and publication lag alarms to one SNS topic per environment. The
-configured `notification_email` recipient must confirm the SNS subscription
-after apply. See [the alarm runbook](SOURCE_UPDATE.md#phase-3-alarms). Freshness
-and publication-lag alarms treat missing data as breaching, including before
-the first run; they will show the disabled-worker state until live admission.
+```bash
+uv run pytest -v --cov=core --cov=db --cov=app --cov=ingestion --cov=scraper
+```
 
-## Phase 2 public API and manual replay
+Tests use pytest, Moto for mocked DynamoDB and S3, and local fixtures. They do not require live AWS resources and do not prove live source behavior, AWS throughput, deployed permissions, or operating cost. CI is defined in [`.github/workflows/ci.yml`](.github/workflows/ci.yml) and runs on pushes and pull requests to `main`.
 
-`/v2` reads only a complete immutable public snapshot. Pin the returned signed snapshot token
-for detail requests and send it with every later page; keep endpoint filters and
-`limit` unchanged for the continuation cursor. Cursors are signed, query/snapshot
-scoped, and expire at a fixed 24 hours. Listing defaults to 25 rows (maximum 100);
-a request can inspect at most 20 queries/2,000 candidates, analytics at most 50
-queries/5,000 contributions over an inclusive UTC window of at most 90 days.
-Responses are capped at 350,000 bytes and may return an advancing cursor before the
-requested page is full. Unknown values and private allocations remain unknown;
-known-empty is distinct. Dates and source captures are separate, and undated events
-are not assigned a capture date. Ordering is deterministic: dated events newest first
-(unknown last), standings rank with unknown last, then stable identity.
+For Terraform formatting:
+
+```bash
+terraform fmt -check -recursive infra/
+```
+
+## Docker images and AWS infrastructure
+
+The root Dockerfile has three targets:
+
+```bash
+docker build --target api -t vgc-telemetry:api .
+docker build --target ingestion -t vgc-telemetry:ingestion .
+docker build --target scraper -t vgc-telemetry:scraper .
+```
+
+The API image runs Uvicorn on port 8080 and includes the generated Explorer assets. The ingestion and scraper targets are Python 3.12 Lambda images. Docker Compose is a separate self-hosted local stack and uses `Dockerfile.local`.
+
+Terraform environments are in `infra/environments/dev` and `infra/environments/prod`, with reusable services in `infra/modules`. The Terraform pull-request workflow plans the dev environment when its AWS read-only role and ECR settings are configured. The deploy workflow can build and push all three images to ECR and apply the prod Terraform environment when `AWS_DEPLOY_ROLE_ARN` is configured; it uses `ECR_REPOSITORY_NAME` if provided and otherwise `vgc-telemetry`. These are workflow capabilities, not confirmation that the secrets, cloud account, deployment, or production service exist. Review the generated Terraform plan and the source-admission state before any deployment or live collection.
+
+## Repository layout
 
 ```text
-GET /v2/tournaments?limit=25
-GET /v2/tournaments/limitless:6ab9204c880ed327106dddf4/standings?limit=25
-GET /v2/teams?eligibility=all&tournament_id=limitless:6ab9204c880ed327106dddf4
-GET /v2/teams/limitless:<team-id>
-GET /v2/players/limitless:axtheb
-GET /v2/regulations?limit=25
-GET /v2/pokemon?catalog_revision=champions-mb-3661ce4&limit=25
-GET /v2/meta?metric=species&date_from=2026-09-01&date_to=2026-10-01&placement_max=8
-GET /v2/meta?metric=nature&population_id=<exact-population-id>
-GET /v2/cores?size=3&date_from=2026-09-01&date_to=2026-10-01
+app/                  FastAPI routes, models, readers, and Jinja Explorer
+core/                 Domain contracts, regulation/catalog data, source policy
+db/                   DynamoDB and object-store integration helpers
+ingestion/            Validation, normalization, ingestion, publication, recovery
+scraper/              Bounded source discovery and collection handlers
+infra/                Terraform environments and AWS modules
+local/                Compose environment example and optional tunnel config
+scripts/              Local operations, catalog and benchmark tools
+tests/                Unit, integration, and fixture-backed tests
+docs/                 Runbooks and dated verification/evidence records
 ```
 
-Use each response's `snapshot` token on following pages and details. Team detail may
-show a partial or absent roster. Native Stat Points are six integers (0–32, total
-at most 66) only when observed; supported metrics are species/form, moves, abilities,
-items, natures, native Stat Points, and registered Mega. Legacy EV data is never converted. A registered
-Mega is capability evidence, not battle activation. Core sizes are 2 or 3. Analytics
-require an unambiguous population; select an exact returned population when multiple
-divisions/catalogs/rulesets match. Match rates use linked verified cut matches; ties
-count half a win and half a loss, mirrors remove both sides, and byes/double
-losses/automatic or pending results are excluded. Zero eligible matches yield null.
-## What remains open
+Useful references:
 
-- Merge and integrate the self-hosted and Phase 5 work.
-- Verify AWS permissions, deployment, capacity, cost, billing, and operational recovery.
-- Establish live source continuity and separately review any activation of collection or a tunnel.
-- Design the Meta Explorer before starting frontend implementation.
-
-## Project references
-
-- [Delivery phases](PHASES.md)
-- [Product scope](PRD.md)
-- [Architecture](ARCHITECTURE.md)
-- [Domain and reliability rules](RULES.md)
-- [Source and release checklist](SOURCE_UPDATE.md)
+- [Self-hosted operations](docs/runbooks/self-hosted-phase-4a.md)
+- [Query guide and examples](docs/runbooks/phase-5-queries.md)
+- [Phase 5 evidence](docs/phase5/evidence.md)
 - [Catalog provenance](core/regulations/v2/README.md)
 
-This README is a working project note. Update it as development moves; a polished project introduction can wait until the project is closer to done.
+## Troubleshooting
+
+### Compose reports that `.env.local` is missing
+
+Create it from the checked-in local-only example, then retry:
+
+```bash
+cp local/compose.env.example .env.local
+docker compose up -d --build --wait
+```
+
+### The API is healthy, but `/v2` has no usable data
+
+Health confirms that the API process is responding; it does not mean a public snapshot has been published. On a fresh local stack, seed the retained fixture demo. The command refuses to write over existing local table rows or object versions.
+
+### `seed-demo` refuses to run
+
+The demo seed is intentionally limited to an empty installation. Do not delete volumes to bypass the check. Use the [local operations guide](docs/runbooks/self-hosted-phase-4a.md) to inspect, back up, or recover existing data.
+
+### `/v2` reports cursor or snapshot errors
+
+Keep the original endpoint filters and page size when continuing a query, and send the returned snapshot token with later pages. A cursor expires after its configured lifetime (24 hours by default); restart with a fresh first-page request after expiry. Ensure `V2_CURSOR_SECRET` is stable across requests and at least 32 bytes.
+
+### Host API port is already in use
+
+Set `VGC_API_PORT` in `.env.local` to an available host port, recreate the API service, and use that port in the URL. The API stays bound to loopback by default.
+
+### Changes to CSS or browser code do not appear
+
+Run `npm ci --ignore-scripts` and `npm run build`, or rebuild the Compose image with `docker compose up -d --build`. The app serves generated assets from `app/web/static`; editing the source CSS alone does not update the built stylesheet.
+
+## Contributing and licensing
+
+Keep changes aligned with the Champions-specific data contracts and the evidence boundaries above. Use four-space Python indentation, type annotations, Ruff formatting, and tests for behavior changes. See the repository's [contribution and test commands](#tests-and-code-quality) and review the affected evidence or runbook when changing data behavior.
+
+There is no project-wide `LICENSE` file in the repository, so no license is asserted here for the application code. Pokémon names and artwork are owned by their respective rights holders; the Explorer's remote sprites are not relicensed by this project. Bundled font assets include their SIL Open Font License notices. Check the rights and terms of each upstream dataset, asset, and dependency before redistribution or deployment.
