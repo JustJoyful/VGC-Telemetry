@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-top"><h1>API Explorer</h1><p class="intro">Preview public data and the evidence behind it.</p></div>
+<div class="api-layout">
+<nav class="dex-card endpoints" aria-label="Example endpoints">
+{% for key, info in examples.items() %}<a href="/explorer/api?example={{ key }}"{% if key == example %} class="selected" aria-current="page"{% endif %}><span class="method">GET</span><span>{{ info[1] }}<small class="muted">{{ info[0] }}</small></span></a>{% endfor %}
+<a href="/docs">Full API schema</a></nav>
+<section class="dex-card api-response" aria-label="API response">
+<form class="api-form" method="get" action="/explorer/api"><label for="example">Read-only example<select id="example" name="example">{% for key, info in examples.items() %}<option value="{{ key }}"{% if key == example %} selected{% endif %}>{{ info[1] }}</option>{% endfor %}</select></label><button class="button primary" type="submit">Preview response</button></form>
+{% include 'partials/response_preview.html' %}
+</section></div>
+{% endblock %}
