@@ -151,3 +151,63 @@ def test_incomplete_eligibility_sidecar_is_rejected(tmp_path, monkeypatch):
     with pytest.raises(V2Error) as failure:
         references.load_public_reference(digest)
     assert failure.value.status == 503
+
+
+def test_exact_name_choices_moves_and_revision_visibility(reference_client):
+    client = reference_client
+    for name in ["floetteeternal", "Floette", "Floette Eternal"]:
+        response = client.get("/v2/pokemon", params={"name": name})
+        assert response.status_code == 200, response.text
+        assert [r["pokemon_id"] for r in response.json()["items"]] == ["floetteeternal"]
+        assert response.json()["lookup_status"] == "exact"
+    forms = client.get("/v2/pokemon", params={"name": "Rotom", "limit": 1})
+    assert forms.status_code == 200, forms.text
+    assert forms.json()["lookup_status"] == "ambiguous" and forms.json()["next_cursor"]
+    assert client.get("/v2/pokemon", params={"name": "missing"}).status_code == 404
+    moves = client.get(
+        "/v2/moves", params={"name": " PRO-TECT ", "catalog_revision": "champions-mb-3661ce4"}
+    )
+    assert moves.status_code == 200, moves.text
+    assert [m["move_id"] for m in moves.json()["items"]] == ["protect"]
+    assert moves.json()["items"][0]["catalog_revision"] == "champions-mb-3661ce4"
+    assert client.get("/v2/moves/missing").status_code == 404
+    assert client.get("/v2/moves/Protect").json()["move_id"] == "protect"
+    assert client.get("/v2/moves", params={"catalog_revision": "missing"}).status_code == 404
+    first = client.get("/v2/moves", params={"limit": 1}).json()
+    last = client.get("/v2/moves", params={"limit": 1, "cursor": first["next_cursor"]})
+    assert last.status_code == 200 and last.json()["snapshot"] == first["snapshot"]
+    assert (
+        client.get(
+            "/v2/moves", params={"limit": 1, "cursor": first["next_cursor"], "name": "Protect"}
+        ).status_code
+        == 400
+    )
+
+
+def test_name_lookup_counts_ambiguity_metadata_in_response_bound():
+    from app.models.v2_queries import PokemonQuery
+    from app.routers.v2.reference import reference_page
+    from app.v2.config import V2ReadConfig
+    from app.v2.errors import V2Error
+    from core.public_reference import load_public_reference
+    from ingestion.staging import canonical_bytes
+
+    reference = load_public_reference(None)
+    query = PokemonQuery(name="Floette", species_id="rotom")
+    config = V2ReadConfig(secret=b"secret" * 8, clock=lambda: 100)
+    args = dict(
+        catalog_revision=config.default_catalog_revision,
+        reference_manifest_hash=reference["manifest_hash"],
+        query=query,
+        position=None,
+        limit=25,
+    )
+    page = reference_page(**args, config=config)
+    size = len(canonical_bytes(page.model_dump(mode="json")))
+    assert page.items == [] and page.lookup_status == "exact"
+    with pytest.raises(V2Error) as failure:
+        reference_page(
+            **args,
+            config=V2ReadConfig(secret=config.secret, clock=config.clock, response_bytes=size - 1),
+        )
+    assert failure.value.status == 503

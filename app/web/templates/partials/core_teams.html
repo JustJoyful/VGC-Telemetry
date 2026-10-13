@@ -1,0 +1,8 @@
+<div class="core-team-strip">
+{% for entry in ctx.data.entries %}<article class="core-team">
+<span class="core-placement" data-standing="{{ entry.team.standing }}">{% if entry.team.standing == 1 %}1st{% elif entry.team.standing == 2 %}2nd{% elif entry.team.standing == 3 %}3rd{% elif entry.team.standing is not none %}Top {{ entry.team.standing }}{% else %}Unknown placement{% endif %}</span>
+<a class="core-team-sprites" href="{{ entry.url }}" aria-label="Team: {{ entry.names|join(', ') }}">
+{% for p in entry.team.pokemon %}{% set name = entry.names[loop.index0] %}{% set url = sprite_url(p.form_id or p.species_id) %}<span class="sprite-slot"{% if not url %} data-unavailable="true"{% endif %}><span class="placeholder" aria-hidden="true"></span>{% if url %}<img src="{{ url }}" alt="{{ name }}" width="48" height="48" loading="lazy" decoding="async" referrerpolicy="no-referrer">{% endif %}</span>{% endfor %}
+</a></article>{% else %}<p>No published teams match this core in this sample.</p>{% endfor %}
+</div>
+<a class="text-link" href="{{ ctx.data.all_teams_url }}">See all teams with this core</a>

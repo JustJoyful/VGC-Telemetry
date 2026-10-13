@@ -1,0 +1,6 @@
+<h2>Response preview</h2>
+<p class="api-request">GET {{ preview.request_url }}</p>
+<p class="small muted">HTTP {{ preview.response_status }}. Reference default: {{ preview.catalog_revision }}. Each response carries its own catalog and snapshot identity when applicable.</p>
+<a class="entry-link" href="{{ preview.request_url }}">Read this endpoint as JSON</a>
+<pre class="api-code" tabindex="0" aria-label="Response preview"><code>{{ preview.response_json }}</code></pre>
+<p class="small muted">Examples read at most three returned items. Continuations in the JSON bind the query, snapshot and catalog; preserve their filters when paging. Storage errors and ambiguous populations remain visible.</p>

@@ -1,0 +1,3 @@
+{% macro evidence(values) %}
+{% for value in values %}<div class="source-row">{% if value.url|safe_url %}<a href="{{ value.url|safe_url }}" rel="noreferrer">Source evidence</a>{% else %}<span>Source evidence URL unavailable</span>{% endif %}<p>Capture: {{ value.captured_at }}</p><details><summary>Content hash{{ ' · ' ~ value.path if value.path else '' }}</summary><code>{{ value.content_hash }}</code></details></div>{% else %}<p>Source evidence: Unknown</p>{% endfor %}
+{% endmacro %}

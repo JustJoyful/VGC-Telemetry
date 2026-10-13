@@ -89,3 +89,31 @@ def s3_contract(s3, bucket):
         raise AssertionError("S3 ignored IfNoneMatch; immutable evidence unsafe")
     assert s3.get_object(Bucket=bucket, Key=key)["Body"].read() == b"second"
     return {"versioned_reads": True, "metadata": True, "lists": True, "conditional_writes": True}
+
+
+def require_empty(table, s3, bucket):
+    """Recovery cursors and request counters are operational, not fixture data."""
+    position = None
+    while True:
+        args = {"ConsistentRead": True, "Limit": 100}
+        if position:
+            args["ExclusiveStartKey"] = position
+        page = table.scan(**args)
+        for row in page["Items"]:
+            key = (row["PK"], row["SK"])
+            if key == ("V2#LOCAL#DEMO", "LEASE"):
+                continue
+            if row["PK"].startswith("RATELIMIT#"):
+                continue
+            if (
+                key in {("V2#RECOVERY", "DIRTY"), ("V2#RECOVERY", "native-recovery")}
+                and row.get("cursor") is None
+            ):
+                continue
+            raise ValueError("seed-demo requires empty tournament storage; existing data retained")
+        position = page.get("LastEvaluatedKey")
+        if not position:
+            break
+    versions = s3.list_object_versions(Bucket=bucket, MaxKeys=1)
+    if versions.get("Versions") or versions.get("DeleteMarkers"):
+        raise ValueError("seed-demo requires empty object storage; retained versions preserved")

@@ -1,0 +1,12 @@
+{% if ctx.data.status %}
+{% set state = 'Unavailable' if not ctx.data.status.snapshot_id else 'Stale' if ctx.data.status.stale else 'Freshness unknown' if ctx.data.status.stale is none else 'Fresh' %}
+{% if request.url.path == '/explorer' %}
+<div class="status-strip" aria-label="Sample and freshness">
+<span class="chip">Regulation {{ ctx.data.population.rules_id if ctx.data.population else ctx.filters.regulation or 'Unknown' }}</span>
+<span class="chip">{% if ctx.filters.date_from and ctx.filters.date_to %}{{ ctx.filters.date_from.strftime('%b %d') }} to {{ ctx.filters.date_to.strftime('%b %d') }} UTC{% else %}Window unknown{% endif %}</span>
+<span class="chip">{{ ctx.data.coverage.eligible_complete_rosters if ctx.data.coverage is not none else 'Unknown' }} rosters</span>
+<span class="chip status-{{ 'error' if not ctx.data.status.snapshot_id else 'warning' if ctx.data.status.stale else 'neutral' if ctx.data.status.stale is none else 'success' }}"><span class="status-dot" aria-hidden="true"></span>{{ state }}{% if ctx.data.status.dirty %}, update pending{% endif %}</span>
+<a href="/explorer/about">How to read this</a>
+</div>
+{% else %}<p class="small page-freshness">Freshness: <span class="status-{{ 'warning' if ctx.data.status.stale else 'neutral' }}">{{ state }}</span>. <a href="/explorer/about">How to read this</a></p>{% endif %}
+{% endif %}

@@ -14,7 +14,9 @@ Reader = Annotated[PublicReader, Depends(get_public_reader)]
 def teams(reader: Reader, query: Annotated[TeamQuery, Query()]):
     """Event/entry ID order; unknown builds remain null. Default proven members only."""
     snap, position = reader.request_snapshot(query, "/v2/teams")
-    section = "REG#" + query.regulation if query.regulation else "TEAMS"
+    section = (
+        "TEAMS" if query.members else ("REG#" + query.regulation if query.regulation else "TEAMS")
+    )
     return reader.page(snap, section=section, query=query, position=position, limit=query.limit)
 
 

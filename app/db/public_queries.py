@@ -17,12 +17,12 @@ from app.models.v2 import (
     SnapshotInfo,
     TeamView,
 )
-from app.models.v2_queries import canonical_query
-from app.v2.catalog import resolve_catalog
+from app.models.v2_queries import TeamQuery, canonical_query
+from app.v2.catalog import resolve_catalog, validate_members
 from app.v2.config import V2ReadConfig, get_v2_config
-from app.v2.cursors import decode_cursor, decode_snapshot, encode_cursor, encode_snapshot
+from app.v2.cursors import _decode, decode_cursor, decode_snapshot, encode_cursor, encode_snapshot
 from app.v2.errors import V2Error, unavailable
-from core.models.public_read import PUBLIC_SCHEMA
+from core.models.public_read import PUBLIC_SCHEMA, PopulationKey, population_id
 from core.top_cut import POLICY_VERSION
 from db.client import get_dynamodb_table
 from db.schema_public import public_state_key, snapshot_pk, snapshot_row_key
@@ -36,6 +36,7 @@ T = TypeVar("T", bound=BaseModel)
 class PublicReader:
     def __init__(self, table, *, config: V2ReadConfig):
         self.table, self.config = table, config
+        self._listing_queries = 0
 
     def get(self, key):
         try:
@@ -89,6 +90,42 @@ class PublicReader:
         secret = self.config.require_secret()
         position = None
         pinned = None
+        self._listing_queries = 0
+        if isinstance(query, TeamQuery) and query.members and not query.catalog_revision:
+            retained = (
+                _decode(query.cursor, now=self.config.clock(), secret=secret, kind="cursor")
+                if query.cursor
+                else {}
+            )
+            revision = retained.get("catalog_revision")
+            if revision is None and query.population_id:
+                if self.config.listing_queries < 2:
+                    raise V2Error(
+                        422, "query_too_broad", "Specify catalog_revision with population"
+                    )
+                token = (
+                    decode_snapshot(query.snapshot, now=self.config.clock(), secret=secret)
+                    if query.snapshot
+                    else None
+                )
+                chosen = self.resolve_snapshot(token.snapshot_id if token else None)
+                if token:
+                    chosen.expires_at = token.expires_at
+                rows = self.query(chosen, "POPULATIONS", prefix=query.population_id + ":", limit=1)[
+                    "Items"
+                ]
+                self._listing_queries += 1
+                if not rows:
+                    raise V2Error(404, "not_found", "Population not found")
+                try:
+                    population = PopulationKey.model_validate(rows[0]["data"])
+                    if population_id(population) != query.population_id:
+                        raise ValueError("Population identity mismatch")
+                except (KeyError, ValueError) as error:
+                    raise unavailable("Published population is unavailable") from error
+                revision = population.catalog_revision
+                pinned = SnapshotInfo(snapshot_id=chosen.snapshot_id, expires_at=chosen.expires_at)
+            query.catalog_revision = revision or self.config.default_catalog_revision
         if query.cursor:
             value = decode_cursor(
                 query.cursor,
@@ -142,6 +179,8 @@ class PublicReader:
     def _matches(self, data, query):
         values = query.model_dump(exclude_none=True)
         mapping = {
+            "publication_status": "publication_status",
+            "population_id": "population_id",
             "regulation": "rules_id",
             "division_id": "division_id",
             "competition_id": "competition_id",
@@ -190,6 +229,17 @@ class PublicReader:
             for mon in data.get("pokemon", [])
         ):
             return False
+        for selector in values.get("members", []):
+            kind, identifier = selector.split(":")
+            if not any(
+                mon.get("species_id") == identifier
+                if kind == "species"
+                else identifier in (mon.get("mega_variant_ids") or [])
+                if kind == "mega"
+                else (mon.get("form_id") or mon.get("species_id")) == identifier
+                for mon in data.get("pokemon", [])
+            ):
+                return False
         return True
 
     def page(
@@ -242,6 +292,14 @@ class PublicReader:
             form = catalog.species.get(query.form_id)
             if form is None or form.base_species_id != query.species_id:
                 raise V2Error(422, "invalid_query", "Species and form are incompatible")
+        if getattr(query, "members", None):
+            revision = query.catalog_revision or self.config.default_catalog_revision
+            query.catalog_revision = revision
+            try:
+                pinned_catalog = resolve_catalog(revision, config=self.config)
+            except ValueError as error:
+                raise V2Error(422, "invalid_query", "Catalog not found") from error
+            validate_members(query.members, pinned_catalog)
         summary = self.get(snapshot_row_key(snapshot.snapshot_id, "META", "SUMMARY")) or {}
         page = Page[model](
             items=[],
@@ -250,7 +308,7 @@ class PublicReader:
             coverage=Coverage(**summary.get("coverage", {})),
         )
         inspected, continuation = 0, None
-        for _ in range(self.config.listing_queries):
+        for _ in range(self.config.listing_queries - self._listing_queries):
             response = self.query(
                 snapshot,
                 section,
@@ -298,6 +356,7 @@ class PublicReader:
                 limit=limit,
                 position=continuation,
                 secret=self.config.require_secret(),
+                catalog_revision=getattr(query, "catalog_revision", None),
             )
         self._bounded(page)
         return page

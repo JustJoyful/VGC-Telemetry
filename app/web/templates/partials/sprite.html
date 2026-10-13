@@ -1,0 +1,7 @@
+{% macro sprite(url, large=false, float=false) %}
+<span class="sprite-slot{{ ' large' if large else '' }}"{% if not url %} data-unavailable="true"{% endif %}>
+<span class="placeholder" aria-hidden="true">?</span>
+{% if url %}<img src="{{ url }}" alt="" width="96" height="96" loading="lazy" decoding="async" referrerpolicy="no-referrer"{{ ' class=float-sprite' if float else '' }}>{% endif %}
+{% if large %}<span class="corners" aria-hidden="true"></span>{% endif %}
+</span>
+{% endmacro %}

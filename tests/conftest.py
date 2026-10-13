@@ -1,4 +1,5 @@
 import os
+from types import SimpleNamespace
 from typing import Generator
 
 import boto3
@@ -21,14 +22,28 @@ def release_moto_transaction_dashboard_copies(monkeypatch):
     transaction backups otherwise retain entire table copies until mock shutdown.
     Backend tables and rollback state retain their own live references.
     """
+    import moto.dynamodb.models as models
     from moto.core.model_instances import reset_model_data
     from moto.dynamodb.models import DynamoDBBackend
 
     original = DynamoDBBackend.transact_write_items
 
     def transact(self, actions):
+        deepcopy = models.copy.deepcopy
+        tables = {}
+
+        def backup(value, memo=None):
+            if not isinstance(value, models.Table):
+                return deepcopy(value, memo)
+            if id(value) not in tables:
+                tables[id(value)] = deepcopy(value, memo)
+            return tables[id(value)]
+
         try:
-            return original(self, actions)
+            # Moto backs up the same untouched table once per action before any writes.
+            with monkeypatch.context() as patch:
+                patch.setattr(models, "copy", SimpleNamespace(deepcopy=backup))
+                return original(self, actions)
         finally:
             reset_model_data()
 

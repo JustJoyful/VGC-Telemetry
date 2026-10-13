@@ -100,7 +100,9 @@ class DynamoDBRateLimitMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         # Bypass rate limiting for documentation and health checks
-        if request.url.path in self.excluded_paths:
+        if request.url.path in self.excluded_paths or request.url.path.startswith(
+            "/explorer/static/"
+        ):
             return await call_next(request)
 
         # Source IP resolution:
@@ -114,6 +116,24 @@ class DynamoDBRateLimitMiddleware(BaseHTTPMiddleware):
         if not allowed:
             from app.v2.errors import error_body, is_v2
 
+            headers = {
+                "Retry-After": str(reset_secs),
+                "X-RateLimit-Limit": str(self.rate_limit),
+                "X-RateLimit-Remaining": "0",
+                "X-RateLimit-Reset": str(reset_secs),
+            }
+            if request.url.path == "/explorer" or request.url.path.startswith("/explorer/"):
+                from app.v2.errors import V2Error
+                from app.web.routes import error_page
+
+                response = error_page(
+                    request,
+                    V2Error(
+                        429, "rate_limited", "Rate limit exceeded. Try again in the next minute."
+                    ),
+                )
+                response.headers.update(headers)
+                return response
             return JSONResponse(
                 status_code=429,
                 content=error_body(
@@ -121,12 +141,7 @@ class DynamoDBRateLimitMiddleware(BaseHTTPMiddleware):
                 )
                 if is_v2(request)
                 else {"detail": "Rate limit exceeded. Try again in the next minute."},
-                headers={
-                    "Retry-After": str(reset_secs),
-                    "X-RateLimit-Limit": str(self.rate_limit),
-                    "X-RateLimit-Remaining": "0",
-                    "X-RateLimit-Reset": str(reset_secs),
-                },
+                headers=headers,
             )
 
         response = await call_next(request)

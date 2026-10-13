@@ -78,3 +78,6 @@ local/compose.sources.yaml
 # Local operational notes and reports stay in the workspace, outside commits.
 /docs/**/*.md
 /scripts/local/*.md
+
+# Frontend build dependencies
+node_modules/

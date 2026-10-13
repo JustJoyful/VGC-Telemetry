@@ -1,7 +1,7 @@
 """Strict public filters and resolved canonical token inputs."""
 
 from datetime import date
-from typing import Literal, Self
+from typing import Annotated, Literal, Self
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -44,7 +44,13 @@ class TournamentQuery(PopulationQuery):
     cut_status: Literal["verified_complete", "verified_partial", "none", "unknown"] | None = None
 
 
+MemberSelector = Annotated[str, Field(pattern=r"^(species|form|mega):[a-z0-9]+$", max_length=100)]
+
+
 class TeamQuery(PopulationQuery):
+    publication_status: Literal["complete", "partial", "absent"] | None = None
+    members: list[MemberSelector] = Field(default_factory=list, max_length=3)
+    population_id: str | None = None
     tournament_id: SourceId | None = None
     player_id: SourceId | None = None
     species_id: str | None = None
@@ -56,6 +62,9 @@ class TeamQuery(PopulationQuery):
 
     @model_validator(mode="after")
     def compatible(self) -> Self:
+        if len(set(self.members)) != len(self.members):
+            raise ValueError("Member selectors must be distinct")
+        self.members = sorted(self.members)
         if self.form_id and not self.species_id:
             raise ValueError("form_id requires species_id")
         if self.placement_min and self.placement_max and self.placement_min > self.placement_max:
@@ -71,6 +80,8 @@ class MatchQuery(PageQuery):
 
 
 class AnalyticsQuery(PopulationQuery):
+    move_id: str | None = Field(default=None, pattern=r"^[a-z0-9]+$", max_length=100)
+    registered_mega_id: str | None = Field(default=None, pattern=r"^[a-z0-9]+$", max_length=100)
     tournament_id: SourceId | None = None
     species_id: str | None = None
     form_id: str | None = None
@@ -86,6 +97,8 @@ class AnalyticsQuery(PopulationQuery):
 
     @model_validator(mode="after")
     def window(self) -> Self:
+        if self.move_id and self.metric != "move":
+            raise ValueError("move_id requires metric=move")
         if self.form_id and not self.species_id:
             raise ValueError("form_id requires species_id")
         if self.placement_min and self.placement_max and self.placement_min > self.placement_max:
@@ -115,7 +128,12 @@ class CoreQuery(AnalyticsQuery):
         return self
 
 
+class MoveQuery(ReferenceQuery):
+    name: str | None = Field(default=None, min_length=1, max_length=100)
+
+
 class PokemonQuery(PageQuery):
+    name: str | None = Field(default=None, min_length=1, max_length=100)
     catalog_revision: str | None = None
     species_id: str | None = None
     form_id: str | None = None
@@ -123,4 +141,7 @@ class PokemonQuery(PageQuery):
 
 
 def canonical_query(query: BaseModel) -> dict:
-    return query.model_dump(mode="json", exclude={"cursor", "snapshot", "limit"})
+    resolved = query.model_dump(mode="json", exclude={"cursor", "snapshot", "limit"})
+    if isinstance(query, TeamQuery):
+        resolved["candidate_plan"] = "teams-v1"
+    return resolved

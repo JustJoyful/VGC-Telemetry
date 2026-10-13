@@ -62,6 +62,8 @@ class Coverage(StrictModel):
     excluded_membership: int = 0
     unknown_membership: int = 0
     unknown_stat_points: int = 0
+    scope_matching_rosters: int = 0
+    scope_unknown_rosters: int = 0
     known_attributes: dict[str, int] = Field(default_factory=dict)
     unknown_attributes: dict[str, int] = Field(default_factory=dict)
 
@@ -176,6 +178,7 @@ class MetricView(StrictModel):
 
 
 class CoreView(MetricView):
+    team_members: list[str]
     members: list[str]
     size: Literal[2, 3]
 
@@ -213,6 +216,7 @@ class PokemonView(StrictModel):
 
 
 class MoveView(StrictModel):
+    snapshot: str | None = None
     move_id: str
     name: str
     details: dict[str, str | int | float | bool | None] = Field(default_factory=dict)
@@ -247,6 +251,7 @@ T = TypeVar("T")
 
 
 class Page(StrictModel, Generic[T]):
+    lookup_status: Literal["exact", "ambiguous"] | None = None
     items: list[T]
     next_cursor: str | None = None
     snapshot: str

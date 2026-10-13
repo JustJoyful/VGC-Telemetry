@@ -1,3 +1,11 @@
+FROM node:22.22.2-bookworm-slim AS web-assets
+WORKDIR /build
+COPY package.json package-lock.json ./
+RUN npm ci --ignore-scripts
+COPY scripts/build-web-assets.mjs scripts/build-web-assets.mjs
+COPY app/web/ app/web/
+RUN npm run build
+
 # =============================================================
 # Stage 1: Public API Lambda (Debian slim + Lambda Web Adapter)
 # =============================================================
@@ -19,6 +27,8 @@ COPY core/ /var/task/core/
 COPY db/ /var/task/db/
 COPY app/ /var/task/app/
 COPY ingestion/ /var/task/ingestion/
+COPY --from=web-assets /build/app/web/static/ /var/task/app/web/static/
+RUN rm -r /var/task/app/web/static/src
 
 CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
 

@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% from 'partials/sprite.html' import sprite %}
+{% from 'partials/provenance.html' import evidence %}
+{% block content %}
+<div class="page-top"><a class="crumb" href="{{ ctx.data.back_url }}">Matching teams</a><h1>Tournament team</h1><p class="intro">Select a Pokémon to read its published build.</p><div class="context"><span class="chip">Placement: {{ ctx.data.team.standing if ctx.data.team.standing is not none else 'Unknown' }}</span><span class="chip">{{ ctx.data.builds|length }} published Pokémon</span></div></div>
+<nav class="dex-card team-detail-roster" aria-label="Published roster"><ul class="team-roster">{% for entry in ctx.data.builds %}<li><a data-roster-member="{{ entry.build.form_id or entry.build.species_id }}" href="#{{ entry.id }}">{{ sprite(entry.sprite) }}<span>{{ entry.name }}</span></a></li>{% else %}<li>Not published. Return to matching teams to choose another roster.</li>{% endfor %}</ul></nav>
+{% for entry in ctx.data.builds %}<details class="dex-card team-detail-build build-detail distribution" id="{{ entry.id }}"{{ ' open' if loop.first else '' }}><summary>{{ entry.name }}</summary><div class="build-layout"><div><a href="{{ entry.pokemon_url }}">Open Pokémon entry</a><dl class="build-fields">
+<div><dt>Ability</dt><dd>{{ entry.ability }}{% if entry.build.ability_id %} <code>{{ entry.build.ability_id }}</code>{% endif %}</dd></div>
+<div><dt>Observed moves</dt><dd>{% for id,name in entry.moves %}{{ name }} <code>{{ id }}</code>{{ ', ' if not loop.last else '' }}{% else %}Unknown{% endfor %}<p>Move completeness: {{ 'Unknown' if entry.build.moves_complete is none else 'Complete published set' if entry.build.moves_complete else 'Partial published set' }}</p></dd></div>
+<div><dt>Held item</dt><dd>{{ entry.item }}{% if entry.build.item.item_id %} <code>{{ entry.build.item.item_id }}</code>{% endif %}</dd></div>
+<div><dt>Nature</dt><dd>{{ entry.nature }}{% if entry.build.nature_id %} <code>{{ entry.build.nature_id }}</code>{% endif %}</dd></div>
+<div><dt>Stat Points</dt><dd>{% if entry.build.stat_points %}{% for key,value in entry.build.stat_points.model_dump(by_alias=true).items() %}<span>{{ key }}: {{ value }}</span>{{ ' · ' if not loop.last else '' }}{% endfor %}{% else %}Unknown{% endif %}</dd></div>
+<div><dt>Registered Mega capability</dt><dd>{{ entry.mega_names|join(', ') if entry.build.mega_variant_ids else 'Unknown' if entry.build.mega_variant_ids is none else 'None (confirmed)' }}{% for id in entry.build.mega_variant_ids or [] %} <code>{{ id }}</code>{% endfor %}<p>Registered capability only; battle activation is not observed.</p></dd></div>
+</dl></div><div>{% for field,values in entry.build.field_evidence.items() %}<h3>{{ field|replace('_',' ')|capitalize }} evidence</h3>{{ evidence(values) }}{% else %}<p>Private field evidence: Unknown</p>{% endfor %}</div></div></details>{% endfor %}
+<details class="evidence-detail"><summary>Technical details</summary>
+<p>Roster: {{ ctx.data.team.publication_status|capitalize }}</p><p>Eligibility: {{ ctx.data.team.eligibility.status|capitalize }}</p><p>{{ ctx.data.team.eligibility.reason }}</p>
+<p>Catalog: {{ ctx.data.team.catalog_revision or 'Unknown' }}</p><p>Regulation: {{ ctx.data.team.rules_id or 'Unknown' }}</p><p>Snapshot publication: {{ ctx.data.team.generated_at or 'Unknown' }}</p>
+<p>Team: {{ ctx.data.team.team_id }}</p><p>Population: {{ ctx.data.team.population_id or 'Unknown' }}</p><p class="mono">{{ ctx.data.team.snapshot }}</p></details>
+{{ evidence(ctx.data.team.provenance) }}{{ evidence(ctx.data.team.eligibility.evidence) }}
+<a class="button" href="{{ ctx.data.evidence_url }}">All returned team evidence</a>
+{% include 'partials/status.html' %}
+{% endblock %}

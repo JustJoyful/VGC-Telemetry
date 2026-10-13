@@ -339,3 +339,231 @@ def test_complete_window_pagination_pins_denominators_and_expiry(v2_client):
 
 # pytest imports the fixture by name, not through ordinary Python references.
 from tests.v2_helpers import v2_client  # noqa: E402, F401
+
+
+def test_move_selection_returns_known_zero_unknown_and_exact_mega_roster_scope():
+    from app.v2.analytics import _read
+
+    query = AnalyticsQuery(metric="move", move_id="protect", registered_mega_id="floettemega")
+    rows, _, coverage = _read(snapshot(), query, BundleReader([public_bundle(True)]))
+    assert rows and all(r.value == "protect" for r in rows)
+    floette = next(r for r in rows if r.identity == "floette/floetteeternal")
+    assert (floette.count, floette.denominator, floette.percentage) == (1, 1, 100)
+    assert coverage.eligible_complete_rosters == 1
+    assert coverage.scope_matching_rosters == 1 and coverage.scope_unknown_rosters == 0
+    zero, _, _ = _read(
+        snapshot(),
+        query.model_copy(update={"move_id": "thunderbolt", "species_id": "floette"}),
+        BundleReader([public_bundle(True)]),
+    )
+    assert len(zero) == 1
+    assert (zero[0].count, zero[0].denominator, zero[0].percentage, zero[0].value) == (
+        0,
+        1,
+        0,
+        "thunderbolt",
+    )
+    from ingestion.public_contributions import derive_public_event
+    from tests.phase2_helpers import real_public
+
+    value, capture, catalog = real_public(True)
+    mon = next(
+        p for t in value.result.tournament.teams for p in t.pokemon if p.species_id == "floette"
+    )
+    mon.moves, mon.moves_complete = None, False
+    bundle = derive_public_event(
+        value, capture, catalog=catalog, policy_version="limitless-single-bracket-v1"
+    )
+    unknown, _, _ = _read(
+        snapshot(), query.model_copy(update={"species_id": "floette"}), BundleReader([bundle])
+    )
+    assert unknown[0].count == 0 and unknown[0].percentage is None
+    assert unknown[0].unknown_count == 1
+    empty, _, coverage = _read(snapshot(), query, BundleReader([]))
+    assert empty == [] and coverage.scope_matching_rosters == 0
+
+
+def test_mega_scope_unknown_and_partial_rosters_are_not_false_matches():
+    from app.v2.analytics import _read
+    from ingestion.public_contributions import derive_public_event
+    from tests.phase2_helpers import real_public
+
+    value, capture, catalog = real_public(True)
+    floette = next(
+        p for t in value.result.tournament.teams for p in t.pokemon if p.species_id == "floette"
+    )
+    floette.mega_variant_ids = None
+    bundle = derive_public_event(
+        value, capture, catalog=catalog, policy_version="limitless-single-bracket-v1"
+    )
+    rows, _, coverage = _read(
+        snapshot(),
+        AnalyticsQuery(metric="move", registered_mega_id="floettemega"),
+        BundleReader([bundle]),
+    )
+    assert rows == []
+    assert coverage.scope_unknown_rosters == 1 and coverage.scope_matching_rosters == 0
+    team = next(
+        t
+        for t in value.result.tournament.teams
+        if any(p.species_id == "floette" for p in t.pokemon)
+    )
+    team.publication_status = "partial"
+    team.pokemon = team.pokemon[:2]
+    bundle = derive_public_event(
+        value, capture, catalog=catalog, policy_version="limitless-single-bracket-v1"
+    )
+    rows, _, coverage = _read(
+        snapshot(),
+        AnalyticsQuery(metric="move", registered_mega_id="floettemega"),
+        BundleReader([bundle]),
+    )
+    assert rows == [] and coverage.scope_unknown_rosters == 1
+
+
+def test_scoped_usage_validates_catalog_and_selector_metric():
+    from pydantic import ValidationError
+
+    from app.v2.analytics import read_analytics
+    from app.v2.errors import V2Error
+
+    with pytest.raises(ValidationError):
+        AnalyticsQuery(move_id="protect")
+    for params in [{"move_id": "missing"}, {"registered_mega_id": "floetteeternal"}]:
+        with pytest.raises(V2Error) as failure:
+            read_analytics(
+                snapshot(), AnalyticsQuery(metric="move", **params), reader=BundleReader([])
+            )
+        assert failure.value.status == 422
+
+
+def test_core_base_ids_match_canonical_pairs_and_triples():
+    from app.v2.analytics import read_analytics
+    from app.v2.errors import V2Error
+
+    reader = BundleReader([public_bundle(), public_bundle(True)])
+    for size, members, identity, count in [
+        (2, ["rillaboom", "incineroar"], "incineroar/base+rillaboom/base", 7),
+        (
+            3,
+            ["rillaboom", "incineroar", "gholdengo"],
+            "gholdengo/base+incineroar/base+rillaboom/base",
+            6,
+        ),
+    ]:
+        query = CoreQuery(size=size, members=members, date_from="2026-10-01", date_to="2026-10-04")
+        rows = read_analytics(snapshot(), query, reader=reader)
+        assert [(r.identity, r.count, r.denominator) for r in rows] == [(identity, count, 10)]
+    with pytest.raises(V2Error) as failure:
+        read_analytics(snapshot(), CoreQuery(members=["missing"]), reader=reader)
+    assert failure.value.status == 422
+
+
+def test_core_to_teams_uses_exact_population_and_snapshot(v2_client):
+    client, _, _, _ = v2_client
+    cores = client.get("/v2/cores", params={"members": ["incineroar", "rillaboom"]}).json()
+    core = cores["items"][0]
+    teams = client.get(
+        "/v2/teams",
+        params={
+            "members": ["species:incineroar", "species:rillaboom"],
+            "population_id": core["population_id"],
+            "snapshot": cores["snapshot"],
+            "publication_status": "complete",
+        },
+    )
+    assert teams.status_code == 200, teams.text
+    assert len(teams.json()["items"]) == core["count"]
+    assert all(t["population_id"] == core["population_id"] for t in teams.json()["items"])
+    assert teams.json()["snapshot"] == cores["snapshot"]
+
+
+def test_scoped_analytics_cursor_binds_move_and_mega(v2_client):
+    client, _, _, _ = v2_client
+    params = {
+        "metric": "move",
+        "move_id": "protect",
+        "registered_mega_id": "floettemega",
+        "limit": 1,
+    }
+    response = client.get("/v2/meta", params=params)
+    assert response.status_code == 200, response.text
+    first = response.json()
+    assert first["next_cursor"]
+    assert (
+        client.get("/v2/meta", params=params | {"cursor": first["next_cursor"]}).status_code == 200
+    )
+    for changed in [{"move_id": "thunderbolt"}, {"registered_mega_id": "charizardmegay"}]:
+        response = client.get(
+            "/v2/meta", params=params | changed | {"cursor": first["next_cursor"]}
+        )
+        assert response.status_code == 400, response.text
+
+
+@pytest.mark.parametrize("field", ["move_id", "registered_mega_id"])
+@pytest.mark.parametrize("value", ["", "Protect", "bad:id"])
+def test_attribute_selectors_require_canonical_ids(field, value):
+    from pydantic import ValidationError
+
+    with pytest.raises(ValidationError):
+        AnalyticsQuery(metric="move", **{field: value})
+
+
+def test_unrelated_unknown_mega_capability_does_not_make_scope_unknown():
+    from app.v2.analytics import _read
+    from ingestion.public_contributions import derive_public_event
+    from tests.phase2_helpers import real_public
+
+    value, capture, catalog = real_public(True)
+    raichu = next(
+        p for t in value.result.tournament.teams for p in t.pokemon if p.species_id == "raichu"
+    )
+    raichu.mega_variant_ids = None
+    bundle = derive_public_event(
+        value, capture, catalog=catalog, policy_version="limitless-single-bracket-v1"
+    )
+    rows, _, coverage = _read(
+        snapshot(),
+        AnalyticsQuery(metric="move", registered_mega_id="floettemega"),
+        BundleReader([bundle]),
+    )
+    assert rows and coverage.scope_matching_rosters == 1
+    assert coverage.scope_unknown_rosters == 0
+
+
+def test_core_team_selectors_preserve_base_form_and_species_grouping():
+    from app.db.public_queries import PublicReader
+    from app.models.v2_queries import TeamQuery
+    from app.v2.analytics import read_analytics
+    from ingestion.public_contributions import derive_public_event
+    from tests.phase2_helpers import real_public
+
+    value, capture, catalog = real_public(True)
+    teams = [t for t in value.result.tournament.teams if t.standing in (1, 2)]
+    for team, form in zip(teams, [None, "rotomwash"], strict=True):
+        team.pokemon[0].species_id, team.pokemon[0].form_id = "rotom", form
+    bundle = derive_public_event(
+        value, capture, catalog=catalog, policy_version="limitless-single-bracket-v1"
+    )
+    stream = BundleReader([bundle])
+    reader = PublicReader(None, config=stream.config)
+    reader.get, reader.query = stream.get, stream.query
+    for group, count, selectors in [
+        ("form", 1, ["form:incineroar", "form:rotom"]),
+        ("species", 2, ["species:incineroar", "species:rotom"]),
+    ]:
+        cores = read_analytics(
+            snapshot(),
+            CoreQuery(members=["incineroar/base", "rotom/base"], group_by=group),
+            reader=stream,
+        )
+        assert len(cores) == 1 and cores[0].count == count
+        assert cores[0].team_members == selectors
+        query = TeamQuery(
+            members=cores[0].team_members,
+            publication_status="complete",
+            population_id=cores[0].population_id,
+            catalog_revision=cores[0].catalog_revision,
+        )
+        page = reader.page(snapshot(), section="TEAMS", query=query, position=None, limit=25)
+        assert len(page.items) == count

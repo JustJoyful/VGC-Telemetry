@@ -87,3 +87,47 @@ def test_signature_comparison_and_secret_minimum(monkeypatch):
         V2ReadConfig(secret=b"short")
     with pytest.raises(V2Error):
         decode_snapshot(token[:-1] + ("a" if token[-1] != "a" else "b"), now=100, secret=SECRET)
+
+
+def test_member_cursor_pins_catalog_and_versioned_candidate_plan():
+    from app.db.public_queries import PublicReader
+    from app.models.v2 import SnapshotInfo
+    from app.models.v2_queries import TeamQuery, canonical_query
+    from app.v2.config import V2ReadConfig
+    from app.v2.cursors import encode_cursor
+    from app.v2.errors import V2Error
+
+    query = TeamQuery(members=["species:rillaboom"], catalog_revision="champions-mc-3661ce4")
+    cursor = encode_cursor(
+        snapshot=SnapshotInfo(snapshot_id="retained", expires_at=1000),
+        endpoint="/v2/teams",
+        query=canonical_query(query),
+        limit=25,
+        position="entry",
+        secret=SECRET,
+        catalog_revision="champions-mc-3661ce4",
+    )
+    reader = PublicReader(
+        None,
+        config=V2ReadConfig(
+            secret=SECRET, clock=lambda: 100, default_catalog_revision="champions-mb-3661ce4"
+        ),
+    )
+    reader.resolve_snapshot = lambda identifier: SnapshotInfo(
+        snapshot_id=identifier, expires_at=1000
+    )
+    resumed = TeamQuery(members=["species:rillaboom"], cursor=cursor)
+    snap, position = reader.request_snapshot(resumed, "/v2/teams")
+    assert snap.snapshot_id == "retained" and position == "entry"
+    assert resumed.catalog_revision == "champions-mc-3661ce4"
+    assert canonical_query(resumed)["candidate_plan"] == "teams-v1"
+    with pytest.raises(V2Error) as error:
+        reader.request_snapshot(
+            TeamQuery(
+                members=["species:rillaboom"],
+                catalog_revision="champions-mb-3661ce4",
+                cursor=cursor,
+            ),
+            "/v2/teams",
+        )
+    assert error.value.code == "invalid_cursor"
