@@ -1,0 +1,14 @@
+{% for entry in ctx.data.core_entries %}
+<details class="core-row">
+<summary>
+<span class="core-pair">{% for p in entry.pokemon %}<span class="sprite-slot"{% if not p.sprite %} data-unavailable="true"{% endif %}><span class="placeholder" aria-hidden="true"></span>{% if p.sprite %}<img src="{{ p.sprite }}" alt="" width="48" height="48" loading="lazy" decoding="async" referrerpolicy="no-referrer">{% endif %}</span>{% endfor %}</span>
+<span class="core-name">{{ entry.pokemon|map(attribute='name')|join(' + ') }}</span>
+<span class="core-count">{{ entry.row.count }} of {{ entry.row.denominator }} rosters</span>
+<span class="core-chevron" aria-hidden="true">⌄</span>
+</summary>
+<div class="core-teams" id="core-teams-{{ entry.row.identity|replace('/', '-')|replace('+', '-') }}">
+{% if entry.expansion_url %}<a class="text-link" href="{{ entry.expansion_url }}" hx-get="{{ entry.expansion_url }}" hx-trigger="toggle once from:closest details, click" hx-target="#core-teams-{{ entry.row.identity|replace('/', '-')|replace('+', '-') }}" hx-swap="innerHTML">Show teams with this core</a>{% else %}<p>No published team population matches this sample.</p>{% endif %}
+</div>
+</details>
+{% else %}<p class="small">No common cores returned for this sample.</p>{% endfor %}
+{% if ctx.data.cores_next_url %}<div class="core-continuation"><a class="text-link" href="{{ ctx.data.cores_next_url }}" hx-get="{{ ctx.data.cores_next_url }}" hx-target="closest .core-continuation" hx-swap="outerHTML">Show more cores</a></div>{% endif %}
