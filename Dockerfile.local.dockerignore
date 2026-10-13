@@ -1,4 +1,6 @@
 *
+!package.json
+!package-lock.json
 !pyproject.toml
 !uv.lock
 !Dockerfile.local
@@ -26,3 +28,5 @@
 !tests/fixtures/**
 **/__pycache__/
 **/*.pyc
+
+**/node_modules/

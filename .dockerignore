@@ -22,3 +22,6 @@ local/tunnel.yml
 .agents/
 .codex/
 local/compose.sources.yaml
+
+node_modules
+.superpowers
