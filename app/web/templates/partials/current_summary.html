@@ -1,0 +1,1 @@
+{% if ctx.data.status %}<span class="current-summary">Freshness: <span class="status-{{ 'warning' if ctx.data.status.stale else 'neutral' }}">{{ 'Unknown' if ctx.data.status.stale is none else 'Stale' if ctx.data.status.stale else 'Fresh' }}</span>{% if ctx.data.status.dirty %}, update pending{% endif %}</span>{% endif %}

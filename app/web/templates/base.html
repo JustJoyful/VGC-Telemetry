@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="referrer" content="no-referrer">
+<meta name="htmx-config" content='{"allowEval":false,"allowScriptTags":false,"selfRequestsOnly":true,"historyCacheSize":0,"includeIndicatorStyles":false}'>
+<title>{{ title|default('Meta explorer') }} | VGC Telemetry</title>
+<script>{{ explorer_script|safe }}</script>
+<link rel="stylesheet" href="/explorer/static/app.css?v=dex-1">
+<link rel="preload" href="/explorer/static/fonts/Pixelify-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/explorer/static/fonts/Atkinson-400.woff2" as="font" type="font/woff2" crossorigin>
+<script src="/explorer/static/htmx.min.js" defer></script>
+</head>
+<body hx-boost="true" hx-target="#main" hx-swap="outerHTML" hx-select-oob="#site-header">
+<a class="skip" href="#main">Skip to content</a>
+<div class="sky" aria-hidden="true"><div class="sky-stars sky-stars--far"></div><div class="sky-stars sky-stars--near"></div><img class="sky-moon" src="/explorer/static/sky/moon.svg?v=1" alt="" width="96" height="96"><div class="sky-cloud sky-cloud--a"></div><div class="sky-cloud sky-cloud--b"></div><div class="sky-cloud sky-cloud--c"></div></div>
+<div class="shell">
+<header class="header" id="site-header">
+<a class="brand" href="/explorer" hx-boost="true" hx-target="#main" hx-select="#main" hx-swap="outerHTML" hx-select-oob="#site-header">VGC Telemetry</a>
+<nav class="nav" aria-label="Main navigation" hx-boost="true" hx-target="#main" hx-select="#main" hx-swap="outerHTML" hx-select-oob="#site-header">
+<a href="/explorer"{% if request.url.path == '/explorer' or request.url.path.startswith('/explorer/pokemon/') %} aria-current="page"{% endif %}>Meta</a><a href="/explorer/teams"{% if request.url.path.startswith('/explorer/teams') %} aria-current="page"{% endif %}>Teams</a><a href="/explorer/api"{% if request.url.path.startswith('/explorer/api') %} aria-current="page"{% endif %}>API</a><a href="/explorer/about"{% if request.url.path == '/explorer/about' %} aria-current="page"{% endif %}>Evidence</a>
+</nav>
+<div class="controls">
+<button class="control" data-js data-theme-toggle type="button" aria-label="Switch to light mode" aria-pressed="false"><svg class="theme-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg><svg class="theme-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 15.4A8.6 8.6 0 0 1 8.6 4 8.6 8.6 0 1 0 20 15.4Z"/></svg></button>
+<button class="control" data-js data-motion-toggle type="button" aria-label="Pause motion" aria-pressed="false"><svg class="motion-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14m8-14v14"/></svg><svg class="motion-play" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7Z"/></svg></button>
+</div></header>
+<main id="main" tabindex="-1"><p id="request-status" class="small" role="status" aria-live="polite"></p>{% block content %}<h1>{{ title }}</h1>{% endblock %}</main>
+<footer class="footer"><span>VGC Telemetry</span><a href="/explorer/about">Sources and limits</a></footer>
+</div>
+</body>
+</html>
