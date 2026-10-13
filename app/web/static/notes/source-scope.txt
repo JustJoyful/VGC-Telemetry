@@ -1,0 +1,10 @@
+VGC Telemetry source scope — Phase 6, 2026-10-12
+
+Source configuration: core/sources/admission.json; public build sources: core/sources/builds.json.
+Limitless is the initial tournament source. Its admission and collection ship disabled. No public JSON build source is currently admitted. New sources require a separate access review.
+RK9 automated scraping is excluded by its published Terms. Ranked ladder feeds and private builds are outside this dataset.
+
+Cut eligibility is derived from retained phase/standings evidence, not placement alone. A verified partial cut reports its observed coverage; an unknown cut cannot establish inclusion. Missing roster/build fields remain unknown. Provenance links identify captured source records and their hashes.
+
+Upstream API documentation: https://docs.limitlesstcg.com/developer/tournaments
+Relevant implementation: core/source_admission.py, core/top_cut.py, ingestion/normalize.py; catalog authority is documented separately in catalog-provenance.txt.
