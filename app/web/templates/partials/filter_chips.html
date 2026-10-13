@@ -1,0 +1,1 @@
+<nav{% if team_filter_chips or refresh_filter_chips %} id="team-filter-chips"{% endif %} class="filter-chips"{% if refresh_filter_chips %} hx-swap-oob="outerHTML"{% endif %} aria-label="Active filters">{% for chip in ctx.data.chips if not feed_embedded %}<a class="button" data-remove-filter="{{ chip.key }}" href="{{ chip.url }}">Remove {{ chip.label }}</a>{% endfor %}</nav>

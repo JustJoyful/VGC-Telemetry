@@ -1,0 +1,17 @@
+<details class="filters"><summary class="button">Filters</summary>
+<form class="filter-form" action="{{ ctx.data.form_path }}" method="get" hx-get="{{ ctx.data.form_path }}" hx-target="#results" hx-swap="outerHTML" hx-push-url="true" hx-sync="this:replace" aria-label="Query filters">
+<label for="regulation">Regulation<input class="input" id="regulation" name="regulation" value="{{ ctx.filters.regulation or '' }}" placeholder="M-C"></label>
+<label for="source">Source<select class="select" id="source" name="source"><option value="">All admitted</option value="limitless"{{ ' selected' if ctx.filters.source == 'limitless' else '' }}>Limitless</option></select></label>
+<label for="tournament">Tournament<input class="input" id="tournament" name="tournament_id" value="{{ ctx.filters.tournament_id or '' }}" placeholder="limitless:event-id"></label>
+<label for="species">Species ID<input class="input" id="species" name="species_id" value="{{ ctx.filters.species_id or '' }}" placeholder="incineroar"></label>
+<label for="date-from">From, inclusive UTC<input class="input" type="date" id="date-from" name="date_from" value="{{ ctx.filters.date_from or '' }}"></label>
+<label for="date-to">To, inclusive UTC<input class="input" type="date" id="date-to" name="date_to" value="{{ ctx.filters.date_to or '' }}"></label>
+<label for="limit">Rows per page<input class="input" type="number" id="limit" name="limit" min="1" max="100" value="{{ ctx.filters.limit }}"></label>
+{% if ctx.data.form_path == '/explorer/teams' %}<fieldset><legend>Exact team core (up to three selectors)</legend>{% for index in range(3) %}<label for="member-{{ index }}">Member {{ index + 1 }}<input class="input" id="member-{{ index }}" name="members" value="{{ ctx.filters.members[index] if index < ctx.filters.members|length else '' }}" placeholder="form:incineroar"></label>{% endfor %}</fieldset>{% endif %}
+{% for key, value in ctx.filters.model_dump(mode='json', exclude_none=true, exclude_defaults=true).items() %}
+{% if key not in ['regulation','source','tournament_id','species_id','date_from','date_to','limit','cursor','members','catalog_revision','population_id'] %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endif %}
+{% endfor %}
+<input type="hidden" name="catalog_revision" value="{{ ctx.filters.catalog_revision or '' }}"><input type="hidden" name="population_id" value="{{ ctx.filters.population_id or '' }}">
+<button class="button primary btn" type="submit">Apply filters</button><a class="button" href="{{ ctx.data.form_path }}">Clear filters</a>
+<p class="small muted">Analytics windows are at most 90 inclusive UTC days. Team cores select matching teams.</p>
+</form></details>
