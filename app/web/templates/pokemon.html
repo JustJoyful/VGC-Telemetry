@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% from 'partials/sprite.html' import sprite %}
+{% from 'partials/provenance.html' import evidence %}
+{% block content %}
+{% if not ctx.data.pokemon %}
+<div class="page-top"><h1>Choose an exact form</h1><p>These catalog forms have separate identities. Select the observed form to inspect its evidence.</p></div>
+{% for choice in ctx.data.choice_links %}<p><a class="button" href="{{ choice.url }}">{{ choice.name }}</a></p>{% endfor %}
+{% if ctx.data.more_choices %}<a href="{{ ctx.data.more_choices }}">More exact forms in the API</a>{% endif %}
+{% else %}
+<div class="page-top"><a class="crumb" href="{{ ctx.data.back_url }}">Meta overview</a><div class="context">{% include "partials/current_summary.html" %}</div></div>
+<section class="detail-identity" aria-label="Pokémon identity">
+{{ sprite(ctx.data.sprite, true, true) }}
+<div><h1>{{ ctx.data.pokemon.name }}</h1><div class="type-row">{% for type in ctx.data.pokemon.types %}<span>{{ type|capitalize }}</span>{% endfor %}</div>
+{% for row in ctx.data.usage_rows %}<div class="sample nums"><strong>{{ (row.percentage|string ~ '%') if row.percentage is not none else 'Unknown' }}</strong><span>{{ row.count }} of {{ row.denominator }} rosters</span><p>Eligible complete rosters</p></div>{% else %}<p>Usage: Unknown · No matching row returned</p>{% endfor %}
+{% if ctx.data.teams_url %}<a class="button primary" href="{{ ctx.data.teams_url }}">Explore matching teams</a>{% else %}<p>No matching population for teams</p>{% endif %}
+{% if ctx.data.pokemon.battle_only %}<p>Registered capability reference; battle activation is not observed.</p>{% endif %}
+</div><div class="detail-reference"><h2>Reference facts</h2><p>Reference abilities: {{ ctx.data.reference_abilities|join(', ') }}</p><p>Registration eligibility: {{ ctx.data.pokemon.registration_eligibility|capitalize }}</p><p class="small muted">{{ ctx.data.pokemon.authority }}</p><a href="{{ ctx.data.learnset_url }}">Reference learnset</a></div>
+</section>
+<div class="distributions">
+{% for metric in ctx.data.metrics %}<details class="distribution" open><summary>{{ metric.label }}</summary><div class="distribution-content">
+{% for entry in metric.entries %}<div class="metric-row"><h3>{{ entry.name }}</h3>{% if entry.row.value %}<code>{{ entry.row.value }}</code>{% endif %}<p class="nums">{{ entry.row.count }} of {{ entry.row.denominator }} Known slots · {{ (entry.row.percentage|string ~ '%') if entry.row.percentage is not none else 'Unknown' }}</p><p class="small muted">Known: {{ entry.row.known_count }} · Unknown: {{ entry.row.unknown_count }} · Excluded: {{ entry.row.excluded_count }}</p>{% if entry.row.nature_alignment %}<p>Nature alignment: plus {{ entry.row.nature_alignment.plus or 'Neutral' }}, minus {{ entry.row.nature_alignment.minus or 'Neutral' }}</p>{% endif %}{% for link in entry.row.provenance_links %}<a href="{{ link|provenance_url(ctx.filters.snapshot, ctx.data.reference.snapshot) or '/docs' }}">Metric provenance</a>{% endfor %}</div>{% else %}<p>Unknown · No matching metric returned</p>{% endfor %}
+{% if metric.next_url %}<a class="button" href="{{ metric.next_url }}">More {{ metric.label|lower }}</a>{% endif %}
+</div></details>{% endfor %}
+</div>
+<section class="cores"><h2>Observed partners</h2>{% for entry in ctx.data.partners %}<div class="core-row"><div><h3>{{ entry.names|join(' + ') }}</h3><p>{{ entry.row.count }} of {{ entry.row.denominator }} eligible rosters · Observed co-occurrence</p></div><a class="button" href="{{ entry.url }}">Explore core teams</a></div>{% else %}<p>Unknown · No partner row returned</p>{% endfor %}</section>
+<div class="evidence"><span>Catalog: {{ ctx.data.pokemon.catalog_revision }}</span><span>Source: Limitless for observations; pinned reference for catalog facts</span><span>Selected publication: {{ ctx.data.usage.generated_at if ctx.data.usage and ctx.data.usage.generated_at else 'Unknown' }}</span></div>
+<details class="evidence-detail"><summary>Identity and snapshot evidence</summary><p>Exact form: {{ ctx.data.pokemon.pokemon_id }}</p><p>Catalog hash: {{ ctx.data.pokemon.catalog_hash }}</p><p>Population: {{ ctx.filters.population_id or 'Unknown' }}</p><p class="mono">Data snapshot: {{ ctx.filters.snapshot or 'Unavailable' }}</p><p class="mono">Reference snapshot: {{ ctx.data.reference.snapshot }}</p></details>
+{{ evidence(ctx.data.pokemon.provenance) }}
+{% endif %}
+{% include 'partials/status.html' %}
+{% endblock %}
