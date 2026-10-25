@@ -107,10 +107,15 @@ def restart_completed(table, key, lease: Lease, now: int):
                 "Update": {
                     "Key": key,
                     "UpdateExpression": (
-                        "SET #page = :zero, #status = :running, run_id = :run REMOVE cursor"
+                        "SET #page = :zero, #status = :running, run_id = :run REMOVE #cursor"
                     ),
                     "ConditionExpression": "#page = :old AND #status = :completed",
-                    "ExpressionAttributeNames": {"#page": "page", "#status": "status"},
+                    # CURSOR is a DynamoDB reserved word; it must use a name placeholder.
+                    "ExpressionAttributeNames": {
+                        "#page": "page",
+                        "#status": "status",
+                        "#cursor": "cursor",
+                    },
                     "ExpressionAttributeValues": {
                         ":zero": 0,
                         ":running": "running",
