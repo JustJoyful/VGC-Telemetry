@@ -1,4 +1,4 @@
-# Owner-only future opt-in: requires an independently admitted .local/admission.json.
+# Manual scheduler-only override; prefer `python3 scripts/local/stack.py live` (compose.live.yaml).
 # Copy to local/compose.sources.yaml; never include it in default startup.
 services:
   scheduler:
