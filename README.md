@@ -1,13 +1,14 @@
 # VGC Telemetry
 
-VGC Telemetry is a Python API and web explorer for Pokémon Champions tournament data. It collects and publishes source-backed tournament records, serves bounded read-only analytics and reference data, and makes the evidence and unknowns behind those results visible. The project is under active development; live source collection and production AWS operation are not currently enabled by default.
+VGC Telemetry is a Python API and web explorer for Pokémon Champions tournament data. It collects and publishes source-backed tournament records, serves bounded read-only analytics and reference data, and makes the evidence and unknowns behind those results visible. It runs entirely on your own machine with Docker: one command starts the app and fills it with the newest supported tournaments from Limitless, and another refreshes it later. An offline demo with retained fixture data is also included. Production AWS operation is not enabled.
 
 ## Contents
 
 - [What it does](#what-it-does)
 - [Project status and data limits](#project-status-and-data-limits)
 - [Technology](#technology)
-- [Run locally with Docker Compose](#run-locally-with-docker-compose)
+- [Quick start](#quick-start)
+- [Live data: what to expect](#live-data-what-to-expect)
 - [Run from a source checkout](#run-from-a-source-checkout)
 - [HTTP API](#http-api)
 - [Meta Explorer](#meta-explorer)
@@ -25,18 +26,18 @@ VGC Telemetry is a Python API and web explorer for Pokémon Champions tournament
 - Publishes complete immutable data snapshots so a paginated query can continue against one consistent view while new data is ingested.
 - Tracks source evidence and preserves incomplete or unavailable fields as unknown instead of filling them with guesses.
 - Provides a server-rendered Meta Explorer for browsing Pokémon usage, cores, teams, reference details, API examples, and methodology.
-- Includes a local Docker Compose stack with DynamoDB Local, S3-compatible object storage, an API, a worker, and a scheduler. A retained-fixture demo can populate an empty local stack without contacting an upstream source.
+- Includes a local Docker Compose stack with DynamoDB Local, S3-compatible object storage, an API, a worker, and a scheduler. An opt-in live command collects the newest supported tournaments from Limitless; a retained-fixture demo populates an empty stack without contacting any upstream source.
 - Includes ingestion, bounded collection scheduling, recovery tooling, and Terraform definitions for a possible AWS deployment.
 
 ## Project status and data limits
 
 The repository contains the API, web explorer, ingestion and publication pipeline, local operations, and AWS infrastructure code. CI runs lint, formatting, and Python tests. The existence of deployment automation and Terraform does not mean that a production deployment, AWS permissions, costs, live collection, or source continuity have been verified. See the [local operations guide](docs/runbooks/self-hosted-phase-4a.md), [query guide](docs/runbooks/phase-5-queries.md), [query validation record](docs/evidence/query-usability/verification.json), and [local stack proof](docs/local-operations/fresh-workspace-proof.json) for the scope and limits of recorded checks.
 
-The bundled Limitless source admission is disabled. The local demo uses retained public captures; it does not enable collection. Source continuity, collection authorization, and upstream behavior require separate review before live collection is enabled. Automated RK9 screen scraping is excluded under RK9's published terms.
+The bundled Limitless source admission (`core/sources/admission.json`) stays disabled, so plain `docker compose up` and the fixture demo never contact an upstream source. The live command enables that same evidence-backed admission only for your installation by writing the gitignored `.local/admission.json`; it does not add sources, formats, or platforms. Live collection depends on Limitless's public API remaining available and unchanged, and its publication was checked against current responses on 2026-10-25, not guaranteed for the future. Automated RK9 screen scraping is excluded under RK9's published terms.
 
 Pokémon Champions builds use native **Stat Points**. The legacy `/v1` surface retains its original EV terminology and values; the project does not convert between them. Missing build fields and incomplete rosters remain unknown. A registered Mega capability indicates roster capability, not proof that a Mega transformation occurred in a match. See [catalog provenance and known limits](core/regulations/v2/README.md).
 
-The current fixture data is evidence for local development, not a live meta feed. Catalog snapshots identify their own sources and revisions. Historical regulation coverage such as M-A and intermediate game-data patches remains unverified.
+The offline fixture data is evidence for local development, not a live meta feed. Catalog snapshots identify their own sources and revisions. Historical regulation coverage such as M-A and intermediate game-data patches remains unverified.
 
 ## Technology
 
@@ -47,48 +48,83 @@ The current fixture data is evidence for local development, not a live meta feed
 - **Infrastructure:** Terraform for AWS resources; Docker multi-stage images for the API, ingestion Lambda, and scraper Lambda.
 - **Quality tools:** pytest, Moto, pytest-cov, and Ruff.
 
-## Run locally with Docker Compose
+## Quick start
 
-This is the recommended way to try the API and Explorer. It needs Docker Engine with the Compose plugin. The first run downloads pinned images and builds the local application image. You do not need an AWS account, AWS credentials, Node.js, or upstream source access for the fixture demo.
-
-From the repository root:
+You need [Docker Engine](https://docs.docker.com/engine/install/) (or Docker Desktop) with the Compose plugin, `git`, and Python 3.9 or later on the host to run the helper script (standard library only). You do **not** need an AWS account, AWS credentials, Node.js, or uv. The first run downloads pinned images and builds the local application image, which takes a few minutes.
 
 ```bash
-cp local/compose.env.example .env.local
-docker compose up -d --build --wait
+git clone https://github.com/JustJoyful/VGC-Telemetry.git
+cd VGC-Telemetry
 ```
 
-To load the retained-fixture demo into a new, empty local installation, pause the background worker and scheduler while seeding:
+### Live data (recommended)
 
 ```bash
-docker compose stop worker scheduler
-docker compose exec -T api python -m scripts.local.cli seed-demo
-docker compose start worker scheduler
+python3 scripts/local/stack.py live
 ```
 
-Check the API and open the Explorer:
+This one command:
+
+1. Creates `.env.local` from `local/compose.env.example` and `.local/admission.json` from the bundled admission (enabled for this installation only), if they do not exist yet.
+2. Starts storage and the API, with the background worker and scheduler paused.
+3. Runs a bounded foreground refresh: it reads up to 10 listing pages per supported regulation (M-C and M-B), captures the 10 newest discovered events, validates them through the normal ingestion pipeline, and publishes a complete snapshot.
+4. Starts the worker and scheduler only after the foreground refresh has finished, so two collectors never run at once.
+5. Prints a summary such as `Live refresh: pending - ...`, followed by counts and the Explorer URL.
+
+Then open <http://127.0.0.1:8080/explorer>. The API reference is at <http://127.0.0.1:8080/docs>.
+
+To fetch the newest events again later, whether the stack is running or stopped:
 
 ```bash
-curl -fsS http://127.0.0.1:8080/health
+python3 scripts/local/stack.py refresh
+python3 scripts/local/stack.py refresh --events 25   # capture more of the newest events now (1-100)
 ```
 
-- Explorer: <http://127.0.0.1:8080/explorer>
-- API reference: <http://127.0.0.1:8080/docs>
-- ReDoc: <http://127.0.0.1:8080/redoc>
+`refresh` pauses the worker and scheduler, refreshes in the foreground, then restores exactly what was running before, including when the refresh fails. A stopped stack is left stopped afterwards.
 
-The demo seed command refuses to write if it finds existing tournament rows or S3 object versions and delete markers. It does not overwrite existing data. Choose another port by setting `VGC_API_PORT` in `.env.local` before starting Compose.
+The outcome is one of:
 
-Stop the stack while preserving its named storage volumes:
+| Status | Meaning |
+| --- | --- |
+| `completed` | The newest events were collected and published, and no discovered work is left. |
+| `pending` | The newest events were published; other discovered events (older history) are still queued and the scheduler continues them while the stack runs. This is normal on a first install. |
+| `no_eligible_events` | The source answered, but nothing new passed admission and validation (for example, only custom-rule or simulator events). |
+| `failed` | The source was unreachable, refused or rate-limited past the retry limit, or the configuration is invalid. The last complete snapshot is kept. The command exits non-zero. |
+| `disabled` | `.local/admission.json` has `"enabled": false`. The command exits non-zero. |
+
+### Offline fixture demo (no network)
 
 ```bash
-docker compose down
+python3 scripts/local/stack.py up
+python3 scripts/local/stack.py seed-demo
 ```
 
-Do not use `docker compose down -v` if you need to keep the local database or object data. The optional `admin` and `tunnel` Compose profiles are disabled by default. See the [self-hosted operations guide](docs/runbooks/self-hosted-phase-4a.md) for backups, restore, recovery, and operator workflows.
+`up` (the same as `docker compose up -d --build --wait`) never contacts an upstream source: the scheduler has no external network and schedules are disabled. `seed-demo` loads two retained public Limitless captures from `tests/fixtures/` into an **empty** installation and refuses to run if any tournament data or object versions exist. Use a separate clone or project for the demo if you also want live data.
+
+### Stop, restart and what persists
+
+```bash
+python3 scripts/local/stack.py down       # stops containers; keeps your data
+python3 scripts/local/stack.py live       # start again with live scheduling and a fresh refresh
+python3 scripts/local/stack.py up         # or start again offline (no collection)
+```
+
+Your database and object storage live in the named Docker volumes `vgc-phase4a_dynamodb-data` and `vgc-phase4a_s3-data` and survive `down`, restarts, and image rebuilds. Do not use `docker compose down -v`; it deletes them. Scheduled collection runs only while the stack is running with the live overlay. Nothing collects while it is stopped, or after a plain `up`.
+
+Each clone stores its own data locally. Fetched captures, the local database, `.env.local`, and `.local/` are gitignored and are never pushed to GitHub. This repository does not host or update a shared live dataset. See the [self-hosted operations guide](docs/runbooks/self-hosted-phase-4a.md) for backups, restore, recovery, and the optional loopback-only `admin` and `tunnel` profiles, which are disabled by default.
+
+## Live data: what to expect
+
+- **Coverage:** Limitless Pokémon Champions VGC tournaments in Regulation M-C and M-B, Nintendo Switch platform, doubles. Simulator events, other formats (including M-A), events with custom rules, and other sources are not collected or are reported as pending/rejected rather than relabelled. The analytics population is verified top-cut data; full standings are kept as labelled context.
+- **Incomplete data stays unknown:** Limitless team lists do not include Champions Stat Points, so stat allocations are reported as unknown. Events without public team sheets, missing items, or unrecognised entries are kept with diagnostics instead of guessed. Not every event has team data.
+- **Rate limits:** Limitless advertises a limit of 50 requests per 5 minutes. The collector reads its rate-limit headers and waits for the window to reset, so a refresh can pause for up to about five minutes. A first install queues the regulation history (hundreds of events); the scheduler works through it in the background over several hours, then rechecks known events at most once a day.
+- **Schedules while running:** discovery and recent-event checks every 6 hours, a daily reference check of up to 40 catalog source URLs (official Champions news and the pinned Showdown data), and weekly reconciliation. Reference checks record changes for review; they do not switch the active catalog.
+- **When the source is down or refuses requests:** requests are retried with bounded backoff. Then the refresh reports `failed`, does not change the last complete snapshot, and keeps the queued work so a later refresh or scheduled run can resume it. Events that were validated before the failure are published later by the background worker's normal recovery cycle, never by the failed refresh.
+- **Cost:** this path needs no AWS services and runs locally. You provide the hardware, disk, power and network access, and the collector uses Limitless's public API capacity; nothing here promises zero cost or upstream availability.
 
 ## Run from a source checkout
 
-The Python API can run on the host when its configured DynamoDB and S3-compatible services are available. For an isolated fixture-backed stack, use Docker Compose above.
+The Python API can run on the host when its configured DynamoDB and S3-compatible services are available. For an isolated local stack, use the [quick start](#quick-start) above.
 
 ### Requirements
 
@@ -230,10 +266,11 @@ The local Compose example is [local/compose.env.example](local/compose.env.examp
 | `COLLECTION_PAGE_SIZE` / `COLLECTION_MAX_PAGES` | Per-run discovery bounds. | `50` / `10` |
 | `COLLECTION_BATCH_SIZE` | Ingestion dispatch batch size. | `10` |
 | `RECENT_DAYS` / `RECONCILE_DAYS` | Recent and reconciliation windows. | `7` / `90` |
-| `COLLECTION_INTERVAL_HOURS` | Recent collection cadence. | `6` |
+| `COLLECTION_INTERVAL_HOURS` | Minimum hours before an already checked event is fetched again. | `6`; the live overlay uses `24`. |
+| `LIVE_REFRESH_EVENTS` | Newest events captured by a foreground `live`/`refresh` run (1-100). | `10`; `--events` sets it per run. |
 | `VGC_LOCAL_DEMO` / `VGC_LOCAL_CONTAINER` | Enforce local demo safety checks. | Set by the Compose example. |
-| `LOCAL_SCHEDULES_ENABLED` | Opts into local scheduled work. | `false` in the Compose example. |
-| `VGC_API_PORT` | Host port for the Compose API. | `8080` |
+| `LOCAL_SCHEDULES_ENABLED` | Opts into local scheduled work. | `false` in the Compose example; `true` only in `compose.live.yaml`. |
+| `VGC_API_PORT` | Host port for the Compose API. | `8080`; read from `.env.local` by the helper, or from the shell for plain `docker compose`. |
 
 Use AWS IAM roles or the SDK's standard credential providers for AWS access. Do not commit `.env.local`, cloud credentials, tunnel credentials, or Terraform state. Runtime collection remains disabled unless the source-admission and scheduling gates are explicitly configured.
 
@@ -300,14 +337,37 @@ Useful references:
 
 ## Troubleshooting
 
+### Docker is not running or permission is denied
+
+`python3 scripts/local/stack.py ...` needs a working `docker compose`. Check with `docker compose version` and `docker info`. On Linux, start the daemon (`sudo systemctl start docker`) and either add your user to the `docker` group or use rootless Docker. On macOS and Windows, start Docker Desktop.
+
 ### Compose reports that `.env.local` is missing
 
-Create it from the checked-in local-only example, then retry:
+The helper creates it automatically. When using `docker compose` directly, create it from the checked-in local-only example, then retry:
 
 ```bash
 cp local/compose.env.example .env.local
 docker compose up -d --build --wait
 ```
+
+### The live refresh reports `failed`
+
+- `reason: admission_invalid` or `admission_unverified`: `.local/admission.json` is malformed or was edited to an unverified entry. Delete it and rerun `python3 scripts/local/stack.py live` to recreate it from the bundled admission.
+- `reason: collection_in_progress`: another collector holds the lease, for example after a scheduler was killed mid-run. Leases expire within 15 minutes; retry then.
+- A `discovery_failed` or `capture_failed` diagnostic: the source could not be reached or refused requests. Check that the host can reach `https://play.limitlesstcg.com/api/games` (proxies and firewalls must allow outbound HTTPS from Docker containers), wait a few minutes in case of rate limiting, then run `refresh` again. Previously published data stays available.
+- `.local/admission.json is a directory`: Docker created an empty directory because the file was missing when Compose started. Remove the empty directory and rerun `live`.
+
+### Seeing what background collection is doing
+
+Run `docker compose logs -f scheduler`. It shows each upstream request URL, rate-limit waits (`source_rate_limit_wait`), and redacted per-run outcomes. Upstream response bodies are never logged.
+
+### The live refresh reports `no_eligible_events`
+
+The source responded, but the newest events were not admitted Champions doubles events on Switch, or had custom rules. The summary's diagnostics count each reason. Earlier published data stays available, and the scheduler keeps checking for new events while the stack runs.
+
+### `disabled`, or nothing is being collected
+
+Live collection requires the live overlay and an enabled admission. Plain `docker compose up` and `python3 scripts/local/stack.py up` are intentionally offline. Use `python3 scripts/local/stack.py live`, and check that `.local/admission.json` contains `"enabled": true`.
 
 ### The API is healthy, but `/v2` has no usable data
 
@@ -323,7 +383,7 @@ Keep the original endpoint filters and page size when continuing a query, and se
 
 ### Host API port is already in use
 
-Set `VGC_API_PORT` in `.env.local` to an available host port, recreate the API service, and use that port in the URL. The API stays bound to loopback by default.
+Add `VGC_API_PORT=8090` (any free port) to `.env.local`, rerun `python3 scripts/local/stack.py live` or `up`, and use that port in the URL. The helper passes `.env.local` to Compose. Plain `docker compose` reads the port only from your shell or a `.env` file, so use `VGC_API_PORT=8090 docker compose up -d --build --wait` there. The API stays bound to `127.0.0.1` by default and is not reachable from other machines.
 
 ### Changes to CSS or browser code do not appear
 
