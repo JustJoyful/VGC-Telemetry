@@ -20,6 +20,9 @@ from db.publication import get, transact
 
 SCHEDULES = {"discover": 21600, "recent": 21600, "reference": 86400, "reconcile": 604800}
 WORKER_LEASE = {"PK": "V2#LOCAL#DEMO", "SK": "LEASE"}
+# Seconds without a heartbeat before a role is unhealthy. A scheduler beats before each
+# mode; one live mode may wait out upstream rate limits but stays within its 900s lease.
+HEARTBEAT_LIMITS = {"worker": 180, "scheduler": 960}
 logger = logging.getLogger(__name__)
 
 
@@ -64,6 +67,8 @@ def run_source(mode):
             s3_client=s3,
             bucket_name=bucket,
             table=table,
+            page_size=int(os.environ.get("COLLECTION_PAGE_SIZE", "50")),
+            max_pages=int(os.environ.get("COLLECTION_MAX_PAGES", "10")),
             telemetry=telemetry,
         )
     reports = []
@@ -80,6 +85,8 @@ def run_source(mode):
                 invoke_client=DirectIngestion(),
                 ingestion_function="local-direct",
                 mode=mode,
+                batch_size=int(os.environ.get("COLLECTION_BATCH_SIZE", "10")),
+                recent_hours=int(os.environ.get("COLLECTION_INTERVAL_HOURS", "6")),
                 telemetry=telemetry,
             )
             reports.append(report.model_dump(mode="json"))
@@ -93,7 +100,11 @@ def run_source(mode):
     }
 
 
-def scheduler_tick(table, *, run=run_source, now=None):
+def heartbeat(role):
+    Path(f"/tmp/vgc-{role}-heartbeat").write_text(str(time.time()))
+
+
+def scheduler_tick(table, *, run=run_source, now=None, beat=None):
     if os.environ.get("LOCAL_SCHEDULES_ENABLED", "false") != "true":
         return {"status": "disabled"}
     supplied_now = now
@@ -107,6 +118,8 @@ def scheduler_tick(table, *, run=run_source, now=None):
         key = {"PK": "LOCAL#SCHEDULE", "SK": mode}
         if now < int((get(table, key) or {}).get("next_at", 0)):
             continue
+        if beat:
+            beat()
         lease = acquire_lease(
             table=table,
             key={"PK": "V2#LOCAL#SCHEDULE#" + mode, "SK": "LEASE"},
@@ -139,13 +152,22 @@ def scheduler_tick(table, *, run=run_source, now=None):
 def serve(role):
     validate_local()
     stop = Event()
+
+    def interrupt(*_):
+        stop.set()
+        if role == "scheduler":
+            # Unwind now: finally blocks release schedule/collection leases, and durable
+            # checkpoints resume the interrupted page. The worker ends at its call boundary.
+            raise SystemExit(0)
+
     for sig in (signal.SIGTERM, signal.SIGINT):
-        signal.signal(sig, lambda *_: stop.set())
+        signal.signal(sig, interrupt)
     table, s3 = get_dynamodb_table(), aws_client("s3")
     while not stop.is_set():
+        heartbeat(role)
         try:
             if role == "scheduler":
-                scheduler_tick(table)
+                scheduler_tick(table, beat=lambda: heartbeat(role))
             else:
                 lease = acquire_lease(
                     table=table, key=WORKER_LEASE, owner=uuid4().hex, now=int(time.time()), ttl=900
@@ -156,12 +178,12 @@ def serve(role):
                     handle_native_event({"recover": True}, table=table, s3_client=s3, max_steps=20)
                 finally:
                     release_lease(lease, table=table)
-            Path(f"/tmp/vgc-{role}-heartbeat").write_text(str(time.time()))
+            heartbeat(role)
         except ClientError as error:
             if error.response["Error"]["Code"] != "ConditionalCheckFailedException":
                 logger.exception("local_role_error %s", role)
             else:
-                Path(f"/tmp/vgc-{role}-heartbeat").write_text(str(time.time()))
+                heartbeat(role)
         except Exception:
             logger.exception("local_role_error %s", role)
         stop.wait(30)
