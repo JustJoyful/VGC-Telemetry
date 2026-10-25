@@ -6,17 +6,25 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 import tarfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 PROJECTS = ("vgc-phase4a", "vgc-phase4a-restore", "vgc-phase5", "vgc-phase5-restore")
 VOLUMES = ("dynamodb-data", "s3-data")
+ROLES = ("worker", "scheduler")
+LIVE_FILES = ("compose.yaml", "compose.live.yaml")
+LIVE_ADMISSION = ROOT / ".local/admission.json"
 
 
-def command(*args, capture=False):
+def command(*args, capture=False, files=("compose.yaml",)):
     if args[:2] == ("docker", "compose"):
-        args = args[:2] + ("--file", str(ROOT / "compose.yaml")) + args[2:]
+        selected = tuple(part for name in files for part in ("--file", str(ROOT / name)))
+        if (ROOT / ".env.local").exists():
+            # Interpolation (e.g. VGC_API_PORT) reads .env.local, not only the shell.
+            selected += ("--env-file", str(ROOT / ".env.local"))
+        args = args[:2] + selected + args[2:]
     return subprocess.run(
         args,
         cwd=ROOT,
@@ -27,12 +35,116 @@ def command(*args, capture=False):
     ).stdout
 
 
+def ensure_live_admission():
+    """Create this installation's explicit live admission from the bundled reviewed entry."""
+    if LIVE_ADMISSION.is_dir():
+        raise SystemExit(
+            f"{LIVE_ADMISSION} is a directory (Docker creates one when the file is missing). "
+            "Remove that empty directory and run the live command again."
+        )
+    if LIVE_ADMISSION.exists():
+        return False
+    bundled = json.loads((ROOT / "core/sources/admission.json").read_text())
+    for source in bundled["sources"]:
+        # Only the evidence-backed, verified entry can be enabled; coverage is unchanged.
+        source["enabled"] = bool(source.get("verified") and source.get("evidence"))
+    LIVE_ADMISSION.parent.mkdir(exist_ok=True)
+    LIVE_ADMISSION.write_text(json.dumps(bundled, indent=2) + "\n")
+    print(
+        f"Created {LIVE_ADMISSION.relative_to(ROOT)} enabling the bundled Limitless admission "
+        'for this installation only. Set "enabled": false there to stop live collection.',
+        file=sys.stderr,
+    )
+    return True
+
+
+def api_port():
+    for line in (ROOT / ".env.local").read_text().splitlines():
+        if line.startswith("VGC_API_PORT="):
+            return line.split("=", 1)[1].strip()
+    return os.environ.get("VGC_API_PORT", "8080")
+
+
+def run_collector(compose, events=None):
+    """Run the foreground refresh; returns its JSON report even when it exits non-zero."""
+    extra = ["-e", f"LIVE_REFRESH_EVENTS={events}"] if events else []
+    try:
+        raw = command(
+            *compose, "run", "--rm", "-T", *extra, "collector", capture=True, files=LIVE_FILES
+        )
+    except subprocess.CalledProcessError as error:
+        raw = error.output or ""
+    for line in reversed(raw.splitlines()):
+        if line.startswith("{"):
+            return json.loads(line)
+    return {
+        "status": "failed",
+        "reason": "collector_error",
+        "message": "The collector exited without a report; see the log output above.",
+    }
+
+
+def summarize(report):
+    print(json.dumps(report, sort_keys=True), flush=True)
+    lines = [f"Live refresh: {report['status']} - {report.get('message', '')}"]
+    for source, stats in (report.get("sources") or {}).items():
+        lines.append(
+            f"  {source}: discovered {stats['discovered']}, captured {stats['captured']}, "
+            f"published-eligible {stats['accepted']}, pending {stats['pending']}, "
+            f"rejected {stats['rejected']}, failed {stats['failed']}, "
+            f"queued for background {stats['remaining']}"
+        )
+        if stats.get("diagnostics"):
+            lines.append(f"  diagnostics: {json.dumps(stats['diagnostics'], sort_keys=True)}")
+    if report.get("reason"):
+        lines.append(f"  reason: {report['reason']}")
+    lines.append(f"  Explorer: http://127.0.0.1:{api_port()}/explorer")
+    print("\n".join(lines), file=sys.stderr, flush=True)
+
+
+def live_refresh(compose, events=None):
+    """Pause background roles, refresh in the foreground, then restore prior service state."""
+    running = set(
+        command(
+            *compose, "ps", "--status", "running", "--services", capture=True, files=LIVE_FILES
+        ).split()
+    )
+    command(*compose, "stop", *ROLES, files=LIVE_FILES)
+    try:
+        report = run_collector(compose, events)
+        # Report the collection outcome before restoring roles, so it is never lost.
+        summarize(report)
+    finally:
+        paused = [role for role in ROLES if role in running]
+        if paused:
+            command(*compose, "start", *paused, files=LIVE_FILES)
+        # `run` starts storage dependencies; leave a previously stopped stack stopped.
+        started = sorted({"dynamodb", "storage"} - running)
+        if started and not paused and "api" not in running:
+            command(*compose, "stop", *started, files=LIVE_FILES)
+    return report
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--project", choices=PROJECTS, default=PROJECTS[0])
     parser.add_argument(
         "action",
-        choices=["up", "down", "status", "seed-demo", "demo", "backup", "restore", "reset-demo"],
+        choices=[
+            "up",
+            "live",
+            "refresh",
+            "down",
+            "status",
+            "seed-demo",
+            "demo",
+            "backup",
+            "restore",
+            "reset-demo",
+        ],
+    )
+    parser.add_argument(
+        "--events", type=int, help="live/refresh: newest events to capture now (1-100)"
     )
     parser.add_argument("--output", type=Path)
     parser.add_argument("--input", type=Path)
@@ -41,8 +153,45 @@ def main(argv=None):
     compose = ["docker", "compose", "-p", args.project]
     if not (ROOT / ".env.local").exists():
         shutil.copyfile(ROOT / "local/compose.env.example", ROOT / ".env.local")
+    if args.events is not None and not 1 <= args.events <= 100:
+        parser.error("--events must be 1-100")
     if args.action == "up":
         command(*compose, "up", "-d", "--build", "--wait", "--wait-timeout", "180")
+    elif args.action in {"live", "refresh"}:
+        ensure_live_admission()
+        if args.action == "live":
+            # Start storage and the API only; scheduled collection waits for the refresh.
+            command(
+                *compose,
+                "up",
+                "-d",
+                "--build",
+                "--wait",
+                "--wait-timeout",
+                "180",
+                "api",
+                files=LIVE_FILES,
+            )
+            command(*compose, "stop", *ROLES, files=LIVE_FILES)
+            try:
+                report = run_collector(compose, args.events)
+                summarize(report)
+            finally:
+                # Recreate roles with the live overlay after the foreground refresh finishes.
+                command(
+                    *compose,
+                    "up",
+                    "-d",
+                    "--wait",
+                    "--wait-timeout",
+                    "180",
+                    *ROLES,
+                    files=LIVE_FILES,
+                )
+        else:
+            report = live_refresh(compose, args.events)
+        if report["status"] in {"failed", "disabled"}:
+            raise SystemExit(1)
     elif args.action == "down":
         command(*compose, "down")  # Named volumes retained; never pass -v.
     elif args.action == "status":
