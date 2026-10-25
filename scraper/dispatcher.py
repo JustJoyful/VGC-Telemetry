@@ -569,6 +569,8 @@ def _process_event(
             )
             stats.pending += result.admission_status == "pending"
             stats.rejected += result.admission_status == "rejected"
+            # Keep the admission reason (e.g. platform_conflict) visible to operators.
+            stats.diagnostics.extend(result.diagnostics)
             if telemetry:
                 telemetry.emit(
                     "PendingWork" if result.admission_status == "pending" else "RejectedWork"
