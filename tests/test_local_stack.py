@@ -49,10 +49,14 @@ def test_host_helper_ignores_ambient_compose_profile_and_file(monkeypatch):
     assert str(stack.ROOT / "compose.yaml") in run.call_args.args[0]
 
 
-def test_readme_reports_verified_local_acceptance():
+def test_readme_documents_live_refresh_and_offline_commands():
     from scripts.local.stack import ROOT
 
-    assert "self-hosted and verified" in (ROOT / "README.md").read_text()
+    readme = (ROOT / "README.md").read_text()
+    for command in ("stack.py live", "stack.py refresh", "stack.py up", "stack.py seed-demo"):
+        assert f"python3 scripts/local/{command}" in readme
+    assert "never pushed to GitHub" in readme
+    assert "docker compose down -v" in readme
 
 
 def test_safe_seed_runs_in_container_without_reset(tmp_path, monkeypatch, capsys):
