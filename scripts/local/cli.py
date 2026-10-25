@@ -3,6 +3,7 @@
 import argparse
 import json
 import os
+import signal
 import time
 from pathlib import Path
 from uuid import uuid4
@@ -13,7 +14,7 @@ from core.aws import DEMO_NAME, aws_client, validate_local
 from db.client import get_dynamodb_table
 from db.leases import acquire_lease, release_lease
 from scripts.local import demo
-from scripts.local.roles import WORKER_LEASE, run_source, serve
+from scripts.local.roles import HEARTBEAT_LIMITS, WORKER_LEASE, run_source, serve
 from scripts.local.storage import initialize, reset_demo, s3_contract
 
 
@@ -106,6 +107,7 @@ def main(argv=None):
             "discover",
             "recent",
             "reconcile",
+            "refresh",
         ],
     )
     parser.add_argument("--confirm-reset", action="store_true")
@@ -120,10 +122,20 @@ def main(argv=None):
     if args.command.endswith("-health"):
         role = args.command.split("-")[0]
         stamp = float(Path(f"/tmp/vgc-{role}-heartbeat").read_text())
-        if time.time() - stamp > 180:
+        if time.time() - stamp > HEARTBEAT_LIMITS[role]:
             raise RuntimeError("Local role heartbeat stale")
         return
     if args.command in {"worker", "scheduler"}:
+        import logging
+        import sys
+
+        # Both roles log redacted telemetry; the scheduler also logs request URLs and
+        # rate-limit waits. Neither logs upstream bodies.
+        logging.basicConfig(
+            stream=sys.stderr,
+            level=logging.INFO if args.command == "scheduler" else logging.WARNING,
+            format="%(asctime)s %(name)s %(message)s",
+        )
         serve(args.command)
         return
     if args.command == "init":
@@ -136,6 +148,34 @@ def main(argv=None):
         report = api_proof(args.api_url)
     elif args.command in {"reference", "discover", "recent", "reconcile"}:
         report = run_source(args.command)
+    elif args.command == "refresh":
+        import logging
+        import sys
+
+        from scripts.local.live import refresh
+
+        # Progress (request URLs, rate-limit waits, redacted outcomes) goes to stderr only.
+        logging.basicConfig(
+            stream=sys.stderr, level=logging.INFO, format="%(asctime)s %(name)s %(message)s"
+        )
+
+        def stopped(*_):
+            # `docker stop` must unwind so finally blocks release the schedule leases.
+            raise SystemExit(143)
+
+        signal.signal(signal.SIGTERM, stopped)
+        # Holds every schedule lease for the whole bounded refresh.
+        report = refresh(
+            get_dynamodb_table(),
+            aws_client("s3"),
+            DEMO_NAME,
+            admission_path=Path(
+                os.environ.get("SOURCE_ADMISSION_PATH", "core/sources/admission.json")
+            ),
+            catalog_index=Path(
+                os.environ.get("CATALOG_INDEX_PATH", "core/regulations/v2/index.json")
+            ),
+        )
     else:
         if args.command == "demo":
             reset_demo(confirm=args.confirm_reset)
@@ -192,6 +232,8 @@ def main(argv=None):
         with args.output.open("x") as stream:
             stream.write(rendered + "\n")
     print(rendered)
+    if args.command == "refresh" and report["status"] in {"failed", "disabled"}:
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":
