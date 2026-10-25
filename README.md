@@ -30,7 +30,7 @@ VGC Telemetry is a Python API and web explorer for Pokémon Champions tournament
 
 ## Project status and data limits
 
-The repository contains the API, web explorer, ingestion and publication pipeline, local operations, and AWS infrastructure code. CI runs lint, formatting, and Python tests. The existence of deployment automation and Terraform does not mean that a production deployment, AWS permissions, costs, live collection, or source continuity have been verified. See [Phase 5 evidence](docs/phase5/evidence.md), [local operations](docs/runbooks/self-hosted-phase-4a.md), and [Phase 5 query examples](docs/runbooks/phase-5-queries.md) for the scope and limits of recorded checks.
+The repository contains the API, web explorer, ingestion and publication pipeline, local operations, and AWS infrastructure code. CI runs lint, formatting, and Python tests. The existence of deployment automation and Terraform does not mean that a production deployment, AWS permissions, costs, live collection, or source continuity have been verified. See the [local operations guide](docs/runbooks/self-hosted-phase-4a.md), [query guide](docs/runbooks/phase-5-queries.md), [query validation record](docs/evidence/query-usability/verification.json), and [local stack proof](docs/local-operations/fresh-workspace-proof.json) for the scope and limits of recorded checks.
 
 The bundled Limitless source admission is disabled. The local demo uses retained public captures; it does not enable collection. Source continuity, collection authorization, and upstream behavior require separate review before live collection is enabled. Automated RK9 screen scraping is excluded under RK9's published terms.
 
@@ -294,7 +294,8 @@ Useful references:
 
 - [Self-hosted operations](docs/runbooks/self-hosted-phase-4a.md)
 - [Query guide and examples](docs/runbooks/phase-5-queries.md)
-- [Phase 5 evidence](docs/phase5/evidence.md)
+- [Query validation record](docs/evidence/query-usability/verification.json)
+- [Local stack proof](docs/local-operations/fresh-workspace-proof.json)
 - [Catalog provenance](core/regulations/v2/README.md)
 
 ## Troubleshooting

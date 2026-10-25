@@ -3,12 +3,12 @@
 The stack uses DynamoDB Local, persistent RustFS 1.0.1, the actual FastAPI app,
 and separate worker/scheduler processes. Everything below is local. Phase 4B
 (AWS deployment, billing, IAM, triggers, live capacity/cost) remains deferred.
-See [dated evidence](../phase4a/evidence.md) and [benchmarks](../benchmarks/local-benchmark-results.md).
+See the [fresh workspace proof](../local-operations/fresh-workspace-proof.json), [restore proof](../local-operations/restore-proof.json), and [local benchmark record](../benchmarks/local-benchmark-run-01.json).
 
 ## Historical Phase 4A evidence
 
 Dated Phase 4A reports describe their recorded revisions. Current Phase 5
-checks are recorded in [Phase 5 evidence](../phase5/evidence.md).
+query behavior is described in the [query guide](phase-5-queries.md), with fixture results in the [query walkthrough](../evidence/query-usability/query-walkthrough.json).
 
 ## Fresh checkout
 
