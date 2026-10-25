@@ -68,7 +68,8 @@ docs/*
 !docs/runbooks/self-hosted-phase-4a.md
 !docs/benchmarks/
 !docs/benchmarks/phase-4a*
-!docs/phase4a/
+!docs/local-operations/
+!docs/query-usability/
 
 # Phase 4A generated local state and owner-only tunnel configuration
 .local/
@@ -77,6 +78,7 @@ local/compose.sources.yaml
 
 # Local operational notes and reports stay in the workspace, outside commits.
 /docs/**/*.md
+!/docs/query-usability/pr-description.md
 /scripts/local/*.md
 
 # Frontend build dependencies
