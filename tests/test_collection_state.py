@@ -74,3 +74,17 @@ def test_newer_explicit_backfill_reopens_work_but_old_retry_does_not(dynamodb_ta
     request_backfill_work(dynamodb_table, "limitless", "event", 11)
     request_backfill_work(dynamodb_table, "limitless", "event", 10)
     assert dynamodb_table.get_item(Key=key)["Item"]["status"] == "pending"
+
+
+def test_completed_discovery_restarts_from_the_first_page(dynamodb_table):
+    from scraper.dispatcher import _durable_pages
+
+    class Listing:
+        def get_tournaments(self, game, format, limit, page):
+            return [{"id": "newest"}] if page == 1 else []
+
+    for _ in range(2):
+        pages = _durable_pages(dynamodb_table, Listing(), "limitless", "M-C", "VGC", 50, 10)
+        assert [page for page, _ in pages] == [1, 2]
+    state = get_checkpoint(dynamodb_table, collection_state_key("limitless", "discover", "M-C"))
+    assert state.status == "completed" and state.cursor is None
