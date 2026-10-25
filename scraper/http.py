@@ -9,7 +9,9 @@ import httpx
 from core.models.champions import CapturedDocument
 
 
-def request_public(client, url, *, params=None, before_request=None, on_retry=None):
+def request_public(
+    client, url, *, params=None, before_request=None, on_retry=None, on_response=None
+):
     for attempt in range(3):
         if before_request:
             before_request()
@@ -22,6 +24,9 @@ def request_public(client, url, *, params=None, before_request=None, on_retry=No
                 raise
             time.sleep(min(2**attempt, 30))
             continue
+        if on_response:
+            # Observe rate-limit headers on every attempt, including refusals.
+            on_response(response)
         if response.status_code not in (429, 502, 503, 504):
             return response
         if on_retry:
