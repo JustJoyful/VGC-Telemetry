@@ -1,17 +1,13 @@
 name: Deploy
 
+# Production deploys are manual only: no push trigger. The `production` GitHub Environment
+# should require reviewer approval (Settings > Environments) before this job can run.
 on:
-  push:
-    branches: ["main"]
-    paths:
-      - "infra/**"
-      - "app/**"
-      - "core/**"
-      - "db/**"
-      - "ingestion/**"
-      - "scraper/**"
-      - "Dockerfile"
-      - ".dockerignore"
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "deploy-production" to build images and run terraform apply'
+        required: true
 
 concurrency:
   group: deploy-production
@@ -25,6 +21,8 @@ jobs:
   build-and-deploy:
     name: Build Images & Apply Terraform
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && inputs.confirm == 'deploy-production'
+    environment: production
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
