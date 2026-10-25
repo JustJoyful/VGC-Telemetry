@@ -1,0 +1,34 @@
+# Opt-in live collection overlay. Used only by `python3 -m scripts.local.stack live|refresh`;
+# plain `docker compose up` reads compose.yaml alone and never contacts an upstream source.
+# The admission file is generated per installation under the gitignored .local/ directory.
+x-live-env: &live-env
+  LOCAL_SCHEDULES_ENABLED: "true"
+  SOURCE_ADMISSION_PATH: /run/config/admission.json
+  # Recheck an already captured event at most daily; respects the upstream request budget.
+  COLLECTION_INTERVAL_HOURS: "24"
+services:
+  scheduler:
+    networks: [private, egress]
+    environment: *live-env
+    volumes:
+      - ./.local/admission.json:/run/config/admission.json:ro
+  collector:
+    # One-shot foreground refresh; the host helper pauses worker/scheduler around it.
+    image: ${VGC_LOCAL_IMAGE:-vgc-phase4a:local}
+    build:
+      context: .
+      dockerfile: Dockerfile.local
+    profiles: [collector]
+    env_file: .env.local
+    environment: *live-env
+    networks: [private, egress]
+    volumes:
+      - ./.local/admission.json:/run/config/admission.json:ro
+    mem_limit: 1g
+    cpus: 2
+    init: true
+    command: ["python", "-m", "scripts.local.cli", "refresh"]
+    restart: "no"
+    depends_on:
+      bootstrap:
+        condition: service_completed_successfully
